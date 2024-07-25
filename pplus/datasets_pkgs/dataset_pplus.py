@@ -96,13 +96,11 @@ class TextualInversionDataset(Dataset):
         data_root,
         tokenizer,
         include_prior_concept,
-        learnable_property="object",  # [object, style]
         size=512,
         repeats=100,
         interpolation="bicubic",
         flip_p=0,
         center_crop=False,
-        exclude_suffix=True,
         mlm_target='all',
         mask_prob=0.15,
         mask_token_ids=None,
@@ -132,7 +130,6 @@ class TextualInversionDataset(Dataset):
         self.mask_token_ids = mask_token_ids
         self.mask_prob = mask_prob
         self.mlm_target = mlm_target
-        self.exclude_suffix = exclude_suffix
         self.data_root = data_root
         self.tokenizer = tokenizer
         self.prior_concept = prior_concept

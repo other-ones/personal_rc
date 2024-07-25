@@ -353,7 +353,6 @@ def main():
         repeats=args.repeats,
         center_crop=args.center_crop,
         flip_p=args.flip_p,
-        exclude_suffix=args.exclude_suffix,
         prior_concept=args.prior_concept1,
         mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
