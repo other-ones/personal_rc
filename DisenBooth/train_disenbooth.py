@@ -43,7 +43,7 @@ from diffusers import (
 )
 from diffusers.loaders import (
     LoraLoaderMixin,
-    text_encoder_lora_state_dict,
+    # text_encoder_lora_state_dict,
 )
 from diffusers.models.attention_processor import (
     AttnAddedKVProcessor,
