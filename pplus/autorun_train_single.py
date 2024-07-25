@@ -140,7 +140,7 @@ for include_prior in include_priors:
                 command+='--cls_net_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
                 command+='--mask_embed_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                 command+='--mlm_target=masked \\\n'
-                command+='--mlm_batch_size=14 \\\n'
+                command+='--mlm_batch_size=12 \\\n'
                 command+='--scale_lr \\\n'
                 command+='--prompt_type="{}" \\\n'.format(category)
                 command+='--silent=0 \\\n'
