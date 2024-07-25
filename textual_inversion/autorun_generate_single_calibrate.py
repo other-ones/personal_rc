@@ -2,27 +2,51 @@ from utils import float_to_str
 import time
 import numpy as np
 import os
+import socket
+hostname = socket.gethostname()
+print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
+info_map_03={
     'backpack':('backpack','nonliving'),
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
     'vase':('vase','nonliving'),
     # 'teddybear':('teddybear','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
+    # 'dog6': ('dog','pet'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
 
-
+    # 'dog3': ('dog','pet'),
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
     # 'rc_car':('toy','nonliving'),
-    # # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'dog3': ('dog','pet'),
-    # 'dog6': ('dog','pet'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
-
 }
+info_map_01={
+    # 'backpack':('backpack','nonliving'),
+    # 'pet_cat1':('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'vase':('vase','nonliving'),
+    'teddybear':('teddybear','nonliving'),
+    'dog6': ('dog','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'flower1':('flower','flower'),
+}
+
+if '03' in hostname:
+    info_map=info_map_03
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
 lambda_mlm=0.001
 
 
@@ -47,7 +71,8 @@ device_idx=stat_idx
 
 target_norm=0
 include_prior_concept=1
-pos_values=[0.1,1,10]
+pos_values=[0,0.1,1,10]
+lambda_mlms=[0,0.001]
 for lambda_mlm in lambda_mlms:
     lambda_mlm_str=float_to_str(lambda_mlm).replace('.','')
     for pos_value in pos_values:
@@ -55,9 +80,15 @@ for lambda_mlm in lambda_mlms:
         for idx,concept in enumerate(list(info_map.keys())):
             prior,category=info_map[concept]
             if include_prior_concept:
-                learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+                if lambda_mlm:
+                    learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+                else:
+                    learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
             else:
-                learned_embed_path1='saved_models/ti_models/single/{}/ti_norm{}_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+                if lambda_mlm:
+                    learned_embed_path1='saved_models/ti_models/single/{}/ti_norm{}_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+                else:
+                    learned_embed_path1='saved_models/ti_models/single/{}/ti_norm{}_noprior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
             if not os.path.exists(learned_embed_path1):
                 print(learned_embed_path1,'does not exists')
                 continue

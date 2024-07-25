@@ -73,10 +73,10 @@ for lambda_mlm in lambda_mlms:
     lambda_mlm_str=str(lambda_mlm).replace('.','')
     for idx,concept in enumerate(list(info_map.keys())):
         prior,category=info_map[concept]
-        if not target_norm:
-            learned_embed_path1='saved_models/single_prior/{}/ti_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,lambda_mlm_str,concept)
+        if lambda_mlm:
+            learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
         else:
-            learned_embed_path1='saved_models/single_prior/{}/ti_norm{}_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+            learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
         # print(learned_embed_path1,os.path.exists(learned_embed_path1),)
         # continue
         if not os.path.exists(learned_embed_path1):
