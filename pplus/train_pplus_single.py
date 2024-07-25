@@ -847,8 +847,9 @@ def main():
                     norm_target=torch.norm(target_emb,p=1,dim=-1)
                 if loss_mlm is not None:
                     logs['loss_mlm']=loss_mlm.detach().item()#*args.lambda3
-                for vidx in range(args.num_vectors1):
-                    logs['norm_target{}']=norm_target[vidx].item()
+                logs['norm_target{}'.format(0)]=norm_target[0].item()
+                logs['norm_target{}'.format(4)]=norm_target[4].item()
+                logs['norm_target{}'.format(8)]=norm_target[8].item()
                 if args.report_to=='wandb' and accelerator.is_main_process:
                     wandb.log(logs)
                 if args.silent:
