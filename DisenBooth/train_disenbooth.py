@@ -801,29 +801,29 @@ def main(args):
         text_lora_parameters = LoraLoaderMixin._modify_text_encoder(text_encoder, dtype=torch.float32, rank=args.rank)
 
     # create custom saving & loading hooks so that `accelerator.save_state(...)` serializes in a nice format
-    # def save_model_hook(models, weights, output_dir):
-    #     if accelerator.is_main_process:
-    #         # there are only two options here. Either are just the unet attn processor layers
-    #         # or there are the unet and text encoder atten layers
-    #         unet_lora_layers_to_save = None
-    #         text_encoder_lora_layers_to_save = None
+    def save_model_hook(models, weights, output_dir):
+        if accelerator.is_main_process:
+            # there are only two options here. Either are just the unet attn processor layers
+            # or there are the unet and text encoder atten layers
+            unet_lora_layers_to_save = None
+            text_encoder_lora_layers_to_save = None
 
-    #         for model in models:
-    #             if isinstance(model, type(accelerator.unwrap_model(unet))):
-    #                 unet_lora_layers_to_save = unet_lora_state_dict(model)
-    #             elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
-    #                 text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
-    #             else:
-    #                 torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
+            for model in models:
+                if isinstance(model, type(accelerator.unwrap_model(unet))):
+                    unet_lora_layers_to_save = unet_lora_state_dict(model)
+                elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
+                    text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
+                else:
+                    torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
 
-    #             # make sure to pop weight so that corresponding model is not saved again
-    #             weights.pop()
+                # make sure to pop weight so that corresponding model is not saved again
+                weights.pop()
 
-    #         LoraLoaderMixin.save_lora_weights(
-    #             output_dir,
-    #             unet_lora_layers=unet_lora_layers_to_save,
-    #             text_encoder_lora_layers=text_encoder_lora_layers_to_save,
-    #         )
+            LoraLoaderMixin.save_lora_weights(
+                output_dir,
+                unet_lora_layers=unet_lora_layers_to_save,
+                text_encoder_lora_layers=text_encoder_lora_layers_to_save,
+            )
 
     def load_model_hook(models, input_dir):
         unet_ = None
