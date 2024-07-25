@@ -118,3 +118,4 @@ wandb==0.17.5
 wcwidth==0.2.13
 xformers==0.0.23
 zipp==3.19.2
+open_clip_torch

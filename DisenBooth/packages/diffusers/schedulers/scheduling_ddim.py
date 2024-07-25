@@ -23,7 +23,8 @@ import numpy as np
 import torch
 
 from ..configuration_utils import ConfigMixin, register_to_config
-from ..utils import BaseOutput, randn_tensor
+from ..utils import BaseOutput
+from ..utils.torch_utils import randn_tensor
 from .scheduling_utils import KarrasDiffusionSchedulers, SchedulerMixin
 
 
@@ -31,14 +32,14 @@ from .scheduling_utils import KarrasDiffusionSchedulers, SchedulerMixin
 # Copied from diffusers.schedulers.scheduling_ddpm.DDPMSchedulerOutput with DDPM->DDIM
 class DDIMSchedulerOutput(BaseOutput):
     """
-    Output class for the scheduler's step function output.
+    Output class for the scheduler's `step` function output.
 
     Args:
         prev_sample (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)` for images):
-            Computed sample (x_{t-1}) of previous timestep. `prev_sample` should be used as next model input in the
+            Computed sample `(x_{t-1})` of previous timestep. `prev_sample` should be used as next model input in the
             denoising loop.
         pred_original_sample (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)` for images):
-            The predicted denoised sample (x_{0}) based on the model output from the current timestep.
+            The predicted denoised sample `(x_{0})` based on the model output from the current timestep.
             `pred_original_sample` can be used to preview progress or for guidance.
     """
 
@@ -129,57 +130,53 @@ def rescale_zero_terminal_snr(betas):
 
 class DDIMScheduler(SchedulerMixin, ConfigMixin):
     """
-    Denoising diffusion implicit models is a scheduler that extends the denoising procedure introduced in denoising
-    diffusion probabilistic models (DDPMs) with non-Markovian guidance.
+    `DDIMScheduler` extends the denoising procedure introduced in denoising diffusion probabilistic models (DDPMs) with
+    non-Markovian guidance.
 
-    [`~ConfigMixin`] takes care of storing all config attributes that are passed in the scheduler's `__init__`
-    function, such as `num_train_timesteps`. They can be accessed via `scheduler.config.num_train_timesteps`.
-    [`SchedulerMixin`] provides general loading and saving functionality via the [`SchedulerMixin.save_pretrained`] and
-    [`~SchedulerMixin.from_pretrained`] functions.
-
-    For more details, see the original paper: https://arxiv.org/abs/2010.02502
+    This model inherits from [`SchedulerMixin`] and [`ConfigMixin`]. Check the superclass documentation for the generic
+    methods the library implements for all schedulers such as loading and saving.
 
     Args:
-        num_train_timesteps (`int`): number of diffusion steps used to train the model.
-        beta_start (`float`): the starting `beta` value of inference.
-        beta_end (`float`): the final `beta` value.
-        beta_schedule (`str`):
-            the beta schedule, a mapping from a beta range to a sequence of betas for stepping the model. Choose from
+        num_train_timesteps (`int`, defaults to 1000):
+            The number of diffusion steps to train the model.
+        beta_start (`float`, defaults to 0.0001):
+            The starting `beta` value of inference.
+        beta_end (`float`, defaults to 0.02):
+            The final `beta` value.
+        beta_schedule (`str`, defaults to `"linear"`):
+            The beta schedule, a mapping from a beta range to a sequence of betas for stepping the model. Choose from
             `linear`, `scaled_linear`, or `squaredcos_cap_v2`.
-        trained_betas (`np.ndarray`, optional):
-            option to pass an array of betas directly to the constructor to bypass `beta_start`, `beta_end` etc.
-        clip_sample (`bool`, default `True`):
-            option to clip predicted sample for numerical stability.
-        clip_sample_range (`float`, default `1.0`):
-            the maximum magnitude for sample clipping. Valid only when `clip_sample=True`.
-        set_alpha_to_one (`bool`, default `True`):
-            each diffusion step uses the value of alphas product at that step and at the previous one. For the final
-            step there is no previous alpha. When this option is `True` the previous alpha product is fixed to `1`,
-            otherwise it uses the value of alpha at step 0.
-        steps_offset (`int`, default `0`):
-            an offset added to the inference steps. You can use a combination of `offset=1` and
-            `set_alpha_to_one=False`, to make the last step use step 0 for the previous alpha product, as done in
-            stable diffusion.
-        prediction_type (`str`, default `epsilon`, optional):
-            prediction type of the scheduler function, one of `epsilon` (predicting the noise of the diffusion
-            process), `sample` (directly predicting the noisy sample`) or `v_prediction` (see section 2.4
-            https://imagen.research.google/video/paper.pdf)
-        thresholding (`bool`, default `False`):
-            whether to use the "dynamic thresholding" method (introduced by Imagen, https://arxiv.org/abs/2205.11487).
-            Note that the thresholding method is unsuitable for latent-space diffusion models (such as
-            stable-diffusion).
-        dynamic_thresholding_ratio (`float`, default `0.995`):
-            the ratio for the dynamic thresholding method. Default is `0.995`, the same as Imagen
-            (https://arxiv.org/abs/2205.11487). Valid only when `thresholding=True`.
-        sample_max_value (`float`, default `1.0`):
-            the threshold value for dynamic thresholding. Valid only when `thresholding=True`.
-        timestep_spacing (`str`, default `"leading"`):
-            The way the timesteps should be scaled. Refer to Table 2. of [Common Diffusion Noise Schedules and Sample
-            Steps are Flawed](https://arxiv.org/abs/2305.08891) for more information.
-        rescale_betas_zero_snr (`bool`, default `False`):
-            whether to rescale the betas to have zero terminal SNR (proposed by https://arxiv.org/pdf/2305.08891.pdf).
-            This can enable the model to generate very bright and dark samples instead of limiting it to samples with
-            medium brightness. Loosely related to
+        trained_betas (`np.ndarray`, *optional*):
+            Pass an array of betas directly to the constructor to bypass `beta_start` and `beta_end`.
+        clip_sample (`bool`, defaults to `True`):
+            Clip the predicted sample for numerical stability.
+        clip_sample_range (`float`, defaults to 1.0):
+            The maximum magnitude for sample clipping. Valid only when `clip_sample=True`.
+        set_alpha_to_one (`bool`, defaults to `True`):
+            Each diffusion step uses the alphas product value at that step and at the previous one. For the final step
+            there is no previous alpha. When this option is `True` the previous alpha product is fixed to `1`,
+            otherwise it uses the alpha value at step 0.
+        steps_offset (`int`, defaults to 0):
+            An offset added to the inference steps. You can use a combination of `offset=1` and
+            `set_alpha_to_one=False` to make the last step use step 0 for the previous alpha product like in Stable
+            Diffusion.
+        prediction_type (`str`, defaults to `epsilon`, *optional*):
+            Prediction type of the scheduler function; can be `epsilon` (predicts the noise of the diffusion process),
+            `sample` (directly predicts the noisy sample`) or `v_prediction` (see section 2.4 of [Imagen
+            Video](https://imagen.research.google/video/paper.pdf) paper).
+        thresholding (`bool`, defaults to `False`):
+            Whether to use the "dynamic thresholding" method. This is unsuitable for latent-space diffusion models such
+            as Stable Diffusion.
+        dynamic_thresholding_ratio (`float`, defaults to 0.995):
+            The ratio for the dynamic thresholding method. Valid only when `thresholding=True`.
+        sample_max_value (`float`, defaults to 1.0):
+            The threshold value for dynamic thresholding. Valid only when `thresholding=True`.
+        timestep_spacing (`str`, defaults to `"leading"`):
+            The way the timesteps should be scaled. Refer to Table 2 of the [Common Diffusion Noise Schedules and
+            Sample Steps are Flawed](https://huggingface.co/papers/2305.08891) for more information.
+        rescale_betas_zero_snr (`bool`, defaults to `False`):
+            Whether to rescale the betas to have zero terminal SNR. This enables the model to generate very bright and
+            dark samples instead of limiting it to samples with medium brightness. Loosely related to
             [`--offset_noise`](https://github.com/huggingface/diffusers/blob/74fd735eb073eb1d774b1ab4154a0876eb82f055/examples/dreambooth/train_dreambooth.py#L506).
     """
 
@@ -246,11 +243,14 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         current timestep.
 
         Args:
-            sample (`torch.FloatTensor`): input sample
-            timestep (`int`, optional): current timestep
+            sample (`torch.FloatTensor`):
+                The input sample.
+            timestep (`int`, *optional*):
+                The current timestep in the diffusion chain.
 
         Returns:
-            `torch.FloatTensor`: scaled input sample
+            `torch.FloatTensor`:
+                A scaled input sample.
         """
         return sample
 
@@ -260,7 +260,7 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         beta_prod_t = 1 - alpha_prod_t
         beta_prod_t_prev = 1 - alpha_prod_t_prev
 
-        variance = (beta_prod_t_prev / beta_prod_t) * (1 - alpha_prod_t / alpha_prod_t_prev) #beta_tilde
+        variance = (beta_prod_t_prev / beta_prod_t) * (1 - alpha_prod_t / alpha_prod_t_prev)
 
         return variance
 
@@ -276,13 +276,13 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         https://arxiv.org/abs/2205.11487
         """
         dtype = sample.dtype
-        batch_size, channels, height, width = sample.shape
+        batch_size, channels, *remaining_dims = sample.shape
 
         if dtype not in (torch.float32, torch.float64):
             sample = sample.float()  # upcast for quantile calculation, and clamp not implemented for cpu half
 
         # Flatten sample for doing quantile calculation along each image
-        sample = sample.reshape(batch_size, channels * height * width)
+        sample = sample.reshape(batch_size, channels * np.prod(remaining_dims))
 
         abs_sample = sample.abs()  # "a certain percentile absolute pixel value"
 
@@ -290,22 +290,21 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         s = torch.clamp(
             s, min=1, max=self.config.sample_max_value
         )  # When clamped to min=1, equivalent to standard clipping to [-1, 1]
-
         s = s.unsqueeze(1)  # (batch_size, 1) because clamp will broadcast along dim=0
         sample = torch.clamp(sample, -s, s) / s  # "we threshold xt0 to the range [-s, s] and then divide by s"
 
-        sample = sample.reshape(batch_size, channels, height, width)
+        sample = sample.reshape(batch_size, channels, *remaining_dims)
         sample = sample.to(dtype)
 
         return sample
 
     def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
         """
-        Sets the discrete timesteps used for the diffusion chain. Supporting function to be run before inference.
+        Sets the discrete timesteps used for the diffusion chain (to be run before inference).
 
         Args:
             num_inference_steps (`int`):
-                the number of diffusion steps used when generating samples with a pre-trained model.
+                The number of diffusion steps used when generating samples with a pre-trained model.
         """
 
         if num_inference_steps > self.config.num_train_timesteps:
@@ -356,29 +355,35 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         return_dict: bool = True,
     ) -> Union[DDIMSchedulerOutput, Tuple]:
         """
-        Predict the sample at the previous timestep by reversing the SDE. Core function to propagate the diffusion
+        Predict the sample from the previous timestep by reversing the SDE. This function propagates the diffusion
         process from the learned model outputs (most often the predicted noise).
 
         Args:
-            model_output (`torch.FloatTensor`): direct output from learned diffusion model.
-            timestep (`int`): current discrete timestep in the diffusion chain.
+            model_output (`torch.FloatTensor`):
+                The direct output from learned diffusion model.
+            timestep (`float`):
+                The current discrete timestep in the diffusion chain.
             sample (`torch.FloatTensor`):
-                current instance of sample being created by diffusion process.
-            eta (`float`): weight of noise for added noise in diffusion step.
-            use_clipped_model_output (`bool`): if `True`, compute "corrected" `model_output` from the clipped
-                predicted original sample. Necessary because predicted original sample is clipped to [-1, 1] when
-                `self.config.clip_sample` is `True`. If no clipping has happened, "corrected" `model_output` would
-                coincide with the one provided as input and `use_clipped_model_output` will have not effect.
-            generator: random number generator.
-            variance_noise (`torch.FloatTensor`): instead of generating noise for the variance using `generator`, we
-                can directly provide the noise for the variance itself. This is useful for methods such as
-                CycleDiffusion. (https://arxiv.org/abs/2210.05559)
-            return_dict (`bool`): option for returning tuple rather than DDIMSchedulerOutput class
+                A current instance of a sample created by the diffusion process.
+            eta (`float`):
+                The weight of noise for added noise in diffusion step.
+            use_clipped_model_output (`bool`, defaults to `False`):
+                If `True`, computes "corrected" `model_output` from the clipped predicted original sample. Necessary
+                because predicted original sample is clipped to [-1, 1] when `self.config.clip_sample` is `True`. If no
+                clipping has happened, "corrected" `model_output` would coincide with the one provided as input and
+                `use_clipped_model_output` has no effect.
+            generator (`torch.Generator`, *optional*):
+                A random number generator.
+            variance_noise (`torch.FloatTensor`):
+                Alternative to generating noise with `generator` by directly providing the noise for the variance
+                itself. Useful for methods such as [`CycleDiffusion`].
+            return_dict (`bool`, *optional*, defaults to `True`):
+                Whether or not to return a [`~schedulers.scheduling_ddim.DDIMSchedulerOutput`] or `tuple`.
 
         Returns:
             [`~schedulers.scheduling_utils.DDIMSchedulerOutput`] or `tuple`:
-            [`~schedulers.scheduling_utils.DDIMSchedulerOutput`] if `return_dict` is True, otherwise a `tuple`. When
-            returning a tuple, the first element is the sample tensor.
+                If return_dict is `True`, [`~schedulers.scheduling_ddim.DDIMSchedulerOutput`] is returned, otherwise a
+                tuple is returned where the first element is the sample tensor.
 
         """
         if self.num_inference_steps is None:
@@ -399,11 +404,11 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
 
         # 1. get previous step value (=t-1)
         prev_timestep = timestep - self.config.num_train_timesteps // self.num_inference_steps
-        # print(self.config.num_train_timesteps,'self.config.num_train_timesteps')
-        # print(prev_timestep,'prev_timestep',self.final_alpha_cumprod,'self.final_alpha_cumprod')
+
         # 2. compute alphas, betas
         alpha_prod_t = self.alphas_cumprod[timestep]
         alpha_prod_t_prev = self.alphas_cumprod[prev_timestep] if prev_timestep >= 0 else self.final_alpha_cumprod
+
         beta_prod_t = 1 - alpha_prod_t
 
         # 3. compute predicted original sample from predicted noise also called
@@ -415,8 +420,7 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
             pred_original_sample = model_output
             pred_epsilon = (sample - alpha_prod_t ** (0.5) * pred_original_sample) / beta_prod_t ** (0.5)
         elif self.config.prediction_type == "v_prediction":
-            pred_original_sample = (alpha_prod_t**0.5) * sample - (beta_prod_t**0.5) * model_output #pred_x0 HERE
-            # NOTE:velocity = sqrt_alpha_prod * eps - sqrt_one_minus_alpha_prod * sample
+            pred_original_sample = (alpha_prod_t**0.5) * sample - (beta_prod_t**0.5) * model_output
             pred_epsilon = (alpha_prod_t**0.5) * model_output + (beta_prod_t**0.5) * sample
         else:
             raise ValueError(
@@ -425,9 +429,9 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
             )
 
         # 4. Clip or threshold "predicted x_0"
-        if self.config.thresholding:#False
+        if self.config.thresholding:
             pred_original_sample = self._threshold_sample(pred_original_sample)
-        elif self.config.clip_sample:#False
+        elif self.config.clip_sample:
             pred_original_sample = pred_original_sample.clamp(
                 -self.config.clip_sample_range, self.config.clip_sample_range
             )
@@ -445,7 +449,6 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         pred_sample_direction = (1 - alpha_prod_t_prev - std_dev_t**2) ** (0.5) * pred_epsilon
 
         # 7. compute x_t without "random noise" of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
-        # x_prev = a_prev.sqrt() * pred_x0 + dir_xt + noise
         prev_sample = alpha_prod_t_prev ** (0.5) * pred_original_sample + pred_sample_direction
 
         if eta > 0:
@@ -513,87 +516,5 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         velocity = sqrt_alpha_prod * noise - sqrt_one_minus_alpha_prod * sample
         return velocity
 
-
-
-
-
-    # Added for universal guidance
-    def _get_prev_timestep(self,timestep):
-        prev_timestep = timestep - self.config.num_train_timesteps // self.num_inference_steps
-        return prev_timestep
-    def _get_alpha_prev(self,timestep):
-        prev_timestep = self._get_prev_timestep(timestep)
-        return self.alphas.to(timestep.device)[prev_timestep]
-    def _get_alpha_t(self,timestep):
-        return self.alphas.to(timestep.device)[timestep]
-    def _get_pred_sample_direction(timestep,pred_epsilon):
-        prev_timestep=self._get_prev_timestep(timestep)
-        alpha_prod_t_prev = self.alphas_cumprod[prev_timestep] if prev_timestep >= 0 else self.final_alpha_cumprod
-        pred_sample_direction = (1 - alpha_prod_t_prev - std_dev_t**2) ** (0.5) * pred_epsilon
-        return pred_sample_direction
-    def _get_beta_t(self,timestep):
-        prev_timestep = timestep - self.config.num_train_timesteps // self.num_inference_steps
-        # a_t=self._get_alpha_t(timestep)
-        # a_prev=self._get_alpha_prev(timestep)
-        # beta_t = a_t / a_prev
-        a_t=self.alphas_cumprod.to(timestep.device)[timestep]
-        a_prev=self.alphas_cumprod.to(timestep.device)[prev_timestep]
-        beta_t=a_t/a_prev
-        return beta_t
-    def get_x0_from_velocity(self, velocity, timesteps, x_t):
-        # Make sure alphas_cumprod and timestep have same device and dtype as sample
-        alphas_cumprod = self.alphas_cumprod.to(device=x_t.device, dtype=x_t.dtype)
-        timesteps = timesteps.to(x_t.device)
-
-        sqrt_alpha_prod = alphas_cumprod[timesteps] ** 0.5
-        sqrt_alpha_prod = sqrt_alpha_prod.flatten()
-        while len(sqrt_alpha_prod.shape) < len(x_t.shape):
-            sqrt_alpha_prod = sqrt_alpha_prod.unsqueeze(-1)
-
-
-        sqrt_one_minus_alpha_prod = (1 - alphas_cumprod[timesteps]) ** 0.5
-        sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten()
-        while len(sqrt_one_minus_alpha_prod.shape) < len(x_t.shape):
-            sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(-1)
-        # sqrt_alpha_prod: alpha_t
-        # sqrt_one_minus_alpha_prod: sigma_t # sqrt_beta_t
-        # REFERNCe FROM step() function: 
-        # pred_original_sample = (alpha_prod_t**0.5) * sample - (beta_prod_t**0.5) * model_output 
-        x0=sqrt_alpha_prod*x_t-sqrt_one_minus_alpha_prod*velocity
-        return x0
-    def step_forward(
-        self,
-        prev_step: int,
-        prev_sample: torch.FloatTensor,
-        generator=None,
-    ):
-        
-        # 1. get next step value (=t+1)
-        # prev_timestep = timestep - self.config.num_train_timesteps // self.num_inference_steps
-        cur_timestep = prev_step + self.config.num_train_timesteps // self.num_inference_steps
-        # print(self.config.num_train_timesteps,'self.config.num_train_timesteps')
-        # print(prev_timestep,'prev_timestep',self.final_alpha_cumprod,'self.final_alpha_cumprod')
-
-        # 2. compute alphas, betas
-        alpha_prod_prev = self.alphas_cumprod[prev_step]
-        alpha_prod_t = self.alphas_cumprod[cur_timestep] #if prev_timestep >= 0 else self.final_alpha_cumprod
-        beta_prod_t=alpha_prod_t/alpha_prod_prev
-        epsilon=randn_tensor(prev_sample.shape, generator=generator, device=prev_sample.device, dtype=prev_sample.dtype)
-        # sample_next=((alpha_prod_t_next/alpha_prod_t)**0.5)*sample+((1-(alpha_prod_t_next/alpha_prod_t))**0.5)*epsilon
-        # https://learnopencv.com/denoising-diffusion-probabilistic-models/#Forward-Diffusion-Process
-        sample=(beta_prod_t**0.5)*prev_sample+((1-beta_prod_t)**0.5)*epsilon
-
-        return sample
-    def get_epsilon_from_velocity(self,pred_velocity,sample,timestep):
-        alpha_prod_t = self.alphas_cumprod[timestep]
-        beta_prod_t = 1 - alpha_prod_t
-        pred_epsilon = (alpha_prod_t**0.5) * pred_velocity + (beta_prod_t**0.5) * sample
-        return pred_epsilon
-    def get_velocity_from_epsilon(self,pred_epsilon,sample,timestep):
-        alpha_prod_t = self.alphas_cumprod[timestep]
-        beta_prod_t = 1 - alpha_prod_t
-        # pred_epsilon = (alpha_prod_t**0.5) * pred_velocity + (beta_prod_t**0.5) * sample
-        pred_velocity=(pred_epsilon-(beta_prod_t**0.5) * sample)/(alpha_prod_t**0.5)
-        return pred_velocity
     def __len__(self):
         return self.config.num_train_timesteps
