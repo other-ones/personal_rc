@@ -81,7 +81,7 @@ os.makedirs(log_dir,exist_ok=True)
 ports=np.arange(1111,2222)
 
 
-include_priors=[1]
+include_priors=[0]
 for include_prior in include_priors:
     for lambda_mlm in lambda_mlms:
         lambda_mlm_str=float_to_str(lambda_mlm)
