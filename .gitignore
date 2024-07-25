@@ -1,0 +1,46 @@
+# dreambooth
+dreambooth*/saved_models
+dreambooth*/__pycache__
+dreambooth*/packages/*/__pycacahe__
+dreambooth*/dog
+dreambooth*/fonts
+dreambooth*/samples
+dreambooth*/saved_models
+dreambooth*/dreambooth_models
+dreambooth*/logs*
+dreambooth*/results*
+dreambooth*/priors
+dreambooth*/*.jpg
+dreambooth*/*.png
+dreambooth*/wandb
+
+# textual_inversion
+textual_inversion*/saved_models
+textual_inversion*/__pycache__
+textual_inversion*/packages/*/__pycacahe__
+textual_inversion*/dog
+textual_inversion*/fonts
+textual_inversion*/samples
+textual_inversion*/saved_models
+textual_inversion*/logs*
+textual_inversion*/results*
+textual_inversion*/priors
+textual_inversion*/*.jpg
+textual_inversion*/*.png
+textual_inversion*/tools
+textual_inversion*/wandb
+
+# pplus
+pplus*/saved_models
+pplus*/__pycache__
+pplus*/packages/*/__pycacahe__
+pplus*/dog
+pplus*/fonts
+pplus*/samples
+pplus*/saved_models
+pplus*/logs*
+pplus*/results*
+pplus*/priors
+pplus*/*.jpg
+pplus*/*.png
+pplus*/wandb

@@ -1,0 +1,12 @@
+__pycache__
+packages/*/__pycacahe__
+dog
+fonts
+samples
+saved_models*
+dreambooth_models
+logs*
+results*
+priors
+*.jpg
+*.png

@@ -1,0 +1,9 @@
+ti_noprior_no_mlm_pet_dog1
+ti_noprior_mlm00005_pet_dog1
+ti_noprior_mlm0001_pet_dog1
+ti_noprior_mlm00025_pet_dog1
+ti_noprior_no_mlm_vase
+ti_noprior_mlm00005_vase
+ti_noprior_mlm0001_vase
+ti_noprior_mlm00025_vase
+
