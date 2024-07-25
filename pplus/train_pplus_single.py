@@ -1,7 +1,7 @@
 import inspect
 
 
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+from datasets_pkgs.dataset_pplus import TextualInversionDataset
 from configs import parse_args
 import sys
 sys.path.insert(0, './packages')
@@ -42,7 +42,7 @@ from diffusers import (
     DiffusionPipeline,
     DPMSolverMultistepScheduler,
     StableDiffusionPipeline,
-    UNet2DConditionModel,
+    UNet2DConditionModelPPlus,
 )
 from diffusers.optimization import get_scheduler
 from diffusers.utils import is_wandb_available
@@ -218,7 +218,7 @@ def main():
         viz_dir = os.path.join(exp_dir,'viz')
         os.makedirs(viz_dir, exist_ok=True)
         codepath=os.path.join(exp_dir,'src')
-        if os.path.exists(codepath):
+        if os.path.exists(codepath) and 'tmp' not in codepath:
             assert False
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
@@ -256,36 +256,30 @@ def main():
     vae = AutoencoderKL.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
     )
-    unet = UNet2DConditionModel.from_pretrained(
+    unet = UNet2DConditionModelPPlus.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
     )
-    # Class Augmenter
-    # class Augmenter(nn.Module):
-    #     def __init__(self, embed_dim, width_fac=4):
-    #         super(Augmenter, self).__init__()
-    #         self.W_ff1 = nn.Linear(embed_dim, width_fac * embed_dim)
-    #         self.W_ff2 = nn.Linear(embed_dim * width_fac, embed_dim)
-    #         self.relu = nn.ReLU()
-    #     def forward(self, X):
-    #         # Simple Feedforward network that projects into a higher space (by width_fac) and back to embed_dim
-    #         X = self.W_ff1(X)
-    #         X = self.relu(X)
-    #         return self.W_ff2(X)
-    # augmenter=Augmenter(embed_dim=768*2)
+    
     # # # # # # # # # # 
     # HERE
     # Add the placeholder token in tokenizer
+    print(len(tokenizer),'before add tokens')
     mask_tokens = [args.mask_tokens]
-    placeholder_tokens = [args.placeholder_token1]
     tokenizer.add_tokens(mask_tokens)
+    if args.num_vectors1>1:
+        placeholder_tokens = []
+        for vidx in range(args.num_vectors1):
+            placeholder_tokens.append(args.placeholder_token1+'_{}'.format(vidx))
+    else:
+        placeholder_tokens = [args.placeholder_token1]
     tokenizer.add_tokens(placeholder_tokens)
+    print(len(tokenizer),'after add tokens')
     mask_token_ids = tokenizer.convert_tokens_to_ids(mask_tokens)
     placeholder_token_ids = tokenizer.convert_tokens_to_ids(placeholder_tokens)
     initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
     initializer_token_id = initializer_token_ids[0]
     text_encoder.resize_token_embeddings(len(tokenizer))
     token_embeds = text_encoder.get_input_embeddings().weight.data
-    print(token_embeds.shape,'token_embeds.shape')
     prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
     # Initializer
     with torch.no_grad():
@@ -300,7 +294,8 @@ def main():
     # HERE
     # # # # # # # # # # 
     from contextnet import ContextNet
-    cls_net=ContextNet(768, len(token_embeds))
+    # pretrained with one placeholder, one mask_embeds
+    cls_net=ContextNet(768, len(token_embeds)-args.num_vectors1+1)
 
 
     # Freeze vae and unet
@@ -329,9 +324,6 @@ def main():
         )
     params_to_optimize = [
         {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
-        # {"params": augmenter.parameters(), "lr": args.learning_rate},
-        # {"params": learned_embeds, "lr": args.learning_rate},
-        # {"params": cls_net.parameters(), "lr": args.learning_rate},
     ]
     # Initialize the optimizer
     optimizer = torch.optim.AdamW(
@@ -343,13 +335,11 @@ def main():
     )
 
     # Dataset and DataLoaders creation:
-    print(mask_token_ids,'mask_token_ids')
     train_dataset = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
         size=args.resolution,
-        placeholder_token=(" ".join(tokenizer.convert_ids_to_tokens(placeholder_token_ids))),
         repeats=args.repeats,
         center_crop=args.center_crop,
         flip_p=args.flip_p,
@@ -358,26 +348,26 @@ def main():
         mlm_target=args.mlm_target,
         get_images=True,
         prompt_type=args.prompt_type,
+        placeholder_tokens=placeholder_tokens, #for pplus
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
         size=args.resolution,
-        placeholder_token=(" ".join(tokenizer.convert_ids_to_tokens(placeholder_token_ids))),
         repeats=args.repeats,
         center_crop=args.center_crop,
         flip_p=args.flip_p,
-        exclude_suffix=args.exclude_suffix,
         prior_concept=args.prior_concept1,
         mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
         get_images=False,
         prompt_type=args.prompt_type,
+        placeholder_tokens=placeholder_tokens, #for pplus
+
     )
     
     def collate_fn(examples):
-
         if 'pixel_values' in examples[0]:
             # 1. pixel_values
             pixel_values = [example["pixel_values"] for example in examples]
@@ -388,45 +378,45 @@ def main():
             masks = masks.to(memory_format=torch.contiguous_format).float()
 
             # 2. input ids
-            input_ids = [example["input_ids"] for example in examples]
-            input_ids=torch.stack(input_ids)
+            input_ids_list = [example["input_ids_list"] for example in examples]
+            input_ids_list=torch.stack(input_ids_list) #1,77
             # 2. input ids
-            is_keyword_tokens = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
-            is_keyword_tokens = torch.stack(is_keyword_tokens)
+            is_keyword_tokens_list = [example["is_keyword_tokens_list"] for example in examples] #N,77, list of booleans
+            is_keyword_tokens_list = torch.stack(is_keyword_tokens_list)
         else:
             pixel_values=[]
-            input_ids=[]
-            is_keyword_tokens=[]
+            input_ids_list=[]
+            is_keyword_tokens_list=[]
             masks=[]
 
        
         # 5. For MLM 
-        input_ids_masked = [example["input_ids_masked"] for example in examples]
-        input_ids_masked=torch.stack(input_ids_masked)
-        input_ids_non_mask = [example["input_ids_non_mask"] for example in examples]
-        input_ids_non_mask=torch.stack(input_ids_non_mask)
-        masked_idxs = [example["masked_idxs"] for example in examples] #N,77, list of booleans
-        masked_idxs = torch.stack(masked_idxs)
-        mlm_labels = [example["mlm_labels"] for example in examples] #N,77, list of booleans
-        mlm_labels = torch.stack(mlm_labels)
-        non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans
-        non_special_idxs = torch.stack(non_special_idxs)
-        is_keyword_tokens_mlm = [example["is_keyword_tokens_mlm"] for example in examples] #N,77, list of booleans
-        is_keyword_tokens_mlm = torch.stack(is_keyword_tokens_mlm)
+        input_ids_masked_list = [example["input_ids_masked_list"] for example in examples]
+        input_ids_masked_list=torch.stack(input_ids_masked_list)
+        input_ids_non_mask_list = [example["input_ids_non_mask_list"] for example in examples]
+        input_ids_non_mask_list=torch.stack(input_ids_non_mask_list)
+        masked_idxs_list = [example["masked_idxs_list"] for example in examples] #N,77, list of booleans
+        masked_idxs_list = torch.stack(masked_idxs_list)
+        mlm_labels_list = [example["mlm_labels_list"] for example in examples] #N,77, list of booleans
+        mlm_labels_list = torch.stack(mlm_labels_list)
+        non_special_idxs_list = [example["non_special_idxs_list"] for example in examples] #N,77, list of booleans
+        non_special_idxs_list = torch.stack(non_special_idxs_list)
+        is_keyword_tokens_mlm_list = [example["is_keyword_tokens_mlm_list"] for example in examples] #N,77, list of booleans
+        is_keyword_tokens_mlm_list = torch.stack(is_keyword_tokens_mlm_list)
         # 5. For MLM 
 
 
         batch = {
-            "pixel_values": pixel_values,
-            "input_ids": input_ids, # for reconstruction
-            "input_ids_masked": input_ids_masked, # for mlm
-            "input_ids_non_mask": input_ids_non_mask, # for mlm
-            "masked_idxs": masked_idxs,
-            "mlm_labels": mlm_labels,
-            "non_special_idxs": non_special_idxs,
-            "is_keyword_tokens_mlm": is_keyword_tokens_mlm,
-            "is_keyword_tokens": is_keyword_tokens,
-            "masks": masks,
+            "pixel_values": pixel_values, # for reconstruction
+            "masks": masks,# for mlm
+            "input_ids_list": input_ids_list, # for reconstruction
+            "is_keyword_tokens_list": is_keyword_tokens_list, # for reconstruction
+            "input_ids_masked_list": input_ids_masked_list, # for mlm
+            "input_ids_non_mask_list": input_ids_non_mask_list, # for mlm
+            "masked_idxs_list": masked_idxs_list,# for mlm
+            "mlm_labels_list": mlm_labels_list,# for mlm
+            "non_special_idxs_list": non_special_idxs_list,# for mlm
+            "is_keyword_tokens_mlm_list": is_keyword_tokens_mlm_list,# for mlm
         }
         return batch
     train_dataloader = torch.utils.data.DataLoader(
@@ -586,19 +576,27 @@ def main():
             with accelerator.accumulate(text_encoder):
                 # 1. Load Batch
                 pixel_values=batch["pixel_values"]# B,77 list of booleans (tensor)
-                input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
+                input_ids_list=batch["input_ids_list"]# B,77 list of booleans (tensor)
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
-                is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
+                is_keyword_tokens_list=batch["is_keyword_tokens_list"]# B,77 list of booleans (tensor)
+                print(is_keyword_tokens_list.shape,'is_keyword_tokens_list.shape')
+                print(input_ids_list.shape,'input_ids_list.shape')
                 # for MLM
                 batch_mlm=load_mlm_batch(mlm_loader)
-                is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
-                masked_idxs=batch_mlm["masked_idxs"]
-                mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
-                non_special_idxs=batch_mlm["non_special_idxs"]
-                input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
-                input_ids_non_mask=batch_mlm["input_ids_non_mask"].to(accelerator.device)
-                # input_ids_non_mask=batch_mlm["input_ids_non_mask"]
+                is_keyword_tokens_mlm_list=batch_mlm["is_keyword_tokens_mlm_list"]
+                masked_idxs_list=batch_mlm["masked_idxs_list"]
+                mlm_labels_list=batch_mlm["mlm_labels_list"].to(accelerator.device)
+                non_special_idxs_list=batch_mlm["non_special_idxs_list"]
+                input_ids_masked_list=batch_mlm["input_ids_masked_list"].to(accelerator.device)
+                input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
+                
+                print(is_keyword_tokens_mlm_list.shape,'is_keyword_tokens_mlm_list.shape')
+                print(masked_idxs_list.shape,'masked_idxs_list.shape')
+                print(mlm_labels_list.shape,'mlm_labels_list.shape')
+                print(non_special_idxs_list.shape,'non_special_idxs_list.shape')
+                print(input_ids_masked_list.shape,'input_ids_masked_list.shape')
+                print(input_ids_non_mask_list.shape,'input_ids_non_mask_list.shape')
                 # 1. Load Batch
                 
                 # 2. Reconstruction Loss
@@ -610,15 +608,18 @@ def main():
                 timesteps = timesteps.long()
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
                 learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
+                # learned_embeds: 9,768
                 if args.normalize_target1:
                     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
                 else:
                     target_emb=learned_embeds
-                encoder_hidden_states = text_encoder(input_ids,
-                                                     is_keyword_tokens1=is_keyword_tokens,
+                bsz,num_vectors,num_tokens=input_ids_list.shape
+                input_ids_list=input_ids_list.reshape(-1,num_tokens)#n,9,77 -> 9n,77
+                is_keyword_tokens_list=is_keyword_tokens_list.reshape(-1,num_tokens)#n,9,77 -> 9n,77
+                encoder_hidden_states = text_encoder(input_ids_list,
+                                                     is_keyword_tokens1=is_keyword_tokens_list,
                                                      inj_embeddings1=target_emb
                                                      )[0].to(dtype=weight_dtype)
-                
                 # Predict the noise residual
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 # Get the target for loss depending on the prediction type
@@ -637,21 +638,26 @@ def main():
                 # 3. MLM Loss
                 loss_mlm=None
                 if args.lambda_mlm:
-                    clip_text_embedding_masked = text_encoder(input_ids_masked,
+                    print(input_ids_masked_list.shape,'input_ids_masked_list.shape')
+                    print(masked_idxs_list.shape,'masked_idxs_list.shape')
+                    print(is_keyword_tokens_mlm_list.shape,'is_keyword_tokens_mlm_list.shape')
+                    print(target_emb.shape,'target_emb.shape')
+                    exit()
+                    clip_text_embedding_masked = text_encoder(input_ids_masked_list,
                                                             mask_embedding=mask_embeds.unsqueeze(0),
-                                                            mask_idxs=masked_idxs,
-                                                            is_keyword_tokens1=is_keyword_tokens_mlm,
+                                                            mask_idxs=masked_idxs_list,
+                                                            is_keyword_tokens1=is_keyword_tokens_mlm_list,
                                                             inj_embeddings1=target_emb,
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
-                    mlm_logits=cls_net(clip_text_embedding_masked)
-                    masked_idxs_flat=masked_idxs.view(-1)
+                    mlm_logits_list=cls_net(clip_text_embedding_masked)
+                    masked_idxs_flat_list=masked_idxs_list.view(-1)
                     loss_mlm = F.cross_entropy(
-                        mlm_logits.view(-1,len(orig_embeds_params)),
-                        mlm_labels.view(-1),
+                        mlm_logits_list.view(-1,len(orig_embeds_params)),
+                        mlm_labels_list.view(-1),
                         ignore_index=-100,
                         reduction='none'
                     )
-                    loss_mlm[masked_idxs_flat]*=args.mlm_weight
+                    loss_mlm[masked_idxs_flat_list]*=args.mlm_weight
                     loss_mlm=loss_mlm.mean()
                     loss+=(loss_mlm*args.lambda_mlm)
 
@@ -713,6 +719,13 @@ def main():
                     if args.lambda_mlm:
                         # 1. MLM Result Logging
                         viz_idx=0
+                        mlm_bsz=len(masked_idxs_list)
+                        masked_idxs=masked_idxs_list.chunk(mlm_bsz)[0]
+                        non_special_idxs=non_special_idxs_list.chunk(mlm_bsz)[0]
+                        mlm_logits=mlm_logits_list.chunk(mlm_bsz)[0]
+                        input_ids_non_mask=input_ids_non_mask_list.chunk(mlm_bsz)[0]
+                        input_ids_masked=input_ids_masked_list.chunk(mlm_bsz)[0]
+
                         masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
                         non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
                         mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77

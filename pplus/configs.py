@@ -51,7 +51,8 @@ def parse_args():
     parser.add_argument('--normalize_target2',type=int,default=0)
     parser.add_argument('--sim_margin',type=float,default=0.2)
     parser.add_argument('--dissim_layers',default='last',type=str,help='list of index of the layer to inject orthogonality')
-
+    parser.add_argument("--num_vectors1",type=int,default=1,help="How many textual inversion vectors shall be used to learn the concept.",)
+    parser.add_argument("--num_vectors2",type=int,default=1,help="How many textual inversion vectors shall be used to learn the concept.",)
     # Added
     parser.add_argument(
         "--save_steps",
@@ -66,12 +67,7 @@ def parse_args():
         action="store_true",
         help="Save the complete stable diffusion pipeline.",
     )
-    parser.add_argument(
-        "--num_vectors",
-        type=int,
-        default=1,
-        help="How many textual inversion vectors shall be used to learn the concept.",
-    )
+    
     parser.add_argument(
         "--pretrained_model_name_or_path",
         type=str,

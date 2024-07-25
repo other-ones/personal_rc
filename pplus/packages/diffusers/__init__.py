@@ -44,6 +44,7 @@ else:
         Transformer2DModel,
         UNet1DModel,
         UNet2DConditionModel,
+        UNet2DConditionModelPPlus,
         UNet2DConditionModelRef,
         UNet2DConditionModelSD,
         UNet2DConditionModelEdit,

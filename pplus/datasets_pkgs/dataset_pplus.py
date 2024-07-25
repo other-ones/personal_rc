@@ -107,7 +107,7 @@ class TextualInversionDataset(Dataset):
         get_images=True,
         prompt_type=None,
         prior_concept=None,
-        placeholder_token=None
+        placeholder_tokens=[]
     ):
         self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
@@ -133,7 +133,7 @@ class TextualInversionDataset(Dataset):
         self.data_root = data_root
         self.tokenizer = tokenizer
         self.prior_concept = prior_concept
-        self.placeholder_token = placeholder_token
+        self.placeholder_tokens = placeholder_tokens
         self.size = size
         self.center_crop = center_crop
         self.flip_p = flip_p
@@ -193,18 +193,27 @@ class TextualInversionDataset(Dataset):
             example["masks"] = mask_tensor
 
             # 2. Caption for TI
-            placeholder_string = self.placeholder_token
-            if self.include_prior_concept:
-                text = random.choice(prefixes).format(placeholder_string)+' {}'.format(self.prior_concept)
-            else:
-                text = random.choice(prefixes).format(placeholder_string)
-            example["input_ids"] = self.tokenizer(
-                text,
-                padding="max_length",
-                truncation=True,
-                max_length=self.tokenizer.model_max_length,
-                return_tensors="pt",
-            ).input_ids[0]
+            # 2.1 input_ids
+            input_ids_list=[]
+            for pidx in range(len(self.placeholder_tokens)):
+                placeholder_string = self.placeholder_tokens[pidx]
+                if self.include_prior_concept:
+                    text = random.choice(prefixes).format(placeholder_string)+' {}'.format(self.prior_concept)
+                else:
+                    text = random.choice(prefixes).format(placeholder_string)
+                input_ids = self.tokenizer(
+                    text,
+                    padding="max_length",
+                    truncation=True,
+                    max_length=self.tokenizer.model_max_length,
+                    return_tensors="pt",
+                ).input_ids[0] #77
+                input_ids_list.append(input_ids)
+            input_ids_list=torch.stack(input_ids_list) # 9,77
+            example["input_ids_list"]=input_ids_list
+
+            # 2.1 input_ids
+            # 2.2 is_keywor_tokens
             is_keyword_tokens=[False]
             text_words=text.split()
             for word_idx in range(len(text_words)):
@@ -212,119 +221,139 @@ class TextualInversionDataset(Dataset):
                 word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
                 for tok_id in word_token_ids:
-                    if self.placeholder_token in cap_word:
+                    if self.placeholder_tokens[pidx] in cap_word:
                         is_keyword_tokens.append(True)
                     else:
                         is_keyword_tokens.append(False)
-
-            # 3) is_keyword_tokens - keyword indices for MLM
             for _ in range(len(is_keyword_tokens),self.tokenizer.model_max_length):
                 is_keyword_tokens.append(False)
+            
             assert len(is_keyword_tokens)==self.tokenizer.model_max_length
-            example["is_keyword_tokens"]=torch.BoolTensor(is_keyword_tokens)
-        # 3. MLM
-        mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
-        if self.include_prior_concept:
-            placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
-        else:
-            placeholder='{}'.format(self.placeholder_token)
-        caption_pos=mlm_pos.replace('<new>','{}'.format(placeholder)) # caption without masked embedding
-        caption_neg=mlm_neg.replace('<new>','{}'.format(placeholder)) #
-        example["input_ids_pos"] = self.tokenizer(
-                caption_pos,
-                padding="max_length",
-                truncation=True,
-                max_length=self.tokenizer.model_max_length,
-                return_tensors="pt",
-            ).input_ids[0]
-        example["input_ids_neg"] = self.tokenizer(
-                caption_neg,
-                padding="max_length",
-                truncation=True,
-                max_length=self.tokenizer.model_max_length,
-                return_tensors="pt",
-            ).input_ids[0]
-        
+            is_keyword_tokens=torch.BoolTensor(is_keyword_tokens) #77
+            is_keyword_tokens_list=is_keyword_tokens.repeat(len(self.placeholder_tokens),1)
+            example["is_keyword_tokens_list"]=is_keyword_tokens_list
+            # 2.2 is_keywor_tokens
+            # 2. Caption for TI
 
 
-        words_anchor=caption_pos.split()
-        is_keyword_tokens_mlm=[False] # first token for <startoftext>
-        masked_idxs=[False]
-        if self.mlm_target=='non_special': # if non-special only then bos is not learned
-            mlm_labels=[-100]
-        else:
-            mlm_labels=[self.tokenizer.bos_token_id]
-        input_ids_masked=[self.tokenizer.bos_token_id]
-        non_special_idxs=[False]
-        for word_idx in range(len(words_anchor)):
-            cap_word=words_anchor[word_idx]
-            word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
-            num_tokens=len(word_token_ids)
-            non_special_idxs+=([True]*num_tokens)
-            for tok_id in word_token_ids:
-                # 1) input ids and indices for mask token
-                if np.random.rand()<self.mask_prob and (self.placeholder_token not in cap_word) and (cap_word not in self.prior_concept): 
-                    masked_idxs.append(True)
-                    input_ids_masked.append(self.mask_token_ids)
-                else:
-                    masked_idxs.append(False)
-                    input_ids_masked.append(tok_id)
-                # 2) keyword indices and labels for MLM
-                if self.placeholder_token in cap_word:
-                    assert num_tokens==1
-                    is_keyword_tokens_mlm.append(True)
+
+
+
+
+        # 3. MLM: 
+        # is_keyword_tokens_mlm/input_ids_masked/mlm_labels
+        caption_mlm_raw,_=self.prompt_generator.generate_triplet()
+        input_ids_masked_list=[]
+        is_keyword_tokens_mlm_list=[]
+        mlm_labels_list=[]
+        masked_idxs_list=[]
+        non_special_idxs_list=[]
+        input_ids_non_mask_list=[]
+        for pidx in range(len(self.placeholder_tokens)):
+            if self.include_prior_concept:
+                placeholder='{} {}'.format(self.placeholder_tokens[pidx],self.prior_concept)
+            else:
+                placeholder='{}'.format(self.placeholder_tokens[pidx])
+            caption_mlm=caption_mlm_raw.replace('<new>','{}'.format(placeholder)) # caption without masked embedding
+            words_mlm=caption_mlm.split()
+            is_keyword_tokens_mlm=[False] # first token for <startoftext>
+            masked_idxs=[False]
+            if self.mlm_target=='non_special': # if non-special only then bos is not learned
+                mlm_labels=[-100]
+            else:
+                mlm_labels=[self.tokenizer.bos_token_id]
+            input_ids_masked=[self.tokenizer.bos_token_id]
+            non_special_idxs=[False]
+            for word_idx in range(len(words_mlm)):
+                mlm_word=words_mlm[word_idx]
+                word_token_ids=self.tokenizer.encode(mlm_word,add_special_tokens=False)
+                num_tokens=len(word_token_ids)
+                non_special_idxs+=([True]*num_tokens)
+                for tok_id in word_token_ids:
+                    # 1) input ids and indices for mask token
+                    if np.random.rand()<self.mask_prob and (self.placeholder_tokens[pidx] not in mlm_word) and (mlm_word not in self.prior_concept): 
+                        masked_idxs.append(True)
+                        input_ids_masked.append(self.mask_token_ids)
+                    else:
+                        masked_idxs.append(False)
+                        input_ids_masked.append(tok_id)
+                    # 2) keyword indices and labels for MLM
+                    if self.placeholder_tokens[pidx] in mlm_word:
+                        assert num_tokens==1
+                        is_keyword_tokens_mlm.append(True)
+                        mlm_labels.append(-100)
+                    else:
+                        is_keyword_tokens_mlm.append(False)
+                        mlm_labels.append(tok_id)
+            
+
+            # 3) is_keyword_tokens_mlm - keyword indices for MLM
+            for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
+                is_keyword_tokens_mlm.append(False)
+            assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
+            is_keyword_tokens_mlm=torch.BoolTensor(is_keyword_tokens_mlm)
+            is_keyword_tokens_mlm_list.append(is_keyword_tokens_mlm)
+
+            # 4) input_ids or MLM
+            input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
+            input_ids_masked.append(self.tokenizer.eos_token_id)
+            for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
+                input_ids_masked.append(self.tokenizer.pad_token_id)
+            input_ids_masked=torch.LongTensor(input_ids_masked)
+            input_ids_masked_list.append(input_ids_masked)
+
+            # 5) mlm_labels
+            mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
+            if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token
+                mlm_labels.append(self.tokenizer.eos_token_id)
+            for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+                if self.mlm_target=='all':
+                    mlm_labels.append(self.tokenizer.pad_token_id)
+                else: # non_padding/non_special/masked
                     mlm_labels.append(-100)
-                else:
-                    is_keyword_tokens_mlm.append(False)
-                    mlm_labels.append(tok_id)
-         
+            mlm_labels=torch.LongTensor(mlm_labels)
+            mlm_labels_list.append(mlm_labels)
 
-        # 3) is_keyword_tokens_mlm - keyword indices for MLM
-        for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
-            is_keyword_tokens_mlm.append(False)
-        assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
-        example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
+            
+            # 6) non_special_idxs/masked_idxs
+            masked_idxs=masked_idxs[:self.tokenizer.model_max_length-1]
+            for _ in range(len(masked_idxs),self.tokenizer.model_max_length):
+                masked_idxs.append(False)
+            masked_idxs=torch.BoolTensor(masked_idxs)
+            masked_idxs_list.append(masked_idxs)
 
-        # 4) input_ids or MLM
-        input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
-        input_ids_masked.append(self.tokenizer.eos_token_id)
-        for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
-            input_ids_masked.append(self.tokenizer.pad_token_id)
-        input_ids_masked=torch.LongTensor(input_ids_masked)
-        example["input_ids_masked"]=input_ids_masked
+            non_special_idxs=non_special_idxs[:self.tokenizer.model_max_length-1]
+            for _ in range(len(non_special_idxs),self.tokenizer.model_max_length):
+                non_special_idxs.append(False)
+            non_special_idxs=torch.BoolTensor(non_special_idxs)
+            non_special_idxs_list.append(non_special_idxs)
+            
 
-        # 5) mlm_labels
-        mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-        if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token
-            mlm_labels.append(self.tokenizer.eos_token_id)
-        for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
-            if self.mlm_target=='all':
-                mlm_labels.append(self.tokenizer.pad_token_id)
-            else: # non_padding/non_special/masked
-                mlm_labels.append(-100)
-        mlm_labels=torch.LongTensor(mlm_labels)
-        example['mlm_labels']=mlm_labels
-
-        
-        # 6) non_special_idxs/masked_idxs
-        masked_idxs=masked_idxs[:self.tokenizer.model_max_length-1]
-        for _ in range(len(masked_idxs),self.tokenizer.model_max_length):
-            masked_idxs.append(False)
-        non_special_idxs=non_special_idxs[:self.tokenizer.model_max_length-1]
-        for _ in range(len(non_special_idxs),self.tokenizer.model_max_length):
-            non_special_idxs.append(False)
-        masked_idxs=torch.BoolTensor(masked_idxs)
-        non_special_idxs=torch.BoolTensor(non_special_idxs)
-        example['masked_idxs']=masked_idxs
-        example['non_special_idxs']=non_special_idxs
-
-        # 7) non_mask_input_ids
-        example["input_ids_non_mask"]= self.tokenizer(
-            caption_pos,
-            padding="max_length",
-            truncation=True,
-            max_length=self.tokenizer.model_max_length,
-            return_tensors="pt",
-        ).input_ids[0]
+            # 7) non_mask_input_ids
+            input_ids_non_mask= self.tokenizer(
+                caption_mlm,
+                padding="max_length",
+                truncation=True,
+                max_length=self.tokenizer.model_max_length,
+                return_tensors="pt",
+            ).input_ids[0]
+            input_ids_non_mask_list.append(input_ids_non_mask)
+        # input_ids_masked_list=[]
+        # is_keyword_tokens_mlm_list=[]
+        # mlm_labels_list=[]
+        # masked_idxs_list=[]
+        # non_special_idxs_list=[]
+        # input_ids_non_mask_list=[]
+        input_ids_masked_list=torch.stack(input_ids_masked_list)
+        is_keyword_tokens_mlm_list=torch.stack(is_keyword_tokens_mlm_list)
+        mlm_labels_list=torch.stack(mlm_labels_list)
+        masked_idxs_list=torch.stack(masked_idxs_list)
+        non_special_idxs_list=torch.stack(non_special_idxs_list)
+        example['input_ids_masked_list']=input_ids_masked_list
+        example['is_keyword_tokens_mlm_list']=is_keyword_tokens_mlm_list
+        example['mlm_labels_list']=mlm_labels_list
+        example['masked_idxs_list']=masked_idxs_list
+        example['non_special_idxs_list']=non_special_idxs_list
+        example['input_ids_non_mask_list']=masked_idxs_list
         return example
 

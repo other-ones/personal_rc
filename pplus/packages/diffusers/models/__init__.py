@@ -26,6 +26,7 @@ if is_torch_available():
     from .unet_1d import UNet1DModel
     from .unet_2d import UNet2DModel
     from .unet_2d_condition import UNet2DConditionModel
+    from .unet_2d_condition_pplus import UNet2DConditionModelPPlus
     from .unet_2d_condition_ref import UNet2DConditionModelRef
     from .unet_2d_condition_sd import UNet2DConditionModelSD
     from .unet_2d_condition_edit import UNet2DConditionModelEdit

@@ -1,0 +1,3 @@
+4 len(down_block_types)
+1 UNetMidBlock2DCrossAttn mid_block_type
+4 len(up_block_types)
