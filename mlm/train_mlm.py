@@ -426,8 +426,8 @@ def main():
             bsz=len(input_ids)
             mask_embeds_normlized=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
             clip_text_embedding_masked = text_encoder(input_ids_masked,
-            inj_embeddings1=mask_embeds_normlized,
-            is_keyword_tokens1=masked_idxs)[0].to(accelerator.device, dtype=weight_dtype)
+                                            mask_embedding=mask_embeds_normlized,
+                                            mask_idxs=masked_idxs)[0].to(accelerator.device, dtype=weight_dtype)
             # clip_text_embedding_masked = text_encoder(input_ids_masked,
             #                             normalizing_scale=avg_norm,
             #                             normalizing_idxs=mask_token_ids)[0].to(accelerator.device, dtype=weight_dtype)
