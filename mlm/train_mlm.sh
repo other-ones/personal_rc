@@ -49,5 +49,6 @@ accelerate launch --num_processes=2 --main_process_port=7353 train_mlm.py \
   --mlm_weight=5 \
   --mlm_target='all' \
   --whole_word_mask=0 \
+  --report_to="wandb" \
   --project_name='ContextNet Train' 
 

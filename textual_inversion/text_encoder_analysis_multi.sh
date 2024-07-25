@@ -1,7 +1,7 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR1="/data/twkim/diffusion/personalization/collected/images/pet_cat1"
 export DATA_DIR2="/data/twkim/diffusion/personalization/collected/images/pet_dog1"
-export CUDA_VISIBLE_DEVICES=0;
+export CUDA_VISIBLE_DEVICES=3;
 accelerate launch --main_process_port 1234  text_encoder_analysis.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR1 \
@@ -27,8 +27,8 @@ accelerate launch --main_process_port 1234  text_encoder_analysis.py \
   --placeholder_token2="<pet_dog1>" \
   --prior_concept1="cat" \
   --prior_concept2="dog" \
-  --learned_embed_path1="saved_models/single/pet_cat1/ti_noprior_mlm0001_pet_cat1/checkpoints/learned_embeds_s3000.pt" \
-  --learned_embed_path2="saved_models/single/pet_dog1/ti_noprior_mlm0001_pet_dog1/checkpoints/learned_embeds_s3000.pt" \
+  --learned_embed_path1="saved_models/single_prior/pet_cat1/ti_norm0_prior_mlm0001_pet_cat1/checkpoints/learned_embeds_s3000.pt" \
+  --learned_embed_path2="saved_models/single/single_prior/ti_norm0_prior_mlm0001_pet_dog1/checkpoints/learned_embeds_s3000.pt" \
   --include_prior_concept=0 \
   --scale_lr \
   --run_name='tmp' \
