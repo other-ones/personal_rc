@@ -42,17 +42,17 @@ from diffusers.optimization import get_scheduler
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer, CLIPVisionModel, AutoProcessor
 
-from lora_diffusion.xformers_utils import set_use_memory_efficient_attention_xformers
+# from lora_diffusion.xformers_utils import set_use_memory_efficient_attention_xformers
 from torch.utils.data import Dataset, SubsetRandomSampler
 from torchvision import transforms
 from pathlib import Path
 import random
 from PIL import Image
-from lora_diffusion import tune_lora_scale, patch_pipe
+# from lora_diffusion import tune_lora_scale, patch_pipe
 import torchvision.transforms as T
 import inspect
-from azureml.core import Run
-run = Run.get_context()
+# from azureml.core import Run
+# run = Run.get_context()
 import socket
 hostname = socket.gethostname()
 
