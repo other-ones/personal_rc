@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, './packages')
 import argparse
 import copy
 import gc
