@@ -1034,6 +1034,8 @@ def main(args):
                     class_labels = None
 
                 # Predict the noise residual
+                print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
+                print(img_state.shape,'img_state.shape')
                 model_pred = unet(noisy_model_input, timesteps, encoder_hidden_states + img_state, class_labels=class_labels).sample
                 text_pred = unet(noisy_model_input, timesteps, encoder_hidden_states, class_labels=class_labels).sample
 

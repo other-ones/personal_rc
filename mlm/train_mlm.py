@@ -211,15 +211,18 @@ def main():
     # from token_cls import TokenCLS
     # cls_net = TokenCLS(input_dim=768, output_dim=len(token_embeds))
     from contextnet import ContextNet
-    cls_net=ContextNet(768, len(token_embeds))
-    embed_dim=768
+    if 'v1-5' in args.pretrained_model_name_or_path:
+        embed_dim=768
+    elif '-2-1' in args.pretrained_model_name_or_path:
+        embed_dim=1024
+
+    cls_net=ContextNet(embed_dim, len(token_embeds))
     num_hidden_layers=4
     in_proj_std = (embed_dim**-0.5) * ((2 * num_hidden_layers) ** -0.5)
     out_proj_std = (embed_dim**-0.5) 
     final_std=768**-0.5
     for key,val in cls_net.named_parameters():
         print(key,'key clsnet')
-        
         if 'bias' in key:
             val.data.zero_()
         else:
