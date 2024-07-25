@@ -5,9 +5,8 @@ import socket
 
 hostname = socket.gethostname()
 print(hostname,'hostname')
-exit()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
+info_map_03={
     'dog6': ('dog','pet'),
     'pet_cat1':('cat','pet'),
     'vase':('vase','nonliving'),
@@ -29,6 +28,34 @@ info_map={
     # 'flower1':('flower','flower'),
     
 }
+
+info_map_01={
+    # 'dog6': ('dog','pet'),
+    # 'pet_cat1':('cat','pet'),
+    # 'vase':('vase','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
+    # 'barn': ('barn','building'),
+    # 'teddybear':('teddybear','nonliving'),
+    # 'wooden_pot':('pot','nonliving'),
+
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+
+
+    # 'flower1':('flower','flower'),
+}
+if '03' in hostname:
+    info_map=info_map_03
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
+else:
+    assert False
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlms=[0,0.001]
 target_norms=[0]
