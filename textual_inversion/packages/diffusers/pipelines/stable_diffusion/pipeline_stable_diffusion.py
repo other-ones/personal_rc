@@ -387,7 +387,7 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
                 attention_mask = text_inputs.attention_mask.to(device)
             else:
                 attention_mask = None
-            print(is_prior1.shape,'is_prior1 pipeline')
+            # print(is_prior1.shape,'is_prior1 pipeline')
             prompt_embeds = self.text_encoder(
                 text_input_ids.to(device),
                 attention_mask=attention_mask,

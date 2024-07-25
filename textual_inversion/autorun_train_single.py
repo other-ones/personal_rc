@@ -20,7 +20,6 @@ info_map={
     # 'rc_car':('toy','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
-    
 }
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlms=[0]
@@ -69,9 +68,9 @@ for include_prior in include_priors:
                 if masked_loss:
                     run_name+='_masked'
                 if include_prior:
-                    output_dir=os.path.join('saved_models/ti_models/single',concept)
-                else:
                     output_dir=os.path.join('saved_models/ti_models/single_prior',concept)
+                else:
+                    output_dir=os.path.join('saved_models/ti_models/single',concept)
                 exp_path=os.path.join(output_dir,run_name)
                 if os.path.exists(exp_path):
                     print(exp_path,'exists')
@@ -107,8 +106,8 @@ for include_prior in include_priors:
                 command+='--seed=7777 \\\n'
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                command+='--cls_net_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
-                command+='--mask_embed_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
+                command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
+                command+='--mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                 command+='--mlm_target=masked \\\n'
                 command+='--mlm_batch_size=50 \\\n'
                 command+='--scale_lr \\\n'
