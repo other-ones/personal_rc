@@ -845,7 +845,7 @@ def main(args):
             lora_state_dict, network_alphas=network_alphas, text_encoder=text_encoder_
         )
 
-    # accelerator.register_save_state_pre_hook(save_model_hook)
+    accelerator.register_save_state_pre_hook(save_model_hook)
     accelerator.register_load_state_pre_hook(load_model_hook)
 
     # Enable TF32 for faster training on Ampere GPUs,
@@ -992,7 +992,6 @@ def main(args):
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(unet):
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
-
                 if vae is not None:
                     # Convert images to latent space
                     model_input = vae.encode(pixel_values).latent_dist.sample()
@@ -1077,8 +1076,8 @@ def main(args):
                     if global_step % args.checkpointing_steps == 0:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit
                         save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-                        # accelerator.save_state(save_path)
-                        # logger.info(f"Saved state to {save_path}")
+                        accelerator.save_state(save_path)
+                        logger.info(f"Saved state to {save_path}")
 
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             progress_bar.set_postfix(**logs)
