@@ -2,8 +2,11 @@ from utils import float_to_str
 import time
 import numpy as np
 import os
+import socket
+hostname = socket.gethostname()
+print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
+info_map_03={
     'backpack':('backpack','nonliving'),
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
@@ -21,6 +24,29 @@ info_map={
     # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
 }
+info_map_01={
+    # 'backpack':('backpack','nonliving'),
+    # 'pet_cat1':('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'vase':('vase','nonliving'),
+    'teddybear':('teddybear','nonliving'),
+    'dog6': ('dog','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'flower1':('flower','flower'),
+}
+if '03' in hostname:
+    info_map=info_map_03
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
+# cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlms=[0]
 target_norms=[0]
