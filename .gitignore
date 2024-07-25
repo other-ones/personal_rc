@@ -1,9 +1,7 @@
 # dreambooth
 dreambooth*/saved_models
 dreambooth*/__pycache__
-dreambooth*/packages/*/__pycacahe__
-dreambooth*/packages/*/*/__pycacahe__
-dreambooth*/packages/*/*/*/__pycacahe__
+dreambooth*/packages/**/__pycacahe__
 dreambooth*/dog
 dreambooth*/fonts
 dreambooth*/samples
@@ -19,9 +17,7 @@ dreambooth*/wandb
 # textual_inversion
 textual_inversion*/saved_models
 textual_inversion*/__pycache__
-textual_inversion*/packages/*/__pycacahe__
-textual_inversion*/packages/*/*/__pycacahe__
-textual_inversion*/packages/*/*/*/__pycacahe__
+textual_inversion*/packages/**/__pycacahe__
 textual_inversion*/dog
 textual_inversion*/fonts
 textual_inversion*/samples
@@ -37,9 +33,7 @@ textual_inversion*/wandb
 # pplus
 pplus*/saved_models
 pplus*/__pycache__
-pplus*/packages/*/__pycacahe__
-pplus*/packages/*/*/__pycacahe__
-pplus*/packages/*/*/*/__pycacahe__
+pplus*/packages/**/__pycacahe__
 pplus*/dog
 pplus*/fonts
 pplus*/samples
@@ -56,9 +50,7 @@ pplus*/wandb
 # mlm
 mlm*/saved_models
 mlm*/__pycache__
-mlm*/packages/*/__pycacahe__
-mlm*/packages/*/*/__pycacahe__
-mlm*/packages/*/*/*/__pycacahe__
+mlm*/packages/**/__pycacahe__
 mlm*/dog
 mlm*/fonts
 mlm*/samples
