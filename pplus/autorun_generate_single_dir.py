@@ -17,7 +17,7 @@ info_map_03={
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
 
-
+    # cat_statue  chair1  dog3  pink_sunglasses  rc_car  wooden_pot
     # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'rc_car':('toy','nonliving'),
     # 'dog3': ('dog','pet'),
