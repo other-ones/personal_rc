@@ -1,28 +1,51 @@
 import time
 import numpy as np
 import os
+import socket
+hostname = socket.gethostname()
+print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
+info_map_03={
     'backpack':('backpack','nonliving'),
-    'teddybear':('teddybear','nonliving'),
-    'wooden_pot':('pot','nonliving'),
-    'vase':('vase','nonliving'),
-    'cat1': ('cat','pet'),
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
-    'barn': ('barn','building'),
+    'vase':('vase','nonliving'),
+    # 'teddybear':('teddybear','nonliving'),
+    # 'dog6': ('dog','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
 
-
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
-    'dog3': ('dog','pet'),
-    'dog6': ('dog','pet'),
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
-
 }
-lambda_mlm=0.001
+info_map_01={
+    # 'backpack':('backpack','nonliving'),
+    # 'pet_cat1':('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'vase':('vase','nonliving'),
+    'teddybear':('teddybear','nonliving'),
+    'dog6': ('dog','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'flower1':('flower','flower'),
+}
+
+if '03' in hostname:
+    info_map=info_map_03
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
 
 
 import subprocess as sp
@@ -33,10 +56,11 @@ def get_gpu_memory():
     return memory_free_values
 
 
-log_dir='logs/generate/single'
+log_dir='logs/ti_models/generate/calibrate/single_prior'
 os.makedirs(log_dir,exist_ok=True)    
-lambda_mlm_str=str(lambda_mlm).replace('.','')
 
+
+lambda_mlms=[0,0.001]
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -44,14 +68,15 @@ for stat_idx,stat in enumerate(stats):
         break
 device_idx=stat_idx
 
-target_norms=[0]
-for target_norm in target_norms:
+target_norm=0
+for lambda_mlm in lambda_mlms:
+    lambda_mlm_str=str(lambda_mlm).replace('.','')
     for idx,concept in enumerate(list(info_map.keys())):
         prior,category=info_map[concept]
         if not target_norm:
-            learned_embed_path1='saved_models/single/{}/ti_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,lambda_mlm_str,concept)
+            learned_embed_path1='saved_models/single_prior/{}/ti_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,lambda_mlm_str,concept)
         else:
-            learned_embed_path1='saved_models/single/{}/ti_norm{}_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+            learned_embed_path1='saved_models/single_prior/{}/ti_norm{}_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
         # print(learned_embed_path1,os.path.exists(learned_embed_path1),)
         # continue
         if not os.path.exists(learned_embed_path1):
