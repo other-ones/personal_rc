@@ -311,7 +311,6 @@ class CLIPAttention(nn.Module):
         attn_weights = torch.bmm(query_states, key_states.transpose(1, 2))
 
 
-        print(torch.sum(attn_weights),'before')
         if calibrate_kpos or calibrate_kneg:
             attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
             k1_scores=attn_weights[is_keyword_tokens1].view(bsz * self.num_heads, tgt_len) # 4800,77
@@ -944,9 +943,12 @@ class CLIPTextTransformer(nn.Module):
         input_ids = input_ids.view(-1, input_shape[-1])
 
         hidden_states = self.embeddings(input_ids=input_ids, position_ids=position_ids)
+        print(hidden_states.shape,'hidden_states.shape')
         if mask_idxs is not None and mask_embedding is not None:
+            print(mask_embedding.shape,'mask_embedding.shape')
             hidden_states[mask_idxs]=mask_embedding
         if is_keyword_tokens1 is not None and inj_embeddings1 is not None:
+            print(inj_embeddings1.shape,'inj_embeddings1.shape')
             hidden_states[is_keyword_tokens1]=inj_embeddings1
         if is_keyword_tokens2 is not None and inj_embeddings2 is not None:
             hidden_states[is_keyword_tokens2]=inj_embeddings2
