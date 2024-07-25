@@ -17,4 +17,4 @@ accelerate launch train_disenbooth.py \
   --max_train_steps=2000 \
   --validation_prompt="A dog</w> dog in a bucket" \
   --validation_epochs=200 \
-  --seed="0" \
+  --seed="0" 

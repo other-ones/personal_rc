@@ -801,29 +801,29 @@ def main(args):
         text_lora_parameters = LoraLoaderMixin._modify_text_encoder(text_encoder, dtype=torch.float32, rank=args.rank)
 
     # create custom saving & loading hooks so that `accelerator.save_state(...)` serializes in a nice format
-    def save_model_hook(models, weights, output_dir):
-        if accelerator.is_main_process:
-            # there are only two options here. Either are just the unet attn processor layers
-            # or there are the unet and text encoder atten layers
-            unet_lora_layers_to_save = None
-            text_encoder_lora_layers_to_save = None
+    # def save_model_hook(models, weights, output_dir):
+    #     if accelerator.is_main_process:
+    #         # there are only two options here. Either are just the unet attn processor layers
+    #         # or there are the unet and text encoder atten layers
+    #         unet_lora_layers_to_save = None
+    #         text_encoder_lora_layers_to_save = None
 
-            for model in models:
-                if isinstance(model, type(accelerator.unwrap_model(unet))):
-                    unet_lora_layers_to_save = unet_lora_state_dict(model)
-                elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
-                    text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
-                else:
-                    torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
+    #         for model in models:
+    #             if isinstance(model, type(accelerator.unwrap_model(unet))):
+    #                 unet_lora_layers_to_save = unet_lora_state_dict(model)
+    #             elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
+    #                 text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
+    #             else:
+    #                 torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
 
-                # make sure to pop weight so that corresponding model is not saved again
-                weights.pop()
+    #             # make sure to pop weight so that corresponding model is not saved again
+    #             weights.pop()
 
-            LoraLoaderMixin.save_lora_weights(
-                output_dir,
-                unet_lora_layers=unet_lora_layers_to_save,
-                text_encoder_lora_layers=text_encoder_lora_layers_to_save,
-            )
+    #         LoraLoaderMixin.save_lora_weights(
+    #             output_dir,
+    #             unet_lora_layers=unet_lora_layers_to_save,
+    #             text_encoder_lora_layers=text_encoder_lora_layers_to_save,
+    #         )
 
     def load_model_hook(models, input_dir):
         unet_ = None
@@ -845,7 +845,7 @@ def main(args):
             lora_state_dict, network_alphas=network_alphas, text_encoder=text_encoder_
         )
 
-    accelerator.register_save_state_pre_hook(save_model_hook)
+    # accelerator.register_save_state_pre_hook(save_model_hook)
     accelerator.register_load_state_pre_hook(load_model_hook)
 
     # Enable TF32 for faster training on Ampere GPUs,
@@ -1077,8 +1077,8 @@ def main(args):
                     if global_step % args.checkpointing_steps == 0:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit
                         save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-                        accelerator.save_state(save_path)
-                        logger.info(f"Saved state to {save_path}")
+                        # accelerator.save_state(save_path)
+                        # logger.info(f"Saved state to {save_path}")
 
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             progress_bar.set_postfix(**logs)

@@ -13,7 +13,7 @@ accelerate launch --main_process_port 4234  train_pplus_single.py \
   --learning_rate=5e-4 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
-  --output_dir="saved_models/pplus/single/pet_dog1" \
+  --output_dir="saved_models/tmp/single/pet_dog1" \
   --seed=7777 \
   --mask_tokens="[MASK]" \
   --lambda_mlm=0.0005 --freeze_mask_embedding=1 \

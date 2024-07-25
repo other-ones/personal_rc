@@ -5,3 +5,10 @@ git add .;
 git commit -m "update";
 git push origin main;
 cd DisenBooth;
+
+
+cp /home/twkim/anaconda3/envs/char/lib/python/site-packages/transformers/models/clip/modeling_clip.py \
+/home/twkim/anaconda3/envs/context/lib/python/site-packages/transformers/models/clip/modeling_clip.py;
+
+cp /home/twkim/anaconda3/envs/char/lib/python/site-packages/transformers/modeling_outputs.py  \
+/home/twkim/anaconda3/envs/context/lib/python/site-packages/transformers/modeling_outputs.py
