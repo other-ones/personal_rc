@@ -4,20 +4,20 @@ import os
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'dog6': ('dog','pet'),
-    'pet_cat1':('cat','pet'),
-    'vase':('vase','nonliving'),
-    'cat1': ('cat','pet'),
-    'pet_dog1':('dog','pet'),
-    'backpack':('backpack','nonliving'),
-    'barn': ('barn','building'),
-    'teddybear':('teddybear','nonliving'),
-    'wooden_pot':('pot','nonliving'),
+    # 'pet_cat1':('cat','pet'),
+    # 'vase':('vase','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
+    # 'barn': ('barn','building'),
+    # 'teddybear':('teddybear','nonliving'),
+    # 'wooden_pot':('pot','nonliving'),
 
-    'dog3': ('dog','pet'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
     
 }
@@ -40,7 +40,7 @@ stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4:
         break
-log_dir='logs/train/single'
+log_dir='logs/pplus/train/single'
 os.makedirs(log_dir,exist_ok=True)   
 ports=np.arange(1111,2222)
 
@@ -54,7 +54,7 @@ for include_prior in include_priors:
         for target_norm in target_norms:
             for idx,concept in enumerate(list(info_map.keys())):
                 prior,category=info_map[concept]
-                prefix='ti_norm{}_'.format(target_norm)
+                prefix='pplus_norm{}_'.format(target_norm)
                 if include_prior:
                     prefix+='prior'
                 else:
@@ -65,7 +65,7 @@ for include_prior in include_priors:
                     run_name="{}_nomlm_{}".format(prefix,concept)
                 if masked_loss:
                     run_name+='_masked'
-                output_dir=os.path.join('saved_models/tmp',concept)
+                output_dir=os.path.join('saved_models/pplus_models/single',concept)
                 exp_path=os.path.join(output_dir,run_name)
                 if os.path.exists(exp_path):
                     print(exp_path,'exists')
@@ -104,7 +104,7 @@ for include_prior in include_priors:
                 command+='--cls_net_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
                 command+='--mask_embed_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                 command+='--mlm_target=masked \\\n'
-                command+='--mlm_batch_size=50 \\\n'
+                command+='--mlm_batch_size=25 \\\n'
                 command+='--scale_lr \\\n'
                 command+='--prompt_type="{}" \\\n'.format(category)
                 command+='--silent=0 \\\n'
@@ -112,7 +112,8 @@ for include_prior in include_priors:
                 command+='--normalize_target1={} \\\n'.format(target_norm)
                 command+='--run_name="{}" \\\n'.format(run_name)
                 command+='--report_to="wandb" \\\n'
-                command+='--project_name="TI MLM SINGLE" \\\n'
+                command+='--num_vectors1=9 \\\n'
+                command+='--project_name="PPLUS MLM SINGLE" \\\n'
                 command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
 
                 os.system(command)
