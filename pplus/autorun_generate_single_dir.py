@@ -1,9 +1,30 @@
 import time
 import numpy as np
 import os
+hostname = socket.gethostname()
+print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
+info_map_03={
     'backpack':('backpack','nonliving'),
+    'teddybear':('teddybear','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'vase':('vase','nonliving'),
+    'cat1': ('cat','pet'),
+    'pet_cat1':('cat','pet'),
+    'pet_dog1':('dog','pet'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+
+
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'rc_car':('toy','nonliving'),
+    # 'dog3': ('dog','pet'),
+    # 'dog6': ('dog','pet'),
+    # 'flower1':('flower','flower'),
+}
+info_map_01={
+    # 'backpack':('backpack','nonliving'),
     # 'teddybear':('teddybear','nonliving'),
     # 'wooden_pot':('pot','nonliving'),
     # 'vase':('vase','nonliving'),
@@ -11,17 +32,21 @@ info_map={
     # 'pet_cat1':('cat','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'barn': ('barn','building'),
-
-
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'dog3': ('dog','pet'),
-    # 'dog6': ('dog','pet'),
+    
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'rc_car':('toy','nonliving'),
+    'dog3': ('dog','pet'),
+    'dog6': ('dog','pet'),
     # 'flower1':('flower','flower'),
-
 }
+if '03' in hostname:
+    info_map=info_map_03
+    delay=15
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
+    delay=30
 lambda_mlm=0.001
 
 
@@ -80,7 +105,7 @@ for dir in dirs:
                     stat_idx+=1
                     break
                 print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
-                time.sleep(10)
+                time.sleep(delay)
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print(exp_name,device_idx)
@@ -105,8 +130,8 @@ for dir in dirs:
             os.system(command)
             print('STARTED')
             idx+=1
-            time.sleep(15)
-        
+            time.sleep(delay)
+
     
 
 

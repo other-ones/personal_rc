@@ -2,7 +2,6 @@ import time
 import numpy as np
 import os
 import socket
-
 hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
