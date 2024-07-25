@@ -44,3 +44,20 @@ pplus*/priors
 pplus*/*.jpg
 pplus*/*.png
 pplus*/wandb
+
+
+
+# mlm
+mlm*/saved_models
+mlm*/__pycache__
+mlm*/packages/*/__pycacahe__
+mlm*/dog
+mlm*/fonts
+mlm*/samples
+mlm*/saved_models
+mlm*/logs*
+mlm*/results*
+mlm*/priors
+mlm*/*.jpg
+mlm*/*.png
+mlm*/wandb
