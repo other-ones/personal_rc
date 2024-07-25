@@ -15,9 +15,9 @@ info_map_03={
     'backpack':('backpack','nonliving'),
     'barn': ('barn','building'),
     'teddybear':('teddybear','nonliving'),
-    'wooden_pot':('pot','nonliving'),
 
-    'dog3': ('dog','pet'),
+    # 'wooden_pot':('pot','nonliving'),
+    # 'dog3': ('dog','pet'),
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
 
@@ -38,9 +38,9 @@ info_map_01={
     # 'backpack':('backpack','nonliving'),
     # 'barn': ('barn','building'),
     # 'teddybear':('teddybear','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
 
-    # 'dog3': ('dog','pet'),
+    'wooden_pot':('pot','nonliving'),
+    'dog3': ('dog','pet'),
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
 
