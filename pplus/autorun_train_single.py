@@ -84,7 +84,7 @@ for include_prior in include_priors:
                 print(run_name,device_idx)
                 log_path=os.path.join(log_dir,run_name+'.out')
                 command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-                command+='accelerate launch --main_process_port {} train_mlm_single.py \\\n'.format(ports[idx],idx)
+                command+='accelerate launch --main_process_port {} train_pplus_single.py \\\n'.format(ports[idx],idx)
                 command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                 command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                 command+='--learnable_property="object" \\\n'
