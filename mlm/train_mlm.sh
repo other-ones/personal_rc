@@ -18,11 +18,12 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm.py \
   --seed=7776 \
   --mask_tokens='[MASK]' \
   --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
-  --project_name='SD MLM' \
   --run_name='mlm_contextnet_nonpad_lr1e4' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
-  --whole_word_mask=0
+  --whole_word_mask=0 \
+  --project_name='SD MLM' 
+
 
 
 

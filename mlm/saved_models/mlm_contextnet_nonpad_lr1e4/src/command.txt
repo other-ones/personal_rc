@@ -1,0 +1,22 @@
+cwd	/home/twkim/project/rich_context/mlm
+train_mlm.py
+--pretrained_model_name_or_path=stabilityai/stable-diffusion-2-1
+--output_dir=saved_models
+--train_batch_size=150
+--gradient_accumulation_steps=1
+--learning_rate=1e-4
+--lr_scheduler=constant
+--lr_warmup_steps=0
+--max_train_steps=100000
+--save_steps=1000
+--local_rank=0
+--visualize_steps=25
+--num_inference_steps=25
+--seed=7776
+--mask_tokens=[MASK]
+--caption_path=/data/dataset/coco/karpathy/coco_caption_raw.txt
+--project_name=SD MLM
+--run_name=mlm_contextnet_nonpad_lr1e4
+--mlm_weight=5
+--mlm_target=non_padding
+--whole_word_mask=0

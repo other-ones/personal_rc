@@ -46,7 +46,6 @@ from diffusers.utils import check_min_version, is_wandb_available
 
 # Added
 import json
-from mapper import Mapper
 from utils import numpy_to_pil
 import cv2
 from PIL import Image
@@ -76,7 +75,7 @@ def get_tensor_clip(normalize=True, toTensor=True):
 # check_min_version("0.28.0.dev0")
 logger = get_logger(__name__)
 
-from config import parse_args
+from configs import parse_args
 def main():
     args = parse_args()
     dict_args=vars(args)
@@ -165,12 +164,10 @@ def main():
 
     # Add Mask Token
     mask_tokens = [args.mask_tokens]
-    placeholder_tokens = [args.placeholder_token]
     # if args.num_vectors_general < 1 or args.num_vectors_personal<1:
     #     raise ValueError(f"--num_vectors has to be larger or equal to 1, but is {args.num_vectors}")
     # assert args.num_vectors_general==1
     num_added_tokens = tokenizer.add_tokens(mask_tokens)
-    num_added_tokens = tokenizer.add_tokens(placeholder_tokens)
     # Convert the initializer_token, placeholder_token to ids
     mask_token_ids = tokenizer.convert_tokens_to_ids(mask_tokens)
     text_encoder.resize_token_embeddings(len(tokenizer))
@@ -428,7 +425,9 @@ def main():
             # clip-text
             bsz=len(input_ids)
             mask_embeds_normlized=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
-            clip_text_embedding_masked = text_encoder(input_ids_masked,inj_embeddings=mask_embeds_normlized,is_keyword_tokens=masked_idxs)[0].to(accelerator.device, dtype=weight_dtype)
+            clip_text_embedding_masked = text_encoder(input_ids_masked,
+            inj_embeddings1=mask_embeds_normlized,
+            is_keyword_tokens1=masked_idxs)[0].to(accelerator.device, dtype=weight_dtype)
             # clip_text_embedding_masked = text_encoder(input_ids_masked,
             #                             normalizing_scale=avg_norm,
             #                             normalizing_idxs=mask_token_ids)[0].to(accelerator.device, dtype=weight_dtype)
