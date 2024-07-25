@@ -414,10 +414,16 @@ def main():
             target_emb2=learned_embed2
         if accelerator.is_main_process:
             count=1
-            print(args.calibrate_kneg,'calibrate_kneg')
-            print(args.calibrate_kpos,'calibrate_kpos')
-            print(args.calibrate_pneg,'calibrate_pneg')
-            print(args.calibrate_ppos,'calibrate_ppos')
+            attn_mod_params={
+                    'calibrate_ppos1':args.calibrate_ppos1,
+                    'calibrate_ppos2':args.calibrate_ppos2,
+                    'calibrate_pneg1':args.calibrate_pneg1,
+                    'calibrate_pneg2':args.calibrate_pneg2,
+                    'calibrate_kpos1':args.calibrate_kpos1,
+                    'calibrate_kpos2':args.calibrate_kpos2,
+                    'calibrate_kneg1':args.calibrate_kneg1,
+                    'calibrate_kneg2':args.calibrate_kneg2,
+                }
             out = text_encoder(input_ids_pos,
                                 is_keyword_tokens1=is_keyword_tokens1,
                                 inj_embeddings1=target_emb1,
@@ -426,10 +432,7 @@ def main():
                                 output_similarities=True,
                                 output_attentions=True,
                                 non_keyword_idxs=non_keyword_idxs,
-                                calibrate_kneg=args.calibrate_kneg,
-                                calibrate_kpos=args.calibrate_kpos,
-                                calibrate_pneg=args.calibrate_pneg,
-                                calibrate_ppos=args.calibrate_ppos,
+                                attn_mod_params=attn_mod_params,
                                 is_prior1=is_prior1,
                                 is_prior2=is_prior2,
                                 )

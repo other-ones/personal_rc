@@ -4,7 +4,14 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
-    parser.add_argument('--calibrate_kp_bind',type=float,default=1)
+    parser.add_argument('--calibrate_ppos1',type=float,default=0)
+    parser.add_argument('--calibrate_ppos2',type=float,default=0)
+    parser.add_argument('--calibrate_pneg1',type=float,default=0)
+    parser.add_argument('--calibrate_pneg2',type=float,default=0)
+    parser.add_argument('--calibrate_kpos1',type=float,default=0)
+    parser.add_argument('--calibrate_kpos2',type=float,default=0)
+    parser.add_argument('--calibrate_kneg1',type=float,default=0)
+    parser.add_argument('--calibrate_kneg2',type=float,default=0)
     parser.add_argument('--run_name',type=str)
     parser.add_argument('--mask_tokens',type=str)
     parser.add_argument('--mlm_weight',type=float,default=1)

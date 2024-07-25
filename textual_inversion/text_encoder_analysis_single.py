@@ -303,7 +303,7 @@ def main():
 
     # Dataset and DataLoaders creation:
     print(mask_token_ids,'mask_token_ids')
-    prior_concepts=[args.prior_concept1,args.prior_concept2]
+    prior_concepts=[args.prior_concept1]
     placeholder_tokens=[args.placeholder_token1]
     placeholder_ids=[placeholder_token_id1[0]]
     
@@ -525,11 +525,23 @@ def main():
                 count=1
                 # for iip in input_ids_pos:
                 #     print(torch.sum(iip).sum(),'iip')
+                attn_mod_params={
+                    'calibrate_ppos1':args.calibrate_ppos1,
+                    'calibrate_ppos2':args.calibrate_ppos2,
+                    'calibrate_pneg1':args.calibrate_pneg1,
+                    'calibrate_pneg2':args.calibrate_pneg2,
+                    'calibrate_kpos1':args.calibrate_kpos1,
+                    'calibrate_kpos2':args.calibrate_kpos2,
+                    'calibrate_kneg1':args.calibrate_kneg1,
+                    'calibrate_kneg2':args.calibrate_kneg2,
+                }
                 out = text_encoder(input_ids_pos,
                                     is_keyword_tokens1=is_keyword_tokens1,
+                                    is_prior1=is_prior1,
                                     inj_embeddings1=target_emb1,
                                     output_attentions=True,
                                     non_keyword_idxs=non_keyword_idxs,
+                                    attn_mod_params=attn_mod_params
                                     )
                 attention_per_layers=out.attentions #[12,12,400,77,77]
                 for layer_idx in range(len(attention_per_layers)):
@@ -539,7 +551,7 @@ def main():
                     prior1_attentions=layer_attentions[is_prior1] # 400,77
                     key1_prior1_attentions=key1_attentions[is_prior1] # 400
                     prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
-                    print(key1_key1_attentions.shape,'key1_key1_attentions.shape')
+                    print(key1_prior1_attentions.shape,'key1_prior1_attentions.shape')
                     print(prior1_key1_attentions.shape,'prior1_key1_attentions.shape')
 
                 # xpoints=np.arange(13)

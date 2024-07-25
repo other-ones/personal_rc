@@ -25,5 +25,6 @@ accelerate launch --main_process_port 1234  text_encoder_analysis_single.py \
   --prior_concept1="dog" \
   --learned_embed_path1="saved_models/ti_models/single_prior/pet_dog1/ti_norm0_prior_mlm0001_pet_dog1/checkpoints/learned_embeds_s3000.pt" \
   --include_prior_concept=1 \
-  --run_name='tmp' 
+  --run_name='tmp' \
+  --calibrate_ppos1=1 
   
