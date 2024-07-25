@@ -1,6 +1,6 @@
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6/";
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export CUDA_VISIBLE_DEVICES=4;
+export CUDA_VISIBLE_DEVICES=0;
 accelerate launch --main_process_port 2731  generate_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
@@ -15,4 +15,5 @@ accelerate launch --main_process_port 2731  generate_single.py \
   --prompt_type='pet' \
   --eval_batch_size=20 \
   --num_images_per_prompt=15  \
-  --calibrate_kpos1=1 --calibrate_ppos1=1
+  --calibrate_kpos1=1 --calibrate_ppos1=1 \
+  --dst_exp_path=tmp

@@ -29,7 +29,7 @@ info_map_01={
     # 'pet_cat1':('cat','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'vase':('vase','nonliving'),
-    'teddybear':('teddybear','nonliving'),
+    'teddybear':('bear','nonliving'),
     'dog6': ('dog','pet'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
@@ -71,7 +71,7 @@ device_idx=stat_idx
 
 target_norm=0
 include_prior_concept=1
-pos_values=[0,0.1,1,10]
+pos_values=[0,1,0.1,10]
 lambda_mlms=[0,0.001]
 for lambda_mlm in lambda_mlms:
     lambda_mlm_str=float_to_str(lambda_mlm).replace('.','')
