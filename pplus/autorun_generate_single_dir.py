@@ -4,21 +4,21 @@ import os
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'backpack':('backpack','nonliving'),
-    'teddybear':('teddybear','nonliving'),
-    'wooden_pot':('pot','nonliving'),
-    'vase':('vase','nonliving'),
-    'cat1': ('cat','pet'),
-    'pet_cat1':('cat','pet'),
-    'pet_dog1':('dog','pet'),
-    'barn': ('barn','building'),
+    # 'teddybear':('teddybear','nonliving'),
+    # 'wooden_pot':('pot','nonliving'),
+    # 'vase':('vase','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'pet_cat1':('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'barn': ('barn','building'),
 
 
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    'dog3': ('dog','pet'),
-    'dog6': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'dog3': ('dog','pet'),
+    # 'dog6': ('dog','pet'),
     # 'flower1':('flower','flower'),
 
 }
@@ -45,8 +45,8 @@ idx=0
 # dirs=['multi','single']
 dirs=['single']
 for dir in dirs:
-    dir_path=os.path.join('saved_models',dir)
-    log_dir='logs/generate/{}'.format(dir)
+    dir_path=os.path.join('saved_models/pplus_models',dir)
+    log_dir='logs/pplus/generate/{}'.format(dir)
     os.makedirs(log_dir,exist_ok=True)    
     concepts=os.listdir(dir_path)
     for concept in concepts:
@@ -66,8 +66,9 @@ for dir in dirs:
             else:
                 assert '_prior_' in exp_name
                 include_prior_concept=1
-            output_dir=os.path.join('results/{}/{}'.format(dir,concept))
+            output_dir=os.path.join('results/pplus_results/{}/{}'.format(dir,concept))
             exp_path=os.path.join(output_dir,exp_name)
+            print(exp_path,'exp_path')
             if os.path.exists(exp_path):
                 print(exp_name,'exists')
                 continue
@@ -95,15 +96,17 @@ for dir in dirs:
             command+='--num_images_per_prompt=15 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed=1234 \\\n'
+            command+='--num_vectors1=9 \\\n'
             command+='--mask_tokens="[MASK]" \\\n'
             command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
             command+='--prompt_type="{}" \\\n'.format(category)
+
             command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior_concept,log_path)
             os.system(command)
             print('STARTED')
             idx+=1
             time.sleep(15)
-
+        
     
 
 

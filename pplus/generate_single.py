@@ -116,7 +116,7 @@ def main(args):
     if args.seed is not None:
         set_seed(args.seed)
 
-    exp_name=args.learned_embed_path1.split('/')[3]
+    exp_name=args.learned_embed_path1.split('/')[-3]
     file_name=args.learned_embed_path1.split('/')[-1].split('.')[0]
     stepname=file_name.split('_')[-1]
     exp_dir=os.path.join(args.output_dir,exp_name)
@@ -166,6 +166,7 @@ def main(args):
     # HERE
     mask_tokens = [args.mask_tokens]
     placeholder_token1 = [args.placeholder_token1]
+    print(len(tokenizer),'len(tokenizer) before')
     # placeholder_token2 = [args.placeholder_token2]
     tokenizer.add_tokens(mask_tokens)
     if args.num_vectors1>1:
@@ -174,14 +175,18 @@ def main(args):
             placeholder_tokens.append(args.placeholder_token1+'_{}'.format(vidx))
     else:
         placeholder_tokens = [args.placeholder_token1]
+    tokenizer.add_tokens(placeholder_tokens)
     placeholder_token_ids = tokenizer.convert_tokens_to_ids(placeholder_tokens)
+    print(placeholder_tokens,'placeholder_tokens')
+    print(placeholder_token_ids,'placeholder_token_ids')
     text_encoder.resize_token_embeddings(len(tokenizer))
+    print(len(tokenizer),'len(tokenizer) after')
     token_embeds = text_encoder.get_input_embeddings().weight.data
     print(token_embeds.shape,'token_embeds.shape')
     learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token1]
+    print(learned_embed1.keys(),'learned_embed1.keys()')
     learned_embed1=learned_embed1[args.placeholder_token1]
     print(learned_embed1.shape,'learned_embed1.shape')
-    exit()
     initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
     initializer_token_id = initializer_token_ids[0]
     prior_embed=token_embeds[initializer_token_id].detach().clone()
@@ -377,6 +382,8 @@ def main(args):
             target_emb1=learned_embed1
         for batch_idx in range(num_batches):
             prompts=eval_prompts[batch_idx*batch_size:(batch_idx+1)*batch_size]
+            prompt_batch=[]
+            eval_bsz=len(prompts)
             if not len(prompts):
                 break
             is_keyword_tokens_list=[]
@@ -387,6 +394,7 @@ def main(args):
                     else:
                         placeholder='{}'.format(placeholder_tokens[pidx])
                     eval_prompt=prompt.format(placeholder)
+                    prompt_batch.append(eval_prompt)
                     is_keyword_tokens=[False]
                     text_words=eval_prompt.split()
                     for word_idx in range(len(text_words)):
@@ -396,25 +404,25 @@ def main(args):
                         for tok_id in word_token_ids:
                             if placeholder_tokens[pidx] == cap_word:
                                 is_keyword_tokens.append(True)
+                                assert num_tokens==1,'num_tokens==1'
                             else:
                                 is_keyword_tokens.append(False)
                     for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
                         is_keyword_tokens.append(False)
                     assert len(is_keyword_tokens)==tokenizer.model_max_length
                     is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
+                    assert torch.sum(is_keyword_tokens)==1,'torch.sum(is_keyword_tokens)'
                     is_keyword_tokens_list.append(is_keyword_tokens)
             is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)#9n,77
-            print(is_keyword_tokens_list.shape,'is_keyword_tokens_list')
-            print(sample_dir,'sample_dir')
-            num_eval=len(validation_prompts)
             emb_dim=target_emb1.shape[-1] #9,768
-            images = pipeline(prompt=prompts, 
+            images = pipeline(prompt=prompt_batch, 
                             silent=args.silent,
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             is_keyword_tokens1=is_keyword_tokens_list,
-                            inj_embeddings1=target_emb1.repeat(num_eval,1,1).reshape(-1,emb_dim),, #9,768 -> n,9,768->9n,768
+                            num_vectors1=args.num_vectors1,
+                            inj_embeddings1=target_emb1.repeat(eval_bsz,1,1).reshape(-1,emb_dim), #9,768 -> n,9,768->9n,768
                             ).images
             
             # 
@@ -431,13 +439,14 @@ def main(args):
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
                 image_name='{:04d}'.format(count+1)
                 img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
-                prompt_saved=prompt.replace(placeholder,args.prior_concept1)
+                prompt_saved=prompt.format(args.prior_concept1)
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)
                 image.save(img_path)
                 count+=1
-            for iidx,(image, prompt) in enumerate(zip(images[:num_viz_samples],prompts[:num_viz_samples])):
+            prompt_batch=prompt_batch[::args.num_vectors1]
+            for iidx,(image, prompt) in enumerate(zip(images[:num_viz_samples],prompt_batch[:num_viz_samples])):
                 row_idx=iidx//num_cols
                 col_idx=iidx-(num_cols*row_idx)
                 x0=(col_idx+1)*(512+margin_right)
