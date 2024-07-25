@@ -1,6 +1,6 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1"
-export CUDA_VISIBLE_DEVICES=4;
+export CUDA_VISIBLE_DEVICES=6;
 accelerate launch --main_process_port 4234  train_pplus_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
@@ -20,7 +20,7 @@ accelerate launch --main_process_port 4234  train_pplus_single.py \
   --cls_net_path='saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt' \
   --mask_embed_path='saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt' \
   --mlm_target='masked' \
-  --mlm_batch_size=10 \
+  --mlm_batch_size=15 \
   --run_name='tmp_pplus' \
   --scale_lr \
   --prompt_type='pet' \
