@@ -18,8 +18,8 @@ info_map_03={
     'wooden_pot':('pot','nonliving'),
 
     'dog3': ('dog','pet'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
 
     # 'rc_car':('toy','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
@@ -41,8 +41,8 @@ info_map_01={
     # 'wooden_pot':('pot','nonliving'),
 
     # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
 
     'rc_car':('toy','nonliving'),
     'pink_sunglasses':('sunglasses','sunglasses'),
