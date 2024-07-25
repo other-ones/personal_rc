@@ -33,8 +33,8 @@ from accelerate.utils import set_seed
 from diffusers import (
     AutoencoderKL,
     DDPMScheduler,
-    UNet2DConditionModel,
-    StableDiffusionPipeline,
+    UNet2DConditionModelPPlus,
+    StableDiffusionPipelinePPlus,
     UNet2DModel
 )
 
@@ -168,18 +168,26 @@ def main(args):
     placeholder_token1 = [args.placeholder_token1]
     # placeholder_token2 = [args.placeholder_token2]
     tokenizer.add_tokens(mask_tokens)
-    tokenizer.add_tokens(placeholder_token1)
-    placeholder_token_id1 = tokenizer.convert_tokens_to_ids(placeholder_token1)
+    if args.num_vectors1>1:
+        placeholder_tokens = []
+        for vidx in range(args.num_vectors1):
+            placeholder_tokens.append(args.placeholder_token1+'_{}'.format(vidx))
+    else:
+        placeholder_tokens = [args.placeholder_token1]
+    placeholder_token_ids = tokenizer.convert_tokens_to_ids(placeholder_tokens)
     text_encoder.resize_token_embeddings(len(tokenizer))
     token_embeds = text_encoder.get_input_embeddings().weight.data
     print(token_embeds.shape,'token_embeds.shape')
     learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token1]
     learned_embed1=learned_embed1[args.placeholder_token1]
+    print(learned_embed1.shape,'learned_embed1.shape')
+    exit()
     initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
     initializer_token_id = initializer_token_ids[0]
     prior_embed=token_embeds[initializer_token_id].detach().clone()
     with torch.no_grad():
-        token_embeds[placeholder_token_id1] = learned_embed1 #
+        for tidx,token_id in enumerate(placeholder_token_ids):
+            token_embeds[token_id] = learned_embed1[tidx].clone()
         # token_embeds[placeholder_token_id2] = learned_embed2 #token_embeds[initializer_token_id].clone()
     text_encoder.text_model.encoder.requires_grad_(False)
     text_encoder.text_model.final_layer_norm.requires_grad_(False)
@@ -190,11 +198,11 @@ def main(args):
     vae = AutoencoderKL.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
     )
-    unet = UNet2DConditionModel.from_pretrained(
+    unet = UNet2DConditionModelPPlus.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
     )
     """UNet Initialization"""
-    print(inspect.getsourcefile(UNet2DConditionModel.from_pretrained), 'inspect')
+    print(inspect.getsourcefile(UNet2DConditionModelPPlus.from_pretrained), 'inspect')
     for param in unet.parameters():
         param.requires_grad = False
     vae.requires_grad_(False)
@@ -252,7 +260,7 @@ def main(args):
     )
     
     unet=unet.to(accelerator.device)
-    pipeline = StableDiffusionPipeline(
+    pipeline = StableDiffusionPipelinePPlus(
             vae=accelerator.unwrap_model(vae, **extra_args),
             unet=accelerator.unwrap_model(unet, **extra_args),
             text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
@@ -268,84 +276,84 @@ def main(args):
         placeholder='{}'.format(args.placeholder_token1)
     if args.prompt_type=='nonliving':
         eval_prompts = [ 
-            'a {0} in the jungle'.format(placeholder),
-            'a {0} in the snow'.format(placeholder),
-            'a {0} on the beach'.format(placeholder),
-            'a {0} on a cobblestone street'.format(placeholder),
-            'a {0} on top of pink fabric'.format(placeholder),
-            'a {0} on top of a wooden floor'.format(placeholder),
-            'a {0} with a city in the background'.format(placeholder),
-            'a {0} with a mountain in the background'.format(placeholder),
-            'a {0} with a blue house in the background'.format(placeholder),
-            'a {0} on top of a purple rug in a forest'.format(placeholder),
+            'a {0} in the jungle',
+            'a {0} in the snow',
+            'a {0} on the beach',
+            'a {0} on a cobblestone street',
+            'a {0} on top of pink fabric',
+            'a {0} on top of a wooden floor',
+            'a {0} with a city in the background',
+            'a {0} with a mountain in the background',
+            'a {0} with a blue house in the background',
+            'a {0} on top of a purple rug in a forest',
 
-            'a {0} with a wheat field in the background'.format(placeholder),
-            'a {0} with a tree and autumn leaves in the background'.format(placeholder),
-            'a {0} with the Eiffel Tower in the background'.format(placeholder),
-            'a {0} floating on top of water'.format(placeholder),
-            'a {0} floating in an ocean of milk'.format(placeholder),
-            'a {0} on top of green grass with sunflowers around it'.format(placeholder),
-            'a {0} on top of a mirror'.format(placeholder),
-            'a {0} on top of the sidewalk in a crowded street'.format(placeholder),
-            'a {0} on top of a dirt road'.format(placeholder),
-            'a {0} on top of a white rug'.format(placeholder),
+            'a {0} with a wheat field in the background',
+            'a {0} with a tree and autumn leaves in the background',
+            'a {0} with the Eiffel Tower in the background',
+            'a {0} floating on top of water',
+            'a {0} floating in an ocean of milk',
+            'a {0} on top of green grass with sunflowers around it',
+            'a {0} on top of a mirror',
+            'a {0} on top of the sidewalk in a crowded street',
+            'a {0} on top of a dirt road',
+            'a {0} on top of a white rug',
 
-            'a red {0}'.format(placeholder),
-            'a purple {0}'.format(placeholder),
-            'a shiny {0}'.format(placeholder),
-            'a wet {0}'.format(placeholder),
-            'a cube shaped {0}'.format(placeholder)
+            'a red {0}',
+            'a purple {0}',
+            'a shiny {0}',
+            'a wet {0}',
+            'a cube shaped {0}'
             ]*args.num_images_per_prompt
     elif args.prompt_type=='pet':
         eval_prompts = [ 
-        'a {0} in the jungle'.format(placeholder),
-        'a {0} in the snow'.format(placeholder),
-        'a {0} on the beach'.format(placeholder),
-        'a {0} on a cobblestone street'.format(placeholder),
-        'a {0} on top of pink fabric'.format(placeholder),
-        'a {0} on top of a wooden floor'.format(placeholder),
-        'a {0} with a city in the background'.format(placeholder),
-        'a {0} with a mountain in the background'.format(placeholder),
-        'a {0} with a blue house in the background'.format(placeholder),
-        'a {0} on top of a purple rug in a forest'.format(placeholder),
+        'a {0} in the jungle',
+        'a {0} in the snow',
+        'a {0} on the beach',
+        'a {0} on a cobblestone street',
+        'a {0} on top of pink fabric',
+        'a {0} on top of a wooden floor',
+        'a {0} with a city in the background',
+        'a {0} with a mountain in the background',
+        'a {0} with a blue house in the background',
+        'a {0} on top of a purple rug in a forest',
 
-        'a {0} wearing a red hat'.format(placeholder),
-        'a {0} wearing a santa hat'.format(placeholder),
-        'a {0} wearing a rainbow scarf'.format(placeholder),
-        'a {0} wearing a black top hat and a monocle'.format(placeholder),
-        'a {0} in a chef outfit'.format(placeholder),
-        'a {0} in a firefighter outfit'.format(placeholder),
-        'a {0} in a police outfit'.format(placeholder),
-        'a {0} wearing pink glasses'.format(placeholder),
-        'a {0} wearing a yellow shirt'.format(placeholder),
-        'a {0} in a purple wizard outfit'.format(placeholder),
-        'a red {0}'.format(placeholder),
-        'a purple {0}'.format(placeholder),
-        'a shiny {0}'.format(placeholder),
-        'a wet {0}'.format(placeholder),
-        'a cube shaped {0}'.format(placeholder)
+        'a {0} wearing a red hat',
+        'a {0} wearing a santa hat',
+        'a {0} wearing a rainbow scarf',
+        'a {0} wearing a black top hat and a monocle',
+        'a {0} in a chef outfit',
+        'a {0} in a firefighter outfit',
+        'a {0} in a police outfit',
+        'a {0} wearing pink glasses',
+        'a {0} wearing a yellow shirt',
+        'a {0} in a purple wizard outfit',
+        'a red {0}',
+        'a purple {0}',
+        'a shiny {0}',
+        'a wet {0}',
+        'a cube shaped {0}'
         ]*args.num_images_per_prompt
     elif args.prompt_type=='building':
-       eval_prompts=['photo of a {}'.format(placeholder),
-       '{} in snowy ice'.format(placeholder),
-       '{} in the fall season with leaves all around'.format(placeholder),
-       '{} at a beach with a view of the seashore'.format(placeholder),
-       'Photo of the {} with the sun rising in the sky.'.format(placeholder),
-       '{} with forest in the background.'.format(placeholder),
-       'puppy in front of the {}'.format(placeholder),
-       'cat sitting in front of the {}'.format(placeholder),
-       'cat sitting in front of {} in snowy ice'.format(placeholder),
-       'squirrel in front of the {}'.format(placeholder),
-       '{} oil painting ghibli inspired'.format(placeholder),
-       '{} painting by artist claude monet'.format(placeholder),
-       '{} digital painting 3d render geometric style'.format(placeholder),
-       "Georgia O'Keeffe style {} painting".format(placeholder),
-       'a watercolor painting of the {}'.format(placeholder),
-       'painting of {} in the style of van gogh'.format(placeholder),
-       'A futuristic {}'.format(placeholder),
-       'A surreal landscape, {}'.format(placeholder),
-       'A close up shot of the {}'.format(placeholder),
-       'Top view of the {}'.format(placeholder)]*args.num_images_per_prompt
+       eval_prompts=['photo of a {}',
+       '{} in snowy ice',
+       '{} in the fall season with leaves all around',
+       '{} at a beach with a view of the seashore',
+       'Photo of the {} with the sun rising in the sky.',
+       '{} with forest in the background.',
+       'puppy in front of the {}',
+       'cat sitting in front of the {}',
+       'cat sitting in front of {} in snowy ice',
+       'squirrel in front of the {}',
+       '{} oil painting ghibli inspired',
+       '{} painting by artist claude monet',
+       '{} digital painting 3d render geometric style',
+       "Georgia O'Keeffe style {} painting",
+       'a watercolor painting of the {}',
+       'painting of {} in the style of van gogh',
+       'A futuristic {}',
+       'A surreal landscape, {}',
+       'A close up shot of the {}',
+       'Top view of the {}']*args.num_images_per_prompt
     else:
         assert False
     # batch_size=len(prompts)
@@ -373,30 +381,40 @@ def main(args):
                 break
             is_keyword_tokens_list=[]
             for prompt in prompts:
-                is_keyword_tokens=[False]
-                text_words=prompt.split()
-                for word_idx in range(len(text_words)):
-                    cap_word=text_words[word_idx]
-                    word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
-                    num_tokens=len(word_token_ids)
-                    for tok_id in word_token_ids:
-                        if args.placeholder_token1 in cap_word:
-                            is_keyword_tokens.append(True)
-                        else:
-                            is_keyword_tokens.append(False)
-                for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
-                    is_keyword_tokens.append(False)
-                assert len(is_keyword_tokens)==tokenizer.model_max_length
-                is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
-                is_keyword_tokens_list.append(is_keyword_tokens)
-            is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)
+                for pidx in range(len(placeholder_tokens)):
+                    if args.include_prior_concept:
+                        placeholder='{} {}'.format(placeholder_tokens[pidx],args.prior_concept1)
+                    else:
+                        placeholder='{}'.format(placeholder_tokens[pidx])
+                    eval_prompt=prompt.format(placeholder)
+                    is_keyword_tokens=[False]
+                    text_words=eval_prompt.split()
+                    for word_idx in range(len(text_words)):
+                        cap_word=text_words[word_idx]
+                        word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
+                        num_tokens=len(word_token_ids)
+                        for tok_id in word_token_ids:
+                            if placeholder_tokens[pidx] == cap_word:
+                                is_keyword_tokens.append(True)
+                            else:
+                                is_keyword_tokens.append(False)
+                    for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
+                        is_keyword_tokens.append(False)
+                    assert len(is_keyword_tokens)==tokenizer.model_max_length
+                    is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
+                    is_keyword_tokens_list.append(is_keyword_tokens)
+            is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)#9n,77
+            print(is_keyword_tokens_list.shape,'is_keyword_tokens_list')
             print(sample_dir,'sample_dir')
+            num_eval=len(validation_prompts)
+            emb_dim=target_emb1.shape[-1] #9,768
             images = pipeline(prompt=prompts, 
+                            silent=args.silent,
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             is_keyword_tokens1=is_keyword_tokens_list,
-                            inj_embeddings1=target_emb1,
+                            inj_embeddings1=target_emb1.repeat(num_eval,1,1).reshape(-1,emb_dim),, #9,768 -> n,9,768->9n,768
                             ).images
             
             # 
