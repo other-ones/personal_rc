@@ -13,7 +13,7 @@ from PIL import ImageFont,ImageDraw
 def float_to_str(f):
     s = f"{f:.15f}"  # Start with a high precision
     return s.rstrip('0').rstrip('.') if '.' in s else s
-def render_caption(image, text, coords, font_path='fonts/GoNotoCurrent.ttf'):
+def render_caption(image, text, coords, font_path='../fonts/GoNotoCurrent.ttf'):
     # Load the font
     draw = ImageDraw.Draw(image)
     font_size = 30  # Starting with the given font size
