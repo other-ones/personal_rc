@@ -10,7 +10,7 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm.py \
   --learning_rate=1e-4 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
-  --max_train_steps=100000 \
+  --max_train_steps=100001 \
   --save_steps=1000 \
   --local_rank=0 \
   --visualize_steps=25 \
@@ -37,7 +37,7 @@ accelerate launch --num_processes=2 --main_process_port=7353 train_mlm.py \
   --learning_rate=1e-4 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
-  --max_train_steps=100000 \
+  --max_train_steps=100001 \
   --save_steps=1000 \
   --local_rank=0 \
   --visualize_steps=25 \
