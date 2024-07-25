@@ -536,10 +536,11 @@ def main():
                     layer_attentions=attention_per_layers[layer_idx]
                     layer_attentions=torch.mean(layer_attentions,dim=1) # 400,77,77
                     key1_attentions=layer_attentions[is_keyword_tokens1] # 400,77
-                    key1_key1_attentions=key1_attentions[is_keyword_tokens1] # 400
+                    prior1_attentions=layer_attentions[is_prior1] # 400,77
                     key1_prior1_attentions=key1_attentions[is_prior1] # 400
+                    prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
                     print(key1_key1_attentions.shape,'key1_key1_attentions.shape')
-                    print(key1_prior1_attentions.shape,'key1_prior1_attentions.shape')
+                    print(prior1_key1_attentions.shape,'prior1_key1_attentions.shape')
 
                 # xpoints=np.arange(13)
                 # for key_sims,nonkey_sims in zip(keywords_similarities,nonkey_similarities):

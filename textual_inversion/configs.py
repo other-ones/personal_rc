@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--calibrate_kp_bind',type=float,default=1)
     parser.add_argument('--run_name',type=str)
     parser.add_argument('--mask_tokens',type=str)
     parser.add_argument('--mlm_weight',type=float,default=1)
@@ -27,7 +28,6 @@ def parse_args():
     parser.add_argument('--lambda_mlm',type=float,default=0.1)
     parser.add_argument('--lambda_contrastive',type=float,default=0)
     parser.add_argument('--lambda_sim',type=float)
-
     parser.add_argument('--margin',type=float,default=0.1)
 
 
