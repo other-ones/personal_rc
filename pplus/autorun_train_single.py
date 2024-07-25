@@ -52,8 +52,11 @@ info_map_01={
 }
 if '03' in hostname:
     info_map=info_map_03
+    delay=15
 elif 'ubuntu' in hostname:
     info_map=info_map_01
+    delay=30
+
 else:
     assert False
 # cuda_ids=[0,1,2,3,4,5,6,7]
@@ -113,7 +116,7 @@ for include_prior in include_priors:
                         stat_idx+=1
                         break
                     print(run_name,'sleep',stat_idx,stat)
-                    time.sleep(10)
+                    time.sleep(delay)
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
                 print(run_name,device_idx)
@@ -153,7 +156,7 @@ for include_prior in include_priors:
 
                 os.system(command)
                 print('STARTED')
-                time.sleep(15)
+                time.sleep(delay)
             
 
 
