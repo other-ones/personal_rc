@@ -1,7 +1,7 @@
 import os
 import shutil
 root='saved_models/pplus_models/single'
-keyword='mlm0001'
+keyword='mlm'
 concepts=os.listdir(root)
 for concept in concepts:
     concept_path=os.path.join(root,concept)
