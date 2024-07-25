@@ -5,6 +5,7 @@ import socket
 
 hostname = socket.gethostname()
 print(hostname,'hostname')
+exit()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'dog6': ('dog','pet'),
