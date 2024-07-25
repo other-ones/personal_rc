@@ -51,8 +51,6 @@ from PIL import Image
 from lora_diffusion import tune_lora_scale, patch_pipe
 import torchvision.transforms as T
 import inspect
-from azureml.core import Run
-run = Run.get_context()
 import socket
 hostname = socket.gethostname()
 
@@ -116,10 +114,7 @@ def main(args):
     if args.seed is not None:
         set_seed(args.seed)
 
-    exp_name=args.learned_embed_path1.split('/')[3]
-    file_name=args.learned_embed_path1.split('/')[-1].split('.')[0]
-    stepname=file_name.split('_')[-1]
-    exp_dir=os.path.join(args.output_dir,exp_name)
+    exp_dir=args.dst_exp_path
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
     os.makedirs(sample_dir, exist_ok=True)
@@ -129,7 +124,7 @@ def main(args):
         codepath=os.path.join(exp_dir,'src')
         if os.path.exists(codepath) and 'tmp' not in codepath:
             assert False
-        caption_path = os.path.join(args.output_dir,exp_name,'captions.json')
+        caption_path = os.path.join(exp_dir,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
@@ -362,6 +357,16 @@ def main(args):
     print(prior_embed.shape,'prior_embed.shape')
     prior_embed=prior_embed.to(accelerator.device)
     learned_embed1=learned_embed1.to(accelerator.device)
+    attn_mod_params={
+                    'calibrate_ppos1':args.calibrate_ppos1,
+                    'calibrate_ppos2':args.calibrate_ppos2,
+                    'calibrate_pneg1':args.calibrate_pneg1,
+                    'calibrate_pneg2':args.calibrate_pneg2,
+                    'calibrate_kpos1':args.calibrate_kpos1,
+                    'calibrate_kpos2':args.calibrate_kpos2,
+                    'calibrate_kneg1':args.calibrate_kneg1,
+                    'calibrate_kneg2':args.calibrate_kneg2,
+                }
     with torch.no_grad():
         if args.normalize_target1:
             target_emb1=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
@@ -372,31 +377,49 @@ def main(args):
             if not len(prompts):
                 break
             is_keyword_tokens_list=[]
+            is_prior1_list=[]
             for prompt in prompts:
                 is_keyword_tokens=[False]
+                is_prior1=[False]
                 text_words=prompt.split()
                 for word_idx in range(len(text_words)):
                     cap_word=text_words[word_idx]
                     word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
                     num_tokens=len(word_token_ids)
                     for tok_id in word_token_ids:
-                        if args.placeholder_token1 in cap_word:
+                        tok_decoded=tokenizer.decode(tok_id)
+                        if args.placeholder_token1 == cap_word:
                             is_keyword_tokens.append(True)
                         else:
                             is_keyword_tokens.append(False)
+                        # prior1
+                        if tok_decoded==args.prior_concept1:
+                            is_prior1.append(True)
+                        else:
+                            is_prior1.append(False)
                 for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
                     is_keyword_tokens.append(False)
+                for _ in range(len(is_prior1),tokenizer.model_max_length):
+                    is_prior1.append(False)
                 assert len(is_keyword_tokens)==tokenizer.model_max_length
+                assert len(is_prior1)==tokenizer.model_max_length
                 is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
+                is_prior1=torch.BoolTensor(is_prior1)
+                assert torch.sum(is_keyword_tokens)==1,'torch.sum(is_keyword_tokens)==1'
+                assert torch.sum(is_prior1)==1,'torch.sum(is_prior1)==1'
                 is_keyword_tokens_list.append(is_keyword_tokens)
+                is_prior1_list.append(is_prior1)
             is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)
-            print(sample_dir,'sample_dir')
+            is_prior1_list=torch.stack(is_prior1_list)
+            print(is_prior1_list.shape,'is_prior1_list.shape')
             images = pipeline(prompt=prompts, 
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             is_keyword_tokens1=is_keyword_tokens_list,
                             inj_embeddings1=target_emb1,
+                            is_prior1=is_prior1_list,
+                            attn_mod_params=attn_mod_params,
                             ).images
             
             # 

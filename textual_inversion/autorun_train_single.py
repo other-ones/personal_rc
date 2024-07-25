@@ -1,28 +1,29 @@
+from utils import float_to_str
 import time
 import numpy as np
 import os
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
-    'dog6': ('dog','pet'),
-    'pet_cat1':('cat','pet'),
-    'vase':('vase','nonliving'),
-    'cat1': ('cat','pet'),
-    'pet_dog1':('dog','pet'),
     'backpack':('backpack','nonliving'),
-    'barn': ('barn','building'),
-    'teddybear':('teddybear','nonliving'),
-    'wooden_pot':('pot','nonliving'),
+    'pet_cat1':('cat','pet'),
+    'pet_dog1':('dog','pet'),
+    'vase':('vase','nonliving'),
+    # 'teddybear':('teddybear','nonliving'),
+    # 'dog6': ('dog','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
 
-    'dog3': ('dog','pet'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
     
 }
 # cuda_ids=[0,1,2,3,4,5,6,7]
-lambda_mlms=[0.001]
+lambda_mlms=[0]
 target_norms=[0]
 masked_loss=0
 
@@ -33,20 +34,22 @@ def get_gpu_memory():
     memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
     memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
     return memory_free_values
-def float_to_str(f):
-    s = f"{f:.15f}"  # Start with a high precision
-    return s.rstrip('0').rstrip('.') if '.' in s else s
+
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4:
         break
-log_dir='logs/train/single'
-os.makedirs(log_dir,exist_ok=True)   
+
 ports=np.arange(1111,2222)
 
 
 include_priors=[1]
 for include_prior in include_priors:
+    if include_prior:
+        log_dir='logs/ti_models/train/single_prior'
+    else:
+        log_dir='logs/ti_models/train/single'
+    os.makedirs(log_dir,exist_ok=True)   
     for lambda_mlm in lambda_mlms:
         lambda_mlm_str=float_to_str(lambda_mlm)
         lambda_mlm_str=lambda_mlm_str.replace('.','')
@@ -65,7 +68,10 @@ for include_prior in include_priors:
                     run_name="{}_nomlm_{}".format(prefix,concept)
                 if masked_loss:
                     run_name+='_masked'
-                output_dir=os.path.join('saved_models/tmp',concept)
+                if include_prior:
+                    output_dir=os.path.join('saved_models/ti_models/single',concept)
+                else:
+                    output_dir=os.path.join('saved_models/ti_models/single_prior',concept)
                 exp_path=os.path.join(output_dir,run_name)
                 if os.path.exists(exp_path):
                     print(exp_path,'exists')

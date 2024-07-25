@@ -239,6 +239,7 @@ class TextualInversionDatasetSingle(Dataset):
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
                 tok_decoded=self.tokenizer.decode(tok_id)
+                print(tok_decoded,'tok_decoded')
                 # 2) keyword indices and labels for MLM.
                 if tok_id in self.placeholder_ids:
                     if tok_id == self.placeholder_ids[0]:

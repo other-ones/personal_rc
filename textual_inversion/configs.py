@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument('--calibrate_kpos2',type=float,default=0)
     parser.add_argument('--calibrate_kneg1',type=float,default=0)
     parser.add_argument('--calibrate_kneg2',type=float,default=0)
+    parser.add_argument('--dst_exp_path',type=str)
     parser.add_argument('--run_name',type=str)
     parser.add_argument('--mask_tokens',type=str)
     parser.add_argument('--mlm_weight',type=float,default=1)

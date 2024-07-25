@@ -44,7 +44,7 @@ for stat_idx,stat in enumerate(stats):
         break
 device_idx=stat_idx
 
-target_norms=[0,4,8,16,24]
+target_norms=[0]
 for target_norm in target_norms:
     for idx,concept in enumerate(list(info_map.keys())):
         prior,category=info_map[concept]
@@ -93,7 +93,7 @@ for target_norm in target_norms:
         command+='--mask_tokens="[MASK]" \\\n'
         command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
         command+='--prompt_type="{}" \\\n'.format(category)
-        command+='--include_prior_concept=0 > {} 2>&1 &'.format(log_path)
+        command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
         
         os.system(command)
         print('STARTED')

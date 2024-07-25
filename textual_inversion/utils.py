@@ -10,6 +10,9 @@ from PIL import ImageFont,ImageDraw
 #     font = ImageFont.truetype(font_path, font_size)
 #     draw.text((x0, y0), text, font=font, fill="black")
 #     return image
+def float_to_str(f):
+    s = f"{f:.15f}"  # Start with a high precision
+    return s.rstrip('0').rstrip('.') if '.' in s else s
 def render_caption(image, text, coords, font_path='fonts/GoNotoCurrent.ttf'):
     # Load the font
     draw = ImageDraw.Draw(image)

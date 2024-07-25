@@ -707,10 +707,11 @@ def main():
                     # visualize input
                     input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
                     input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                    input_masked=input_image*input_mask
-                    input_masked=input_masked.astype(np.uint8)
-                    input_masked=Image.fromarray(input_masked)
-                    input_masked.save(os.path.join(viz_dir,'input_masked_s{:05d}.jpg'.format(global_step)))
+                    if args.masked_loss:
+                        input_image=input_image*input_mask
+                    input_image=input_image.astype(np.uint8)
+                    input_image=Image.fromarray(input_image)
+                    input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
                     if args.lambda_mlm:
                         # 1. MLM Result Logging
                         viz_idx=0
