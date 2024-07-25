@@ -920,13 +920,14 @@ class UNet2DConditionModelPPlus(ModelMixin, ConfigMixin, UNet2DConditionLoadersM
         # 3. down
         down_block_res_samples = (sample,)
         layer_count=0
+        bsz=len(sample) #14
+        # encoder_hidden_states_list:126,77,768
         for downsample_block in self.down_blocks:
             if hasattr(downsample_block, "has_cross_attention") and downsample_block.has_cross_attention:
-                print(encoder_hidden_states_list[layer_count:layer_count+1].shape,'encoder_hidden_states_list[layer_count].shape')
                 sample, res_samples = downsample_block(
                     hidden_states=sample,
                     temb=emb,
-                    encoder_hidden_states=encoder_hidden_states_list[layer_count:layer_count+1],
+                    encoder_hidden_states=encoder_hidden_states_list[:,layer_count,:,:],
                     attention_mask=attention_mask,
                     cross_attention_kwargs=cross_attention_kwargs,
                     encoder_attention_mask=encoder_attention_mask,
@@ -953,7 +954,7 @@ class UNet2DConditionModelPPlus(ModelMixin, ConfigMixin, UNet2DConditionLoadersM
             sample = self.mid_block(
                 sample,
                 emb,
-                encoder_hidden_states=encoder_hidden_states_list[layer_count:layer_count+1],
+                encoder_hidden_states=encoder_hidden_states_list[:,layer_count,:,:],
                 attention_mask=attention_mask,
                 cross_attention_kwargs=cross_attention_kwargs,
                 encoder_attention_mask=encoder_attention_mask,
@@ -981,7 +982,7 @@ class UNet2DConditionModelPPlus(ModelMixin, ConfigMixin, UNet2DConditionLoadersM
                     hidden_states=sample,
                     temb=emb,
                     res_hidden_states_tuple=res_samples,
-                    encoder_hidden_states=encoder_hidden_states_list[layer_count:layer_count+1],
+                    encoder_hidden_states=encoder_hidden_states_list[:,layer_count,:,:],
                     cross_attention_kwargs=cross_attention_kwargs,
                     upsample_size=upsample_size,
                     attention_mask=attention_mask,

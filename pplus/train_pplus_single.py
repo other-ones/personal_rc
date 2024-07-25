@@ -41,7 +41,7 @@ from diffusers import (
     DDPMScheduler,
     DiffusionPipeline,
     DPMSolverMultistepScheduler,
-    StableDiffusionPipeline,
+    StableDiffusionPipelinePPlus,
     UNet2DConditionModelPPlus,
 )
 from diffusers.optimization import get_scheduler
@@ -68,7 +68,7 @@ logger = get_logger(__name__)
 
 
 
-def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
+def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,placeholder_tokens):
     
     # create pipeline (note: unet and vae are loaded again in float32)
     
@@ -76,78 +76,87 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
     # run inference
     generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
     # dog
-    if args.include_prior_concept:
-        placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
-    else:
-        placeholder='{}'.format(args.placeholder_token1)
+    
 
     if args.prompt_type=='pet':
         validation_prompts=[
-            "a picture of {} swimming in a pool".format(placeholder),
-            "a picture of {} with the Great Wall of China in the background".format(placeholder),
-            "a picture of {} in times square".format(placeholder),
-            "{} on a boat in the sea".format(placeholder),
-            "{} in a purple wizard outfit".format(placeholder),
-            "{} playing with a ball".format(placeholder),
-            "{} wearing sunglasses".format(placeholder),
+            "a picture of {} swimming in a pool",
+            "a picture of {} with the Great Wall of China in the background",
+            "a picture of {} in times square",
+            "{} on a boat in the sea",
+            "{} in a purple wizard outfit",
+            "{} playing with a ball",
+            "{} wearing sunglasses",
             ]
     # vase
     
     elif args.prompt_type in ['nonliving']:
         validation_prompts = [
-            'a {0} in the jungle'.format(placeholder),
-            'a {0} in the snow'.format(placeholder),
-            'a {0} with a blue house in the background'.format(placeholder),
-            'a {0} with the Eiffel Tower in the background'.format(placeholder),
-            'a purple {0}'.format(placeholder),
-            'a wet {0}'.format(placeholder),
-            'a cube shaped {0}'.format(placeholder)
+            'a {0} in the jungle',
+            'a {0} in the snow',
+            'a {0} with a blue house in the background',
+            'a {0} with the Eiffel Tower in the background',
+            'a purple {0}',
+            'a wet {0}',
+            'a cube shaped {0}',
             ]
     elif args.prompt_type in ['building']:
         validation_prompts = [
-            '{} in snowy ice.'.format(placeholder),
-            '{} at a beach with a view of the seashore.'.format(placeholder),
-            'Photo of the {} with the sun rising in the sky.'.format(placeholder),
-            'cat sitting in front of {} in snowy ice.'.format(placeholder),
-            '{} digital painting 3d render geometric style.'.format(placeholder),
-            'painting of {} in the style of van gogh.'.format(placeholder),
-            'Top view of the {}. '.format(placeholder)
+            '{} in snowy ice.',
+            '{} at a beach with a view of the seashore.',
+            'Photo of the {} with the sun rising in the sky.',
+            'cat sitting in front of {} in snowy ice.',
+            '{} digital painting 3d render geometric style.',
+            'painting of {} in the style of van gogh.',
+            'Top view of the {}.',
             ]
     elif args.prompt_type in ['sunglasses']:
         validation_prompts=[
-            'photo of a {}'.format(placeholder),
-            'close shot of {} on the sandy beach with a view of the seashore'.format(placeholder),
-            'A scientist wearing {} examines a test tube'.format(placeholder),
-            'A dog wearing {} on the porch'.format(placeholder),
-            'A giraffe wearing {}'.format(placeholder),
-            '{} painted in the style of andy warhol'.format(placeholder),
-            'digital painting of a turtle wearing {}'.format(placeholder),
-            '{} digital 3d render'.format(placeholder),
+            'photo of a {}',
+            'close shot of {} on the sandy beach with a view of the seashore',
+            'A scientist wearing {} examines a test tube',
+            'A dog wearing {} on the porch',
+            'A giraffe wearing {}',
+            '{} painted in the style of andy warhol',
+            'digital painting of a turtle wearing {}',
+            '{} digital 3d render',
         ]
     else:
         assert False
     # print(validation_prompts[0],'validation_prompts')
     # print('Start Inference')
+    validation_prompts_list=[]
     is_keyword_tokens_list1=[]
     for prompt in validation_prompts:
-        is_keyword_tokens1=[False]
-        text_words=prompt.split()
-        for word_idx in range(len(text_words)):
-            cap_word=text_words[word_idx]
-            word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
-            num_tokens=len(word_token_ids)
-            for tok_id in word_token_ids:
-                if args.placeholder_token1 in cap_word:
-                    is_keyword_tokens1.append(True)
-                else:
-                    is_keyword_tokens1.append(False)
-        for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
-            is_keyword_tokens1.append(False)
-        assert len(is_keyword_tokens1)==tokenizer.model_max_length
-        is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
-        # print(is_keyword_tokens1.shape,'is_keyword_tokens1.shape')
-        is_keyword_tokens_list1.append(is_keyword_tokens1)
-    is_keyword_tokens_list1=torch.stack(is_keyword_tokens_list1)
+        for pidx in range(len(placeholder_tokens)):
+            if args.include_prior_concept:
+                placeholder='{} {}'.format(placeholder_tokens[pidx],args.prior_concept1)
+            else:
+                placeholder='{}'.format(placeholder_tokens[pidx])
+            val_prompt=prompt.format(placeholder)
+            validation_prompts_list.append(val_prompt)
+            is_keyword_tokens1=[False]
+            text_words=val_prompt.split()
+            for word_idx in range(len(text_words)):
+                cap_word=text_words[word_idx]
+                word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
+                num_tokens=len(word_token_ids)
+                for tok_id in word_token_ids:
+                    if placeholder_tokens[pidx] == cap_word:
+                        is_keyword_tokens1.append(True)
+                    else:
+                        is_keyword_tokens1.append(False)
+            for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
+                is_keyword_tokens1.append(False)
+            assert len(is_keyword_tokens1)==tokenizer.model_max_length
+            is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
+            assert torch.sum(is_keyword_tokens1)==1,'torch.sum(is_keyword_tokens1)==1'
+
+            is_keyword_tokens_list1.append(is_keyword_tokens1)
+    is_keyword_tokens_list1=torch.stack(is_keyword_tokens_list1)#63,77
+    # torch.Size([63, 77]) is_keyword_tokens_list1.shape
+    num_val=len(validation_prompts)
+    emb_dim=target_emb.shape[-1]
     logger.info(
         f"STEP {step} Running validation... \n Generating {len(validation_prompts)} images with prompt:"
         f" {validation_prompts}.",main_process_only=True
@@ -157,10 +166,12 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
     else:
         autocast_ctx = torch.autocast(accelerator.device.type)
     with autocast_ctx:
-        images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
-                          silent=args.silent,
-                          inj_embeddings1=target_emb,
-                          is_keyword_tokens1=is_keyword_tokens_list1).images
+        images = pipeline(validation_prompts_list, 
+                        num_inference_steps=25, generator=generator,
+                        silent=args.silent,
+                        inj_embeddings1=target_emb.repeat(num_val,1,1).reshape(-1,emb_dim),
+                        is_keyword_tokens1=is_keyword_tokens_list1,
+                        num_vectors1=args.num_vectors1).images
     print('Generated')
 
 
@@ -295,6 +306,7 @@ def main():
     # # # # # # # # # # 
     from contextnet import ContextNet
     # pretrained with one placeholder, one mask_embeds
+    cls_output_dim=len(token_embeds)-args.num_vectors1+1
     cls_net=ContextNet(768, len(token_embeds)-args.num_vectors1+1)
 
 
@@ -468,7 +480,7 @@ def main():
         text_encoder, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader
     )
     
-
+    assert args.cls_net_path is not None,'args.cls_net_path is not None'
     if args.cls_net_path is not None:
         for defined_key in cls_net.state_dict():
             print(defined_key,'defined_key-clsnet')
@@ -554,7 +566,7 @@ def main():
     )
     print(accepts_keep_fp32_wrapper,'accepts_keep_fp32_wrapper')
     print(extra_args,'extra_args')
-    pipeline = StableDiffusionPipeline(
+    pipeline = StableDiffusionPipelinePPlus(
             vae=accelerator.unwrap_model(vae, **extra_args),
             unet=accelerator.unwrap_model(unet, **extra_args),
             text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
@@ -580,8 +592,6 @@ def main():
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
                 is_keyword_tokens_list=batch["is_keyword_tokens_list"]# B,77 list of booleans (tensor)
-                print(is_keyword_tokens_list.shape,'is_keyword_tokens_list.shape')
-                print(input_ids_list.shape,'input_ids_list.shape')
                 # for MLM
                 batch_mlm=load_mlm_batch(mlm_loader)
                 is_keyword_tokens_mlm_list=batch_mlm["is_keyword_tokens_mlm_list"]
@@ -591,12 +601,6 @@ def main():
                 input_ids_masked_list=batch_mlm["input_ids_masked_list"].to(accelerator.device)
                 input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
                 
-                print(is_keyword_tokens_mlm_list.shape,'is_keyword_tokens_mlm_list.shape')
-                print(masked_idxs_list.shape,'masked_idxs_list.shape')
-                print(mlm_labels_list.shape,'mlm_labels_list.shape')
-                print(non_special_idxs_list.shape,'non_special_idxs_list.shape')
-                print(input_ids_masked_list.shape,'input_ids_masked_list.shape')
-                print(input_ids_non_mask_list.shape,'input_ids_non_mask_list.shape')
                 # 1. Load Batch
                 
                 # 2. Reconstruction Loss
@@ -616,11 +620,14 @@ def main():
                 bsz,num_vectors,num_tokens=input_ids_list.shape
                 input_ids_list=input_ids_list.reshape(-1,num_tokens)#n,9,77 -> 9n,77
                 is_keyword_tokens_list=is_keyword_tokens_list.reshape(-1,num_tokens)#n,9,77 -> 9n,77
+                # print(target_emb.shape,'target_emb.shape train') #9,768
+                emb_dim=target_emb.shape[-1]
                 encoder_hidden_states = text_encoder(input_ids_list,
                                                      is_keyword_tokens1=is_keyword_tokens_list,
-                                                     inj_embeddings1=target_emb
+                                                     inj_embeddings1=target_emb.repeat(bsz,1,1).reshape(-1,emb_dim), #9,768 ->9,n,768->9n,768
                                                      )[0].to(dtype=weight_dtype)
                 # Predict the noise residual
+                encoder_hidden_states=encoder_hidden_states.reshape(bsz,num_vectors,num_tokens,-1)
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 # Get the target for loss depending on the prediction type
                 if noise_scheduler.config.prediction_type == "epsilon":
@@ -638,21 +645,27 @@ def main():
                 # 3. MLM Loss
                 loss_mlm=None
                 if args.lambda_mlm:
-                    print(input_ids_masked_list.shape,'input_ids_masked_list.shape')
-                    print(masked_idxs_list.shape,'masked_idxs_list.shape')
-                    print(is_keyword_tokens_mlm_list.shape,'is_keyword_tokens_mlm_list.shape')
-                    print(target_emb.shape,'target_emb.shape')
-                    exit()
-                    clip_text_embedding_masked = text_encoder(input_ids_masked_list,
+                    # torch.Size([50, 9, 77]) input_ids_masked_list.shape
+                    # torch.Size([50, 9, 77]) masked_idxs_list.shape
+                    # torch.Size([50, 9, 77]) is_keyword_tokens_mlm_list.shape
+                    # torch.Size([9, 768]) target_emb.shape
+                    mlm_bsz=len(masked_idxs_list)
+                    emb_dim=target_emb.shape[-1]
+                    # input_ids_masked_list=input_ids_masked_list.reshape(-1,num_tokens)
+                    # masked_idxs_list=masked_idxs_list.reshape(-1,num_tokens)
+                    is_keyword_tokens_mlm_list=is_keyword_tokens_mlm_list.reshape(-1,num_tokens)
+                    clip_text_embedding_masked = text_encoder(input_ids_masked_list.reshape(-1,num_tokens),
                                                             mask_embedding=mask_embeds.unsqueeze(0),
-                                                            mask_idxs=masked_idxs_list,
-                                                            is_keyword_tokens1=is_keyword_tokens_mlm_list,
-                                                            inj_embeddings1=target_emb,
+                                                            mask_idxs=masked_idxs_list.reshape(-1,num_tokens),
+                                                            is_keyword_tokens1=is_keyword_tokens_mlm_list.reshape(-1,num_tokens),
+                                                            inj_embeddings1=target_emb.repeat(mlm_bsz,1,1).reshape(-1,emb_dim), #9,768 ->9,n,768->9n,768
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
+                    # clip_text_embedding_masked:9*mlm_bsz,77,768
+                    # mlm_labels_list:9*mlm_bsz,77,768
                     mlm_logits_list=cls_net(clip_text_embedding_masked)
                     masked_idxs_flat_list=masked_idxs_list.view(-1)
                     loss_mlm = F.cross_entropy(
-                        mlm_logits_list.view(-1,len(orig_embeds_params)),
+                        mlm_logits_list.view(-1,cls_output_dim),
                         mlm_labels_list.view(-1),
                         ignore_index=-100,
                         reduction='none'
@@ -718,19 +731,23 @@ def main():
                     input_masked.save(os.path.join(viz_dir,'input_masked_s{:05d}.jpg'.format(global_step)))
                     if args.lambda_mlm:
                         # 1. MLM Result Logging
-                        viz_idx=0
-                        mlm_bsz=len(masked_idxs_list)
-                        masked_idxs=masked_idxs_list.chunk(mlm_bsz)[0]
-                        non_special_idxs=non_special_idxs_list.chunk(mlm_bsz)[0]
-                        mlm_logits=mlm_logits_list.chunk(mlm_bsz)[0]
-                        input_ids_non_mask=input_ids_non_mask_list.chunk(mlm_bsz)[0]
-                        input_ids_masked=input_ids_masked_list.chunk(mlm_bsz)[0]
+                        viz_batch_idx=0
+                        viz_vec_idx=0
+                        mlm_logits_list=mlm_logits_list.reshape(mlm_bsz,num_vectors,num_tokens,cls_output_dim)
 
-                        masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
-                        non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
-                        mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
-                        input_ids_non_mask=input_ids_non_mask[viz_idx:viz_idx+1]
-                        input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
+
+                        masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,0] #50*9,77
+                        non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,0]
+                        mlm_logits=mlm_logits_list[viz_batch_idx:viz_batch_idx+1,0]
+                        input_ids_non_mask=input_ids_non_mask_list[viz_batch_idx:viz_batch_idx+1,0]
+                        input_ids_masked=input_ids_masked_list[viz_batch_idx:viz_batch_idx+1,0]
+
+                        # masked_idxs=masked_idxs.detach().cpu().numpy()[viz_batch_idx:viz_batch_idx+1]
+                        # non_special_idxs=non_special_idxs.detach().cpu()[viz_batch_idx:viz_batch_idx+1]
+                        mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()#1,77
+
+                        # input_ids_non_mask=input_ids_non_mask[viz_batch_idx:viz_batch_idx+1]
+                        # input_ids_masked=input_ids_masked[viz_batch_idx:viz_batch_idx+1]
 
                         input_ids_non_mask=input_ids_non_mask[non_special_idxs]
                         input_ids_masked=input_ids_masked[non_special_idxs]
@@ -782,9 +799,10 @@ def main():
                                 tokenizer=tokenizer, 
                                 args=args, 
                                 accelerator=accelerator, 
-                                target_emb=target_emb,
+                                target_emb=target_emb, #9,768 ->9,n,768->9n,768,
                                 pipeline=pipeline,
-                                step=global_step
+                                step=global_step,
+                                placeholder_tokens=placeholder_tokens,
                             )
 
                         # save images
@@ -828,7 +846,8 @@ def main():
                     norm_target=torch.norm(target_emb,p=1,dim=-1)
                 if loss_mlm is not None:
                     logs['loss_mlm']=loss_mlm.detach().item()#*args.lambda3
-                logs['norm_target']=norm_target.item()
+                for vidx in range(args.num_vectors1):
+                    logs['norm_target{}']=norm_target[vidx].item()
                 if args.report_to=='wandb' and accelerator.is_main_process:
                     wandb.log(logs)
                 if args.silent:

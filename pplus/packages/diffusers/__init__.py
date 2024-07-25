@@ -173,6 +173,7 @@ else:
         StableDiffusionPanoramaPipeline,
         StableDiffusionParadigmsPipeline,
         StableDiffusionPipeline,
+        StableDiffusionPipelinePPlus,
         StableDiffusionPipelineClsAug,
         StableDiffusionPipelineConcept,
         StableDiffusionPipelineRef,

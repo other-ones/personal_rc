@@ -20,7 +20,7 @@ accelerate launch --main_process_port 4234  train_pplus_single.py \
   --cls_net_path='saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt' \
   --mask_embed_path='saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt' \
   --mlm_target='masked' \
-  --mlm_batch_size=50 \
+  --mlm_batch_size=10 \
   --run_name='tmp_pplus' \
   --scale_lr \
   --prompt_type='pet' \

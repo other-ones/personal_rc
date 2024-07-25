@@ -349,11 +349,12 @@ class TextualInversionDataset(Dataset):
         mlm_labels_list=torch.stack(mlm_labels_list)
         masked_idxs_list=torch.stack(masked_idxs_list)
         non_special_idxs_list=torch.stack(non_special_idxs_list)
+        input_ids_non_mask_list=torch.stack(input_ids_non_mask_list)
         example['input_ids_masked_list']=input_ids_masked_list
         example['is_keyword_tokens_mlm_list']=is_keyword_tokens_mlm_list
         example['mlm_labels_list']=mlm_labels_list
         example['masked_idxs_list']=masked_idxs_list
         example['non_special_idxs_list']=non_special_idxs_list
-        example['input_ids_non_mask_list']=masked_idxs_list
+        example['input_ids_non_mask_list']=input_ids_non_mask_list
         return example
 

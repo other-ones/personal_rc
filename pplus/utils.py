@@ -10,7 +10,7 @@ from PIL import ImageFont,ImageDraw
 #     font = ImageFont.truetype(font_path, font_size)
 #     draw.text((x0, y0), text, font=font, fill="black")
 #     return image
-def render_caption(image, text, coords, font_path='fonts/GoNotoCurrent.ttf'):
+def render_caption(image, text, coords, font_path='../fonts/GoNotoCurrent.ttf'):
     # Load the font
     draw = ImageDraw.Draw(image)
     font_size = 30  # Starting with the given font size
