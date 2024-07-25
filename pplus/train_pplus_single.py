@@ -126,6 +126,7 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,placeh
     # print(validation_prompts[0],'validation_prompts')
     # print('Start Inference')
     validation_prompts_list=[]
+    viz_promps_list=[]
     is_keyword_tokens_list1=[]
     for prompt in validation_prompts:
         for pidx in range(len(placeholder_tokens)):
@@ -177,7 +178,7 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,placeh
 
     del pipeline
     torch.cuda.empty_cache()
-    return images,validation_prompts
+    return images,validation_prompts_list[::args.num_vectors1]
 
 
 
