@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, './packages')
 #!/usr/bin/env python
 # coding=utf-8
 # Copyright 2024 Custom Diffusion authors and the HuggingFace Inc. team. All rights reserved.
