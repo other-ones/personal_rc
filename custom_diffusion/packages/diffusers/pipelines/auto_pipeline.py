@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2023 The HuggingFace Inc. team.
+# Copyright 2024 The HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import inspect
 from collections import OrderedDict
 
+from huggingface_hub.utils import validate_hf_hub_args
+
 from ..configuration_utils import ConfigMixin
-from ..utils import DIFFUSERS_CACHE
 from .controlnet import (
     StableDiffusionControlNetImg2ImgPipeline,
     StableDiffusionControlNetInpaintPipeline,
     StableDiffusionControlNetPipeline,
     StableDiffusionXLControlNetImg2ImgPipeline,
+    StableDiffusionXLControlNetInpaintPipeline,
     StableDiffusionXLControlNetPipeline,
 )
 from .deepfloyd_if import IFImg2ImgPipeline, IFInpaintingPipeline, IFPipeline
+from .hunyuandit import HunyuanDiTPipeline
 from .kandinsky import (
     KandinskyCombinedPipeline,
     KandinskyImg2ImgCombinedPipeline,
@@ -42,12 +44,18 @@ from .kandinsky2_2 import (
     KandinskyV22InpaintPipeline,
     KandinskyV22Pipeline,
 )
+from .kandinsky3 import Kandinsky3Img2ImgPipeline, Kandinsky3Pipeline
 from .latent_consistency_models import LatentConsistencyModelImg2ImgPipeline, LatentConsistencyModelPipeline
-from .pixart_alpha import PixArtAlphaPipeline
+from .pixart_alpha import PixArtAlphaPipeline, PixArtSigmaPipeline
+from .stable_cascade import StableCascadeCombinedPipeline, StableCascadeDecoderPipeline
 from .stable_diffusion import (
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
     StableDiffusionPipeline,
+)
+from .stable_diffusion_3 import (
+    StableDiffusion3Img2ImgPipeline,
+    StableDiffusion3Pipeline,
 )
 from .stable_diffusion_xl import (
     StableDiffusionXLImg2ImgPipeline,
@@ -61,14 +69,19 @@ AUTO_TEXT2IMAGE_PIPELINES_MAPPING = OrderedDict(
     [
         ("stable-diffusion", StableDiffusionPipeline),
         ("stable-diffusion-xl", StableDiffusionXLPipeline),
+        ("stable-diffusion-3", StableDiffusion3Pipeline),
         ("if", IFPipeline),
+        ("hunyuan", HunyuanDiTPipeline),
         ("kandinsky", KandinskyCombinedPipeline),
         ("kandinsky22", KandinskyV22CombinedPipeline),
+        ("kandinsky3", Kandinsky3Pipeline),
         ("stable-diffusion-controlnet", StableDiffusionControlNetPipeline),
         ("stable-diffusion-xl-controlnet", StableDiffusionXLControlNetPipeline),
         ("wuerstchen", WuerstchenCombinedPipeline),
+        ("cascade", StableCascadeCombinedPipeline),
         ("lcm", LatentConsistencyModelPipeline),
-        ("pixart", PixArtAlphaPipeline),
+        ("pixart-alpha", PixArtAlphaPipeline),
+        ("pixart-sigma", PixArtSigmaPipeline),
     ]
 )
 
@@ -76,9 +89,11 @@ AUTO_IMAGE2IMAGE_PIPELINES_MAPPING = OrderedDict(
     [
         ("stable-diffusion", StableDiffusionImg2ImgPipeline),
         ("stable-diffusion-xl", StableDiffusionXLImg2ImgPipeline),
+        ("stable-diffusion-3", StableDiffusion3Img2ImgPipeline),
         ("if", IFImg2ImgPipeline),
         ("kandinsky", KandinskyImg2ImgCombinedPipeline),
         ("kandinsky22", KandinskyV22Img2ImgCombinedPipeline),
+        ("kandinsky3", Kandinsky3Img2ImgPipeline),
         ("stable-diffusion-controlnet", StableDiffusionControlNetImg2ImgPipeline),
         ("stable-diffusion-xl-controlnet", StableDiffusionXLControlNetImg2ImgPipeline),
         ("lcm", LatentConsistencyModelImg2ImgPipeline),
@@ -93,6 +108,7 @@ AUTO_INPAINT_PIPELINES_MAPPING = OrderedDict(
         ("kandinsky", KandinskyInpaintCombinedPipeline),
         ("kandinsky22", KandinskyV22InpaintCombinedPipeline),
         ("stable-diffusion-controlnet", StableDiffusionControlNetInpaintPipeline),
+        ("stable-diffusion-xl-controlnet", StableDiffusionXLControlNetInpaintPipeline),
     ]
 )
 
@@ -101,6 +117,7 @@ _AUTO_TEXT2IMAGE_DECODER_PIPELINES_MAPPING = OrderedDict(
         ("kandinsky", KandinskyPipeline),
         ("kandinsky22", KandinskyV22Pipeline),
         ("wuerstchen", WuerstchenDecoderPipeline),
+        ("cascade", StableCascadeDecoderPipeline),
     ]
 )
 _AUTO_IMAGE2IMAGE_DECODER_PIPELINES_MAPPING = OrderedDict(
@@ -158,14 +175,6 @@ def _get_task_class(mapping, pipeline_class_name, throw_error_if_not_exist: bool
         raise ValueError(f"AutoPipeline can't find a pipeline linked to {pipeline_class_name} for {model_name}")
 
 
-def _get_signature_keys(obj):
-    parameters = inspect.signature(obj.__init__).parameters
-    required_parameters = {k: v for k, v in parameters.items() if v.default == inspect._empty}
-    optional_parameters = set({k for k, v in parameters.items() if v.default != inspect._empty})
-    expected_modules = set(required_parameters.keys()) - {"self"}
-    return expected_modules, optional_parameters
-
-
 class AutoPipelineForText2Image(ConfigMixin):
     r"""
 
@@ -181,6 +190,7 @@ class AutoPipelineForText2Image(ConfigMixin):
           diffusion pipeline's components.
 
     """
+
     config_name = "model_index.json"
 
     def __init__(self, *args, **kwargs):
@@ -191,6 +201,7 @@ class AutoPipelineForText2Image(ConfigMixin):
         )
 
     @classmethod
+    @validate_hf_hub_args
     def from_pretrained(cls, pretrained_model_or_path, **kwargs):
         r"""
         Instantiates a text-to-image Pytorch diffusion pipeline from pretrained pipeline weight.
@@ -214,7 +225,7 @@ class AutoPipelineForText2Image(ConfigMixin):
         ```
 
         Parameters:
-            pretrained_model_name_or_path (`str` or `os.PathLike`, *optional*):
+            pretrained_model_or_path (`str` or `os.PathLike`, *optional*):
                 Can be either:
 
                     - A string, the *repo id* (for example `CompVis/ldm-text2im-large-256`) of a pretrained pipeline
@@ -231,9 +242,9 @@ class AutoPipelineForText2Image(ConfigMixin):
             cache_dir (`Union[str, os.PathLike]`, *optional*):
                 Path to a directory where a downloaded pretrained model configuration is cached if the standard cache
                 is not used.
-            resume_download (`bool`, *optional*, defaults to `False`):
-                Whether or not to resume downloading the model weights and configuration files. If set to `False`, any
-                incompletely downloaded files are deleted.
+            resume_download:
+                Deprecated and ignored. All downloads are now resumed by default when possible. Will be removed in v1
+                of Diffusers.
             proxies (`Dict[str, str]`, *optional*):
                 A dictionary of proxy servers to use by protocol or endpoint, for example, `{'http': 'foo.bar:3128',
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
@@ -242,7 +253,7 @@ class AutoPipelineForText2Image(ConfigMixin):
             local_files_only (`bool`, *optional*, defaults to `False`):
                 Whether to only load local model weights and configuration files or not. If set to `True`, the model
                 won't be downloaded from the Hub.
-            use_auth_token (`str` or *bool*, *optional*):
+            token (`str` or *bool*, *optional*):
                 The token to use as HTTP bearer authorization for remote files. If `True`, the token generated from
                 `diffusers-cli login` (stored in `~/.huggingface`) is used.
             revision (`str`, *optional*, defaults to `"main"`):
@@ -306,11 +317,11 @@ class AutoPipelineForText2Image(ConfigMixin):
         >>> image = pipeline(prompt).images[0]
         ```
         """
-        cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
+        cache_dir = kwargs.pop("cache_dir", None)
         force_download = kwargs.pop("force_download", False)
-        resume_download = kwargs.pop("resume_download", False)
+        resume_download = kwargs.pop("resume_download", None)
         proxies = kwargs.pop("proxies", None)
-        use_auth_token = kwargs.pop("use_auth_token", None)
+        token = kwargs.pop("token", None)
         local_files_only = kwargs.pop("local_files_only", False)
         revision = kwargs.pop("revision", None)
 
@@ -319,7 +330,7 @@ class AutoPipelineForText2Image(ConfigMixin):
             "force_download": force_download,
             "resume_download": resume_download,
             "proxies": proxies,
-            "use_auth_token": use_auth_token,
+            "token": token,
             "local_files_only": local_files_only,
             "revision": revision,
         }
@@ -344,7 +355,7 @@ class AutoPipelineForText2Image(ConfigMixin):
         pipeline linked to the pipeline class using pattern matching on pipeline class name.
 
         All the modules the pipeline contains will be used to initialize the new pipeline without reallocating
-        additional memoery.
+        additional memory.
 
         The pipeline is set in evaluation mode (`model.eval()`) by default.
 
@@ -383,7 +394,7 @@ class AutoPipelineForText2Image(ConfigMixin):
                 )
 
         # define expected module and optional kwargs given the pipeline signature
-        expected_modules, optional_kwargs = _get_signature_keys(text_2_image_cls)
+        expected_modules, optional_kwargs = text_2_image_cls._get_signature_keys(text_2_image_cls)
 
         pretrained_model_name_or_path = original_config.pop("_name_or_path", None)
 
@@ -451,6 +462,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
           diffusion pipeline's components.
 
     """
+
     config_name = "model_index.json"
 
     def __init__(self, *args, **kwargs):
@@ -461,6 +473,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
         )
 
     @classmethod
+    @validate_hf_hub_args
     def from_pretrained(cls, pretrained_model_or_path, **kwargs):
         r"""
         Instantiates a image-to-image Pytorch diffusion pipeline from pretrained pipeline weight.
@@ -485,7 +498,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
         ```
 
         Parameters:
-            pretrained_model_name_or_path (`str` or `os.PathLike`, *optional*):
+            pretrained_model_or_path (`str` or `os.PathLike`, *optional*):
                 Can be either:
 
                     - A string, the *repo id* (for example `CompVis/ldm-text2im-large-256`) of a pretrained pipeline
@@ -502,9 +515,9 @@ class AutoPipelineForImage2Image(ConfigMixin):
             cache_dir (`Union[str, os.PathLike]`, *optional*):
                 Path to a directory where a downloaded pretrained model configuration is cached if the standard cache
                 is not used.
-            resume_download (`bool`, *optional*, defaults to `False`):
-                Whether or not to resume downloading the model weights and configuration files. If set to `False`, any
-                incompletely downloaded files are deleted.
+            resume_download:
+                Deprecated and ignored. All downloads are now resumed by default when possible. Will be removed in v1
+                of Diffusers.
             proxies (`Dict[str, str]`, *optional*):
                 A dictionary of proxy servers to use by protocol or endpoint, for example, `{'http': 'foo.bar:3128',
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
@@ -513,7 +526,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
             local_files_only (`bool`, *optional*, defaults to `False`):
                 Whether to only load local model weights and configuration files or not. If set to `True`, the model
                 won't be downloaded from the Hub.
-            use_auth_token (`str` or *bool*, *optional*):
+            token (`str` or *bool*, *optional*):
                 The token to use as HTTP bearer authorization for remote files. If `True`, the token generated from
                 `diffusers-cli login` (stored in `~/.huggingface`) is used.
             revision (`str`, *optional*, defaults to `"main"`):
@@ -577,11 +590,11 @@ class AutoPipelineForImage2Image(ConfigMixin):
         >>> image = pipeline(prompt, image).images[0]
         ```
         """
-        cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
+        cache_dir = kwargs.pop("cache_dir", None)
         force_download = kwargs.pop("force_download", False)
-        resume_download = kwargs.pop("resume_download", False)
+        resume_download = kwargs.pop("resume_download", None)
         proxies = kwargs.pop("proxies", None)
-        use_auth_token = kwargs.pop("use_auth_token", None)
+        token = kwargs.pop("token", None)
         local_files_only = kwargs.pop("local_files_only", False)
         revision = kwargs.pop("revision", None)
 
@@ -590,7 +603,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
             "force_download": force_download,
             "resume_download": resume_download,
             "proxies": proxies,
-            "use_auth_token": use_auth_token,
+            "token": token,
             "local_files_only": local_files_only,
             "revision": revision,
         }
@@ -615,7 +628,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
         image-to-image pipeline linked to the pipeline class using pattern matching on pipeline class name.
 
         All the modules the pipeline contains will be used to initialize the new pipeline without reallocating
-        additional memoery.
+        additional memory.
 
         The pipeline is set in evaluation mode (`model.eval()`) by default.
 
@@ -658,7 +671,7 @@ class AutoPipelineForImage2Image(ConfigMixin):
                 )
 
         # define expected module and optional kwargs given the pipeline signature
-        expected_modules, optional_kwargs = _get_signature_keys(image_2_image_cls)
+        expected_modules, optional_kwargs = image_2_image_cls._get_signature_keys(image_2_image_cls)
 
         pretrained_model_name_or_path = original_config.pop("_name_or_path", None)
 
@@ -726,6 +739,7 @@ class AutoPipelineForInpainting(ConfigMixin):
           diffusion pipeline's components.
 
     """
+
     config_name = "model_index.json"
 
     def __init__(self, *args, **kwargs):
@@ -736,6 +750,7 @@ class AutoPipelineForInpainting(ConfigMixin):
         )
 
     @classmethod
+    @validate_hf_hub_args
     def from_pretrained(cls, pretrained_model_or_path, **kwargs):
         r"""
         Instantiates a inpainting Pytorch diffusion pipeline from pretrained pipeline weight.
@@ -759,7 +774,7 @@ class AutoPipelineForInpainting(ConfigMixin):
         ```
 
         Parameters:
-            pretrained_model_name_or_path (`str` or `os.PathLike`, *optional*):
+            pretrained_model_or_path (`str` or `os.PathLike`, *optional*):
                 Can be either:
 
                     - A string, the *repo id* (for example `CompVis/ldm-text2im-large-256`) of a pretrained pipeline
@@ -776,9 +791,9 @@ class AutoPipelineForInpainting(ConfigMixin):
             cache_dir (`Union[str, os.PathLike]`, *optional*):
                 Path to a directory where a downloaded pretrained model configuration is cached if the standard cache
                 is not used.
-            resume_download (`bool`, *optional*, defaults to `False`):
-                Whether or not to resume downloading the model weights and configuration files. If set to `False`, any
-                incompletely downloaded files are deleted.
+            resume_download:
+                Deprecated and ignored. All downloads are now resumed by default when possible. Will be removed in v1
+                of Diffusers.
             proxies (`Dict[str, str]`, *optional*):
                 A dictionary of proxy servers to use by protocol or endpoint, for example, `{'http': 'foo.bar:3128',
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
@@ -787,7 +802,7 @@ class AutoPipelineForInpainting(ConfigMixin):
             local_files_only (`bool`, *optional*, defaults to `False`):
                 Whether to only load local model weights and configuration files or not. If set to `True`, the model
                 won't be downloaded from the Hub.
-            use_auth_token (`str` or *bool*, *optional*):
+            token (`str` or *bool*, *optional*):
                 The token to use as HTTP bearer authorization for remote files. If `True`, the token generated from
                 `diffusers-cli login` (stored in `~/.huggingface`) is used.
             revision (`str`, *optional*, defaults to `"main"`):
@@ -851,11 +866,11 @@ class AutoPipelineForInpainting(ConfigMixin):
         >>> image = pipeline(prompt, image=init_image, mask_image=mask_image).images[0]
         ```
         """
-        cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
+        cache_dir = kwargs.pop("cache_dir", None)
         force_download = kwargs.pop("force_download", False)
-        resume_download = kwargs.pop("resume_download", False)
+        resume_download = kwargs.pop("resume_download", None)
         proxies = kwargs.pop("proxies", None)
-        use_auth_token = kwargs.pop("use_auth_token", None)
+        token = kwargs.pop("token", None)
         local_files_only = kwargs.pop("local_files_only", False)
         revision = kwargs.pop("revision", None)
 
@@ -864,7 +879,7 @@ class AutoPipelineForInpainting(ConfigMixin):
             "force_download": force_download,
             "resume_download": resume_download,
             "proxies": proxies,
-            "use_auth_token": use_auth_token,
+            "token": token,
             "local_files_only": local_files_only,
             "revision": revision,
         }
@@ -889,7 +904,7 @@ class AutoPipelineForInpainting(ConfigMixin):
         pipeline linked to the pipeline class using pattern matching on pipeline class name.
 
         All the modules the pipeline class contain will be used to initialize the new pipeline without reallocating
-        additional memoery.
+        additional memory.
 
         The pipeline is set in evaluation mode (`model.eval()`) by default.
 
@@ -931,7 +946,7 @@ class AutoPipelineForInpainting(ConfigMixin):
                 )
 
         # define expected module and optional kwargs given the pipeline signature
-        expected_modules, optional_kwargs = _get_signature_keys(inpainting_cls)
+        expected_modules, optional_kwargs = inpainting_cls._get_signature_keys(inpainting_cls)
 
         pretrained_model_name_or_path = original_config.pop("_name_or_path", None)
 
