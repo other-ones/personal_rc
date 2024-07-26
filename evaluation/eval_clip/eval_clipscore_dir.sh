@@ -11,5 +11,5 @@ python eval_clipscore_dir.py  \
 
 export CUDA_VISIBLE_DEVICES=1;
 python eval_clipscore_dir.py  \
---dir_path='../../pplus/results/pplus_results/single' 
+--dir_path='../../textual_inversion/results/ti_results/single_prior/calibrate' 
 
