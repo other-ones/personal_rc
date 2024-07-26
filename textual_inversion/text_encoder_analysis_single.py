@@ -544,23 +544,36 @@ def main():
                                     attn_mod_params=attn_mod_params
                                     )
                 attention_per_layers=out.attentions #[12,12,400,77,77]
+                k1_p1_attn_list=[]
+                p1_k1_attn_list=[]
+                print(len(attention_per_layers),'len(attention_per_layers)')
                 for layer_idx in range(len(attention_per_layers)):
-                    layer_attentions=attention_per_layers[layer_idx]
-                    layer_attentions=torch.mean(layer_attentions,dim=1) # 400,77,77
+                    layer_attentions=attention_per_layers[layer_idx] # 400,12,77,77
+                    layer_attentions=torch.mean(layer_attentions,dim=1) # 400,12,77,77 -> 400,77,77
                     key1_attentions=layer_attentions[is_keyword_tokens1] # 400,77
                     prior1_attentions=layer_attentions[is_prior1] # 400,77
                     key1_prior1_attentions=key1_attentions[is_prior1] # 400
                     prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
-                    print(key1_prior1_attentions.shape,'key1_prior1_attentions.shape')
-                    print(prior1_key1_attentions.shape,'prior1_key1_attentions.shape')
-
-                # xpoints=np.arange(13)
-                # for key_sims,nonkey_sims in zip(keywords_similarities,nonkey_similarities):
-                #     plt.plot(xpoints,key_sims, 'b',linewidth=0.1)
-                #     plt.plot(xpoints,nonkey_sims, 'r',linewidth=0.1)
-                #     print(key_sims[-1],nonkey_sims[-1])
-                #     count+=1
-                # plt.savefig('simcurve.jpg',dpi=500)
+                    # print(key1_attentions.sum(dim=-1),'key1_attentions.sum')
+                    # print(prior1_attentions.sum(dim=-1),'prior1_attentions.sum')
+                    # print(key1_prior1_attentions.shape,'key1_prior1_attentions.shape')
+                    # print(prior1_key1_attentions.shape,'prior1_key1_attentions.shape')
+                    k1_p1_attn_list.append(key1_prior1_attentions)
+                    p1_k1_attn_list.append(prior1_key1_attentions)
+                    
+                k1_p1_attn_list=torch.stack(k1_p1_attn_list)#13,400
+                k1_p1_attn_list=k1_p1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
+                p1_k1_attn_list=torch.stack(p1_k1_attn_list)#13,400
+                p1_k1_attn_list=p1_k1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
+                xpoints=np.arange(12)
+                print(k1_p1_attn_list.shape,'k1_p1_attn_list.shape')
+                print(p1_k1_attn_list.shape,'p1_k1_attn_list.shape')
+                for k1_p1_attns,p1_k1_attns in zip(k1_p1_attn_list,p1_k1_attn_list):
+                    plt.plot(xpoints,k1_p1_attns, 'b',linewidth=0.2)
+                    plt.plot(xpoints,p1_k1_attns, 'r',linewidth=0.2)
+                    # print(k1_p1_attns[-1],p1_k1_attns[-1])
+                    count+=1
+                plt.savefig('attn_curve_kpos{}_ppos{}.jpg'.format(args.calibrate_kpos1,args.calibrate_ppos1),dpi=500)
                 break
             break
     # Create the pipeline using the trained modules and save it.

@@ -1,0 +1,1 @@
+python retrieve.py --class_prompt cat --class_data_dir real_reg/samples_cat --num_class_images 200

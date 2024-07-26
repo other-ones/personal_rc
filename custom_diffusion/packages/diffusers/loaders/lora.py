@@ -30,6 +30,7 @@ from ..utils import (
     _get_model_file,
     convert_state_dict_to_diffusers,
     convert_state_dict_to_peft,
+    convert_unet_state_dict_to_peft,
     delete_adapter_layers,
     get_adapter_name,
     get_peft_kwargs,
@@ -42,7 +43,7 @@ from ..utils import (
     set_adapter_layers,
     set_weights_and_activate_adapters,
 )
-from .lora_conversion_utils import _convert_kohya_lora_to_diffusers, _maybe_map_sgm_blocks_to_diffusers
+from .lora_conversion_utils import _convert_non_diffusers_lora_to_diffusers, _maybe_map_sgm_blocks_to_diffusers
 
 
 if is_transformers_available():
@@ -169,9 +170,7 @@ class LoraLoaderMixin:
             force_download (`bool`, *optional*, defaults to `False`):
                 Whether or not to force the (re-)download of the model weights and configuration files, overriding the
                 cached versions if they exist.
-            resume_download:
-                Deprecated and ignored. All downloads are now resumed by default when possible. Will be removed in v1
-                of Diffusers.
+
             proxies (`Dict[str, str]`, *optional*):
                 A dictionary of proxy servers to use by protocol or endpoint, for example, `{'http': 'foo.bar:3128',
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
@@ -193,7 +192,6 @@ class LoraLoaderMixin:
         # UNet and text encoder or both.
         cache_dir = kwargs.pop("cache_dir", None)
         force_download = kwargs.pop("force_download", False)
-        resume_download = kwargs.pop("resume_download", None)
         proxies = kwargs.pop("proxies", None)
         local_files_only = kwargs.pop("local_files_only", None)
         token = kwargs.pop("token", None)
@@ -234,7 +232,6 @@ class LoraLoaderMixin:
                         weights_name=weight_name or LORA_WEIGHT_NAME_SAFE,
                         cache_dir=cache_dir,
                         force_download=force_download,
-                        resume_download=resume_download,
                         proxies=proxies,
                         local_files_only=local_files_only,
                         token=token,
@@ -260,7 +257,6 @@ class LoraLoaderMixin:
                     weights_name=weight_name or LORA_WEIGHT_NAME,
                     cache_dir=cache_dir,
                     force_download=force_download,
-                    resume_download=resume_download,
                     proxies=proxies,
                     local_files_only=local_files_only,
                     token=token,
@@ -287,7 +283,7 @@ class LoraLoaderMixin:
             if unet_config is not None:
                 # use unet config to remap block numbers
                 state_dict = _maybe_map_sgm_blocks_to_diffusers(state_dict, unet_config)
-            state_dict, network_alphas = _convert_kohya_lora_to_diffusers(state_dict)
+            state_dict, network_alphas = _convert_non_diffusers_lora_to_diffusers(state_dict)
 
         return state_dict, network_alphas
 
@@ -395,8 +391,7 @@ class LoraLoaderMixin:
         # their prefixes.
         keys = list(state_dict.keys())
         only_text_encoder = all(key.startswith(cls.text_encoder_name) for key in keys)
-
-        if any(key.startswith(cls.unet_name) for key in keys) and not only_text_encoder:
+        if not only_text_encoder:
             # Load the layers corresponding to UNet.
             logger.info(f"Loading {cls.unet_name}.")
             unet.load_attn_procs(
@@ -462,17 +457,18 @@ class LoraLoaderMixin:
                 text_encoder_lora_state_dict = convert_state_dict_to_peft(text_encoder_lora_state_dict)
 
                 for name, _ in text_encoder_attn_modules(text_encoder):
-                    rank_key = f"{name}.out_proj.lora_B.weight"
-                    rank[rank_key] = text_encoder_lora_state_dict[rank_key].shape[1]
+                    for module in ("out_proj", "q_proj", "k_proj", "v_proj"):
+                        rank_key = f"{name}.{module}.lora_B.weight"
+                        if rank_key not in text_encoder_lora_state_dict:
+                            continue
+                        rank[rank_key] = text_encoder_lora_state_dict[rank_key].shape[1]
 
-                patch_mlp = any(".mlp." in key for key in text_encoder_lora_state_dict.keys())
-                if patch_mlp:
-                    for name, _ in text_encoder_mlp_modules(text_encoder):
-                        rank_key_fc1 = f"{name}.fc1.lora_B.weight"
-                        rank_key_fc2 = f"{name}.fc2.lora_B.weight"
-
-                        rank[rank_key_fc1] = text_encoder_lora_state_dict[rank_key_fc1].shape[1]
-                        rank[rank_key_fc2] = text_encoder_lora_state_dict[rank_key_fc2].shape[1]
+                for name, _ in text_encoder_mlp_modules(text_encoder):
+                    for module in ("fc1", "fc2"):
+                        rank_key = f"{name}.{module}.lora_B.weight"
+                        if rank_key not in text_encoder_lora_state_dict:
+                            continue
+                        rank[rank_key] = text_encoder_lora_state_dict[rank_key].shape[1]
 
                 if network_alphas is not None:
                     alpha_keys = [
@@ -1426,9 +1422,7 @@ class SD3LoraLoaderMixin:
             force_download (`bool`, *optional*, defaults to `False`):
                 Whether or not to force the (re-)download of the model weights and configuration files, overriding the
                 cached versions if they exist.
-            resume_download (`bool`, *optional*, defaults to `False`):
-                Whether or not to resume downloading the model weights and configuration files. If set to `False`, any
-                incompletely downloaded files are deleted.
+
             proxies (`Dict[str, str]`, *optional*):
                 A dictionary of proxy servers to use by protocol or endpoint, for example, `{'http': 'foo.bar:3128',
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
@@ -1449,7 +1443,6 @@ class SD3LoraLoaderMixin:
         # UNet and text encoder or both.
         cache_dir = kwargs.pop("cache_dir", None)
         force_download = kwargs.pop("force_download", False)
-        resume_download = kwargs.pop("resume_download", False)
         proxies = kwargs.pop("proxies", None)
         local_files_only = kwargs.pop("local_files_only", None)
         token = kwargs.pop("token", None)
@@ -1480,7 +1473,6 @@ class SD3LoraLoaderMixin:
                         weights_name=weight_name or LORA_WEIGHT_NAME_SAFE,
                         cache_dir=cache_dir,
                         force_download=force_download,
-                        resume_download=resume_download,
                         proxies=proxies,
                         local_files_only=local_files_only,
                         token=token,
@@ -1502,7 +1494,6 @@ class SD3LoraLoaderMixin:
                     weights_name=weight_name or LORA_WEIGHT_NAME,
                     cache_dir=cache_dir,
                     force_download=force_download,
-                    resume_download=resume_download,
                     proxies=proxies,
                     local_files_only=local_files_only,
                     token=token,
@@ -1542,6 +1533,11 @@ class SD3LoraLoaderMixin:
         }
 
         if len(state_dict.keys()) > 0:
+            # check with first key if is not in peft format
+            first_key = next(iter(state_dict.keys()))
+            if "lora_A" not in first_key:
+                state_dict = convert_unet_state_dict_to_peft(state_dict)
+
             if adapter_name in getattr(transformer, "peft_config", {}):
                 raise ValueError(
                     f"Adapter name {adapter_name} already in use in the transformer - please select a new adapter name."
@@ -1594,6 +1590,8 @@ class SD3LoraLoaderMixin:
         cls,
         save_directory: Union[str, os.PathLike],
         transformer_lora_layers: Dict[str, torch.nn.Module] = None,
+        text_encoder_lora_layers: Dict[str, Union[torch.nn.Module, torch.Tensor]] = None,
+        text_encoder_2_lora_layers: Dict[str, Union[torch.nn.Module, torch.Tensor]] = None,
         is_main_process: bool = True,
         weight_name: str = None,
         save_function: Callable = None,
@@ -1625,11 +1623,19 @@ class SD3LoraLoaderMixin:
             layers_state_dict = {f"{prefix}.{module_name}": param for module_name, param in layers_weights.items()}
             return layers_state_dict
 
-        if not transformer_lora_layers:
-            raise ValueError("You must pass `transformer_lora_layers`.")
+        if not (transformer_lora_layers or text_encoder_lora_layers or text_encoder_2_lora_layers):
+            raise ValueError(
+                "You must pass at least one of `transformer_lora_layers`, `text_encoder_lora_layers`, `text_encoder_2_lora_layers`."
+            )
 
         if transformer_lora_layers:
             state_dict.update(pack_weights(transformer_lora_layers, cls.transformer_name))
+
+        if text_encoder_lora_layers:
+            state_dict.update(pack_weights(text_encoder_lora_layers, "text_encoder"))
+
+        if text_encoder_2_lora_layers:
+            state_dict.update(pack_weights(text_encoder_2_lora_layers, "text_encoder_2"))
 
         # Save the model
         cls.write_lora_layers(
@@ -1727,3 +1733,78 @@ class SD3LoraLoaderMixin:
                     remove_hook_from_module(component, recurse=is_sequential_cpu_offload)
 
         return (is_model_cpu_offload, is_sequential_cpu_offload)
+
+    def fuse_lora(
+        self,
+        fuse_transformer: bool = True,
+        lora_scale: float = 1.0,
+        safe_fusing: bool = False,
+        adapter_names: Optional[List[str]] = None,
+    ):
+        r"""
+        Fuses the LoRA parameters into the original parameters of the corresponding blocks.
+
+        <Tip warning={true}>
+
+        This is an experimental API.
+
+        </Tip>
+
+        Args:
+            fuse_transformer (`bool`, defaults to `True`): Whether to fuse the transformer LoRA parameters.
+            lora_scale (`float`, defaults to 1.0):
+                Controls how much to influence the outputs with the LoRA parameters.
+            safe_fusing (`bool`, defaults to `False`):
+                Whether to check fused weights for NaN values before fusing and if values are NaN not fusing them.
+            adapter_names (`List[str]`, *optional*):
+                Adapter names to be used for fusing. If nothing is passed, all active adapters will be fused.
+
+        Example:
+
+        ```py
+        from diffusers import DiffusionPipeline
+        import torch
+
+        pipeline = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-3-medium-diffusers", torch_dtype=torch.float16
+        ).to("cuda")
+        pipeline.load_lora_weights(
+            "nerijs/pixel-art-medium-128-v0.1",
+            weight_name="pixel-art-medium-128-v0.1.safetensors",
+            adapter_name="pixel",
+        )
+        pipeline.fuse_lora(lora_scale=0.7)
+        ```
+        """
+        if fuse_transformer:
+            self.num_fused_loras += 1
+
+        if fuse_transformer:
+            transformer = (
+                getattr(self, self.transformer_name) if not hasattr(self, "transformer") else self.transformer
+            )
+            transformer.fuse_lora(lora_scale, safe_fusing=safe_fusing, adapter_names=adapter_names)
+
+    def unfuse_lora(self, unfuse_transformer: bool = True):
+        r"""
+        Reverses the effect of
+        [`pipe.fuse_lora()`](https://huggingface.co/docs/diffusers/main/en/api/loaders#diffusers.loaders.LoraLoaderMixin.fuse_lora).
+
+        <Tip warning={true}>
+
+        This is an experimental API.
+
+        </Tip>
+
+        Args:
+            unfuse_transformer (`bool`, defaults to `True`): Whether to unfuse the transformer LoRA parameters.
+        """
+        from peft.tuners.tuners_utils import BaseTunerLayer
+
+        transformer = getattr(self, self.transformer_name) if not hasattr(self, "transformer") else self.transformer
+        if unfuse_transformer:
+            for module in transformer.modules():
+                if isinstance(module, BaseTunerLayer):
+                    module.unmerge()
+
+        self.num_fused_loras -= 1

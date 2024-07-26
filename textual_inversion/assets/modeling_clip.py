@@ -472,7 +472,7 @@ class CLIPAttention(nn.Module):
         
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
         # print(attn_weights.shape,'attn_weights.shape')
-
+        print(self.num_heads,'self.num_heads')
         if output_attentions:
             # this operation is a bit akward, but it's required to
             # make sure that attn_weights keeps its gradient.
@@ -575,8 +575,6 @@ class CLIPEncoderLayer(nn.Module):
         outputs = (hidden_states,)
 
         if output_attentions:
-            # print(attn_weights.shape,'attn_weights.shape')
-            # print(hidden_states.shape,'hidden_states.shape')
             outputs += (attn_weights,)
 
         return outputs
