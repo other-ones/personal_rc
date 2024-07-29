@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, './packages')
 import torch
 from diffusers import StableDiffusionPipeline, EulerAncestralDiscreteScheduler
 from disen_net import Image_adapter
@@ -12,7 +14,7 @@ with torch.no_grad():
     img_model = img_model.to("cuda")
 
 
-lora_path = "./output/checkpoint-1200"
+lora_path = "saved_models/disenbooth_models/tmp_mlm0001_dog6/checkpoints/checkpoint-0400"
 pipe.load_lora_weights(lora_path)
 adapter = Image_adapter().to("cuda")
 info = torch.load(os.path.join(lora_path, "adapter.pt"))
@@ -27,9 +29,7 @@ def disenbooth_infer(pipe, img_model, adapter=None, prompt = None, reference_ima
         height = height or pipe.unet.config.sample_size * pipe.vae_scale_factor
         width = width or pipe.unet.config.sample_size * pipe.vae_scale_factor
         # to deal with lora scaling and other possible forward hooks
-    
         # 1. Check inputs. Raise error if not correct
-    
         pipe._guidance_scale = guidance_scale
         pipe._guidance_rescale = guidance_rescale
         pipe._cross_attention_kwargs = cross_attention_kwargs
@@ -49,7 +49,6 @@ def disenbooth_infer(pipe, img_model, adapter=None, prompt = None, reference_ima
     
         device = pipe._execution_device
         lora_scale = (pipe.cross_attention_kwargs.get("scale", None) if pipe.cross_attention_kwargs is not None else None)
-    
         prompt_embeds, negative_prompt_embeds = pipe.encode_prompt(
             prompt,
             device,
@@ -136,5 +135,9 @@ def disenbooth_infer(pipe, img_model, adapter=None, prompt = None, reference_ima
 torch.manual_seed(1)
 ref_im = Image.open("./dog7/00.jpg")
 ref_image = preprocess(ref_im).unsqueeze(0).to("cuda")
-image = disenbooth_infer(pipe, img_model, adapter, reference_image=ref_image, prompt = "a dog</w> dog wearing a colorful scarf", text_weight=1.0, image_weight=0.0)[0]
+image = disenbooth_infer(pipe, img_model, adapter, 
+                         reference_image=ref_image, 
+                         prompt = "a <dog6> dog wearing a colorful scarf", 
+                         text_weight=1.0, 
+                         image_weight=0.0)[0]
 image

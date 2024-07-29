@@ -51,6 +51,7 @@ def parse_args(input_args=None):
     parser.add_argument('--repeats',type=int,default=100)
     parser.add_argument('--masked_loss',type=int,default=0)
     parser.add_argument('--silent',type=int,default=0)
+    parser.add_argument('--resume_lora_path',type=str)
     parser.add_argument('--resume_unet_path',type=str)
     parser.add_argument('--resume_text_encoder_path',type=str)
     parser.add_argument('--num_images_per_prompt',type=int)

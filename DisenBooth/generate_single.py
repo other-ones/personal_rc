@@ -112,7 +112,7 @@ def main(args):
     if args.seed is not None:
         set_seed(args.seed)
 
-    exp_name=args.resume_unet_path.split('/')[-4]
+    exp_name=args.resume_lora_path.split('/')[-3]
     exp_dir=os.path.join(args.output_dir,exp_name)
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
@@ -219,28 +219,21 @@ def main(args):
     #     tokenizer.load_state_dict(state_dict,strict=True)
     #     print('tokenizer parameters loaded')
     #     del state_dict
-    if args.resume_unet_path and args.resume_unet_path!='None':
-        state_dict = torch.load(args.resume_unet_path, map_location=torch.device('cpu'))
-        if not isinstance(state_dict,OrderedDict):
-            state_dict=state_dict()
-        unet.load_state_dict(state_dict,strict=True)
-        print('unet parameters loaded')
-        del state_dict
-    if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
-        state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
-        if not isinstance(state_dict,OrderedDict):
-            state_dict=state_dict()
-        text_encoder.load_state_dict(state_dict,strict=True)
-        print('text_encoder parameters loaded')
-        del state_dict
-    # std_pipeline = StableDiffusionPipelineClsAug.from_pretrained( model_name,
-    #                         unet=accelerator.unwrap_model(unet, **extra_args),
-    #                         tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
-    #                         )
-    # std_scheduler = std_pipeline.scheduler
-    # std_fe_extractor = std_pipeline.feature_extractor
-    # del std_pipeline
-    # unet.eval()
+    # if args.resume_unet_path and args.resume_unet_path!='None':
+    #     state_dict = torch.load(args.resume_unet_path, map_location=torch.device('cpu'))
+    #     if not isinstance(state_dict,OrderedDict):
+    #         state_dict=state_dict()
+    #     unet.load_state_dict(state_dict,strict=True)
+    #     print('unet parameters loaded')
+    #     del state_dict
+    # if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
+    #     state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
+    #     if not isinstance(state_dict,OrderedDict):
+    #         state_dict=state_dict()
+    #     text_encoder.load_state_dict(state_dict,strict=True)
+    #     print('text_encoder parameters loaded')
+    #     del state_dict
+    
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
         inspect.signature(
             accelerator.unwrap_model
@@ -253,16 +246,20 @@ def main(args):
     )
     
     unet=unet.to(accelerator.device)
-    pipeline = StableDiffusionPipeline(
-            vae=accelerator.unwrap_model(vae, **extra_args),
-            unet=accelerator.unwrap_model(unet, **extra_args),
-            text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
-            tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
-            scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
-            feature_extractor=None,
-            safety_checker=None,
-            requires_safety_checker=False,
-        )
+    # pipeline = StableDiffusionPipeline(
+    #         vae=accelerator.unwrap_model(vae, **extra_args),
+    #         unet=accelerator.unwrap_model(unet, **extra_args),
+    #         text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
+    #         tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
+    #         scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
+    #         feature_extractor=None,
+    #         safety_checker=None,
+    #         requires_safety_checker=False,
+    #     )
+    model_id = "stabilityai/stable-diffusion-2-1-base"
+    pipeline = StableDiffusionPipeline.from_pretrained(model_id).to("cuda")
+    pipeline.load_lora_weights(args.lora_path)
+    print('lora loaded')
     if args.include_prior_concept:
         placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
     else:
