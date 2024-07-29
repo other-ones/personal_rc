@@ -1,3 +1,4 @@
+import inspect
 from data_utils import cycle, create_wbd
 from utils import render_caption
 from datasets_pkgs.dataset_mlm import TextualInversionDataset
@@ -760,16 +761,36 @@ def main(args):
         #     pipeline_args["text_encoder"] = None
         if vae is not None:
             pipeline_args["vae"] = vae
-        pipeline = DiffusionPipeline.from_pretrained(
-            args.pretrained_model_name_or_path,
-            unet=unwrap_model(unet),
-            text_encoder=accelerator.unwrap_model(text_encoder),
-            revision=args.revision,
-            variant=args.variant,
-            **pipeline_args,
+        # pipeline = DiffusionPipeline.from_pretrained(
+        #     args.pretrained_model_name_or_path,
+        #     unet=unwrap_model(unet),
+        #     text_encoder=accelerator.unwrap_model(text_encoder),
+        #     revision=args.revision,
+        #     variant=args.variant,
+        #     **pipeline_args,
+        #     feature_extractor=None,
+        # safety_checker=None,
+        # requires_safety_checker=False,
+        # )
+        accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
+                            inspect.signature(
+                                accelerator.unwrap_model
+                            ).parameters.keys()
+                        )
+        extra_args = (
+        {"keep_fp32_wrapper": True}
+        if accepts_keep_fp32_wrapper
+        else {}
+        )
+        pipeline = StableDiffusionPipeline(
+            vae=accelerator.unwrap_model(vae, **extra_args),
+            unet=accelerator.unwrap_model(unet, **extra_args),
+            text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
+            tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
+            scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
             feature_extractor=None,
-        safety_checker=None,
-        requires_safety_checker=False,
+            safety_checker=None,
+            requires_safety_checker=False,
         )
 
     # Train!

@@ -1,3 +1,4 @@
+# TEST2
 # Copyright 2020 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +46,8 @@ class BaseModelOutput(ModelOutput):
     last_hidden_state: torch.FloatTensor = None
     hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
     attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
+    keywords_similarities: Optional[Tuple[torch.FloatTensor, ...]] = None
+    nonkey_similarities: Optional[Tuple[torch.FloatTensor, ...]] = None
 
 
 @dataclass
@@ -96,6 +99,8 @@ class BaseModelOutputWithPooling(ModelOutput):
     pooler_output: torch.FloatTensor = None
     hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
     attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
+    keywords_similarities: Optional[Tuple[torch.FloatTensor, ...]] = None
+    nonkey_similarities: Optional[Tuple[torch.FloatTensor, ...]] = None
 
 
 @dataclass
