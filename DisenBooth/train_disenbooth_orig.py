@@ -1029,17 +1029,31 @@ def main(args):
                 if args.class_labels_conditioning == "timesteps":
                     class_labels = timesteps
                 else:
-                    class_labels = None
+                    class_labels = None # HERE
                 # Predict the noise residual
+
+                # SHAPES
+                # class_labels: None
+                # encoder_hidden_states: 1,77,1024
+                # img_state: 1,1,1024
+                # encoder_hidden_states: f_s
+                # img_state: f_i
+
                 model_pred = unet(noisy_model_input, timesteps, encoder_hidden_states + img_state, class_labels=class_labels).sample
                 text_pred = unet(noisy_model_input, timesteps, encoder_hidden_states, class_labels=class_labels).sample
+
+                
+                
 
                 # if model predicts variance, throw away the prediction. we will only train on the
                 # simplified training objective. This means that all schedulers using the fine tuned
                 # model must be configured to use one of the fixed variance variance types.
-                if model_pred.shape[1] == 6:
+                # print(model_pred.shape,'model_pred.shape')
+                
+                
+                
+                if model_pred.shape[1] == 6:     #NO
                     model_pred, _ = torch.chunk(model_pred, 2, dim=1)
-
                 # Get the target for loss depending on the prediction type
                 if noise_scheduler.config.prediction_type == "epsilon":
                     target = noise
@@ -1049,7 +1063,7 @@ def main(args):
                     raise ValueError(f"Unknown prediction type {noise_scheduler.config.prediction_type}")
                 loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
                 loss_aux1 = F.mse_loss(text_pred.float(), target.float(), reduction="mean")
-                loss_aux2 = cal_cos(encoder_hidden_states, img_state, cos)
+                loss_aux2 = cal_cos(encoder_hidden_states, img_state, cos) #contrastive
                 loss = loss + 0.01*loss_aux1 + 0.001*loss_aux2
 
                 accelerator.backward(loss)
