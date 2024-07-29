@@ -367,7 +367,7 @@ def main(args):
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             ).images
-            
+            torch.cuda.empty_cache()
             # 
             num_cols=5
             num_viz_samples=5

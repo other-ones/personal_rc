@@ -4,20 +4,20 @@ import numpy as np
 import os
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
+    'dog6': ('dog','pet'),
     'pet_cat1':('cat','pet'),
-    # 'dog6': ('dog','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'pet_dog1':('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'barn': ('barn','building'),
-    # 'teddybear':('teddybear','nonliving'),
-    # 'cat1': ('cat','pet'),
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
+    'vase':('vase','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'pet_dog1':('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'barn': ('barn','building'),
+    'teddybear':('teddybear','nonliving'),
+    'cat1': ('cat','pet'),
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
     # 'flower1':('flower','flower'),
     
 }
@@ -25,6 +25,7 @@ info_map={
 lambda_mlms=[
             0, 
             0.001,
+            0.0025,
             ]
 masked_loss=0
 
@@ -45,7 +46,6 @@ os.makedirs(log_dir,exist_ok=True)
 ports=np.arange(1111,2222)
 train_text_encoders=[1]
 pps=[0]
-target_devices=[2,3,4,5,6,7]
 mlm_prior_only_list=[0]
 
 # for idx,concept in enumerate(list(info_map.keys())):
@@ -83,18 +83,13 @@ for mlm_prior_only in mlm_prior_only_list:
                         continue
                     while True:
                         stats=get_gpu_memory()
-                        found=False
-                        for stat_idx in target_devices:
-                            stat=stats[stat_idx]    
-                            if stat>2e4:
-                                device_idx=stat_idx
-                                stat_idx+=1
-                                found=True
-                                break
-                        if found:
+                        stat=stats[stat_idx%len(stats)]
+                        if stat>2e4:
+                            device_idx=stat_idx
+                            stat_idx+=1
                             break
                         print(run_name,'sleep',stat_idx,stat)
-                        time.sleep(20)
+                        time.sleep(10)
                         stat_idx+=1
                         stat_idx=(stat_idx%len(stats))
                     print(run_name,device_idx)
@@ -108,11 +103,10 @@ for mlm_prior_only in mlm_prior_only_list:
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
-                    command+='--max_train_steps=3001 \\\n'
+                    command+='--max_train_steps=2001 \\\n'
                     command+='--checkpointing_steps=500 \\\n'
                     command+='--validation_steps=100 \\\n'
-                    command+='--learning_rate=1e-5 \\\n'
-                    command+='--learning_rate_adapter=1e-4 \\\n'
+                    command+='--learning_rate=1e-6 \\\n'
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
                     command+='--output_dir="{}" \\\n'.format(output_dir)
@@ -137,7 +131,6 @@ for mlm_prior_only in mlm_prior_only_list:
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
                     print('STARTED')
-                    exit()
                     time.sleep(20)
                 
 
