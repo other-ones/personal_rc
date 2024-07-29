@@ -63,8 +63,8 @@ target_norms=[0]
 masked_loss=0
 lambda_mlms=[0,0.001]
 include_priors=[1]
-target_devices=[3,4,5,6]
-delay=30
+target_devices=[3,4]
+delay=45
 
 
 
@@ -110,21 +110,25 @@ for include_prior in include_priors:
                     continue
                 while True:
                     stats=get_gpu_memory()
-                    stat_dix=stat_idx%len(stats)
-                    stat=stats[stat_idx%len(stats)]
-                    if stat>2e4 and stat_dix in target_devices:
-                        device_idx=stat_idx
-                        stat_idx+=1
+                    found=False
+                    for stat_idx in target_devices:
+                        stat=stats[stat_idx]    
+                        if stat>2e4 :
+                            device_idx=stat_idx
+                            found=True
+                            break
+                    # stat_dix=stat_idx%len(stats)
+                    # stat=stats[stat_idx%len(stats)]
+                    if found:
                         break
                     print(run_name,'sleep',stat_idx,stat)
                     time.sleep(delay)
-                    stat_idx+=1
-                    stat_idx=(stat_idx%len(stats))
                 print(run_name,device_idx)
                 log_path=os.path.join(log_dir,run_name+'.out')
                 command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+                command+='export ACCELERATE_CONFIG_FILE=../accelerate_config.yaml;'
                 command+='accelerate launch --main_process_port {} train_mlm_single.py \\\n'.format(ports[idx],idx)
-                command+='--pretrained_model_name_or_path="stabilityai/stable-diffusion-2-1" \\\n'
+                command+='--pretrained_model_name_or_path="stabilityai/stable-diffusion-2-1-base" \\\n'
                 command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                 command+='--learnable_property="object" \\\n'
                 command+='--placeholder_token1="<{}>" \\\n'.format(concept)
