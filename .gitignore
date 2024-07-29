@@ -1,18 +1,19 @@
 # dreambooth
-dreambooth*/saved_models
-dreambooth*/__pycache__
-dreambooth*/packages/**/__pycacahe__
-dreambooth*/dog
-dreambooth*/fonts
-dreambooth*/samples
-dreambooth*/saved_models
-dreambooth*/dreambooth_models
-dreambooth*/logs*
-dreambooth*/results*
-dreambooth*/priors
-dreambooth*/*.jpg
-dreambooth*/*.png
-dreambooth*/wandb
+DisenBooth*/saved_models
+DisenBooth*/__pycache__
+DisenBooth*/packages/**/__pycacahe__
+DisenBooth*/dog
+DisenBooth*/fonts
+DisenBooth*/samples
+DisenBooth*/saved_models
+DisenBooth*/disenbooth_models
+DisenBooth*/logs*
+DisenBooth*/results*
+DisenBooth*/priors
+DisenBooth*/*.jpg
+DisenBooth*/*.png
+DisenBooth*/wandb
+DisenBooth*/output
 
 # textual_inversion
 textual_inversion*/saved_models
