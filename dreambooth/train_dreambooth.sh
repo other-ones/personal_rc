@@ -24,3 +24,4 @@ accelerate launch train_dreambooth.py \
   --class_prompt="a picture of a dog" \
   --silent=0 \
   --class_data_dir="priors/dog"
+# 
