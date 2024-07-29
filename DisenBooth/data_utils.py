@@ -1,6 +1,7 @@
 from inspect import trace
 import os
-
+import sys
+sys.path.insert(0, './packages')
 # import imageio
 from PIL import Image
 import yaml
