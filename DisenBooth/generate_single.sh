@@ -10,8 +10,8 @@ accelerate launch --main_process_port 2731  generate_single.py \
   --seed=1234 \
   --mask_tokens="[MASK]" \
   --resume_lora_path='saved_models/disenbooth_models/tmp_mlm0001_dog6/checkpoints/checkpoint-0600' \
-  --prior_concept1='cat' \
+  --prior_concept1='dog' \
   --include_prior_concept=1 \
   --prompt_type='pet' \
-  --eval_batch_size=18 \
+  --eval_batch_size=16 \
   --num_images_per_prompt=15

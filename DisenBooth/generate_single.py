@@ -363,7 +363,7 @@ def main(args):
                 break
             print(sample_dir,'sample_dir')
             images = pipeline(prompt=prompts, 
-                            num_inference_steps=1, 
+                            num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             ).images

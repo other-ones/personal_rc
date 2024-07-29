@@ -18,7 +18,8 @@ accelerate launch train_disenbooth_single.py \
   --train_batch_size=1 \
   --gradient_accumulation_steps=1 \
   --checkpointing_steps=200 \
-  --learning_rate=1e-4 \
+  --learning_rate=1e-5 \
+  --learning_rate_adapter=1e-4 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
   --max_train_steps=2000 \
@@ -26,6 +27,6 @@ accelerate launch train_disenbooth_single.py \
   --validation_steps=200 \
   --seed="0" \
   --run_name='tmp_mlm0001_dog6' \
-  --lambda_mlm=0.001 \
+  --lambda_mlm=0 \
   --prompt_type='pet' \
   --train_text_encoder

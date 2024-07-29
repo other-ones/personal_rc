@@ -622,7 +622,7 @@ def main(args):
     params_to_optimize = (
         [{"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
          {"params": itertools.chain(text_lora_parameters), "lr": args.learning_rate},
-         {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate}
+         {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
         ] if args.train_text_encoder
         else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
                {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate}
@@ -630,7 +630,7 @@ def main(args):
          )
     optimizer = optimizer_class(
         params_to_optimize,
-        lr=args.learning_rate,
+        # lr=args.learning_rate,
         betas=(args.adam_beta1, args.adam_beta2),
         weight_decay=args.adam_weight_decay,
         eps=args.adam_epsilon,
