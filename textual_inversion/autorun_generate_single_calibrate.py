@@ -11,7 +11,7 @@ info_map_03={
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
     'vase':('vase','nonliving'),
-    # 'teddybear':('teddybear','nonliving'),
+    # 'teddybear':('bear','nonliving'),
     # 'dog6': ('dog','pet'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),

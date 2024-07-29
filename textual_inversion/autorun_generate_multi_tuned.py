@@ -8,7 +8,7 @@ info_map={
         'prior_concept2':'dog',
         'prompt_type':'two_pets',
     },
-    # 'teddybear':('teddybear','nonliving'),
+    # 'teddybear':('bear','nonliving'),
     # 'wooden_pot':('pot','nonliving'),
     # 'vase':('vase','nonliving'),
     # 'cat1': ('cat','pet'),

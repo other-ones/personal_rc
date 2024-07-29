@@ -4,7 +4,7 @@ import os
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'backpack':('backpack','nonliving'),
-    'teddybear':('teddybear','nonliving'),
+    'teddybear':('bear','nonliving'),
     'wooden_pot':('pot','nonliving'),
     'vase':('vase','nonliving'),
     'cat1': ('cat','pet'),
@@ -36,9 +36,10 @@ def get_gpu_memory():
 
 
 ports=np.arange(5000,6000)
+target_devices=[1,2,3,4,5,6,7]
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
-    if stat>2e4:
+    if stat>2e4 and stat_idx in target_devices:
         break
 device_idx=stat_idx
 idx=0
@@ -73,15 +74,17 @@ for dir in dirs:
                 continue
             while True:
                 stats=get_gpu_memory()
-                stat=stats[stat_idx%len(stats)]
-                if stat>2e4:
-                    device_idx=stat_idx
-                    stat_idx+=1
+                found=False
+                for stat_idx in target_devices:
+                    stat=stats[stat_idx]    
+                    if stat>2e4 :
+                        device_idx=stat_idx
+                        found=True
+                        break
+                if found:
                     break
-                print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
-                time.sleep(10)
-                stat_idx+=1
-                stat_idx=(stat_idx%len(stats))
+                print(run_name,'sleep',stat_idx,stat)
+                time.sleep(delay)
             print(exp_name,device_idx)
             log_path=os.path.join(log_dir,exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)

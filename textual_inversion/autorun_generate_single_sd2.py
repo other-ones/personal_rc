@@ -28,7 +28,7 @@ info_map_01={
     # 'pet_cat1':('cat','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'vase':('vase','nonliving'),
-    'teddybear':('teddybear','nonliving'),
+    'teddybear':('bear','nonliving'),
     'dog6': ('dog','pet'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
@@ -60,15 +60,16 @@ log_dir='logs/ti_models/generate/sd2/single_prior'
 os.makedirs(log_dir,exist_ok=True)    
 
 
-lambda_mlms=[0,0.001]
+lambda_mlms=[0,0.001,0.0025]
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4:
         break
 device_idx=stat_idx
-
+target_devices=[2,3,4,5,6,7]
 target_norm=0
+delay=30
 for lambda_mlm in lambda_mlms:
     lambda_mlm_str=str(lambda_mlm).replace('.','')
     for idx,concept in enumerate(list(info_map.keys())):
@@ -90,19 +91,19 @@ for lambda_mlm in lambda_mlms:
         if os.path.exists(exp_path):
             print(exp_path,'exists')
             continue
-        
-        
         while True:
             stats=get_gpu_memory()
-            stat=stats[stat_idx%len(stats)]
-            if stat>2e4:
-                device_idx=stat_idx
-                stat_idx+=1
+            found=False
+            for stat_idx in target_devices:
+                stat=stats[stat_idx]    
+                if stat>2e4 :
+                    device_idx=stat_idx
+                    found=True
+                    break
+            if found:
                 break
-            print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(info_map)-idx))
-            time.sleep(10)
-            stat_idx+=1
-            stat_idx=(stat_idx%len(stats))
+            print(exp_name,'sleep',stat_idx,stat)
+            time.sleep(delay)
         print(exp_name,device_idx)
         log_path=os.path.join(log_dir,exp_name+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)

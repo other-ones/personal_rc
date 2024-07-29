@@ -344,7 +344,7 @@ class CLIPAttention(nn.Module):
         
             if calibrate_kneg1:
                 # k1 - neg
-                print('negative calibration')
+                print('calibrate_kneg1')
                 k1_min_scores=torch.min(k1_scores,dim=-1,keepdim=True)[0] # 4800,1
                 k1_p2_scores=k1_scores[is_prior2].view(bsz * self.num_heads,1)# 4800,1
                 offsets_k1_p2=torch.abs(k1_p2_scores-k1_min_scores)
@@ -354,6 +354,7 @@ class CLIPAttention(nn.Module):
 
             if calibrate_kneg2:   
                 # k2 - neg
+                print('calibrate_kneg2')
                 k2_min_scores=torch.min(k2_scores,dim=-1,keepdim=True)[0] # 4800,1
                 k2_p1_scores=k2_scores[is_prior1].view(bsz * self.num_heads,1) # 4800,1
                 offsets_k2_p1=torch.abs(k2_p1_scores-k2_min_scores)
@@ -362,6 +363,7 @@ class CLIPAttention(nn.Module):
 
             if calibrate_pneg1:
                 # p1 - neg
+                print('calibrate_pneg1')
                 p1_min_scores=torch.min(p1_scores,dim=-1,keepdim=True)[0] # 4800,1
                 p1_k2_scores=p1_scores[is_keyword_tokens2].view(bsz * self.num_heads,1) # 4800,1
                 offsets_p1_k2=torch.abs(p1_k2_scores-p1_min_scores)
@@ -370,6 +372,7 @@ class CLIPAttention(nn.Module):
 
             if calibrate_pneg2:
                 # p2 - neg
+                print('calibrate_pneg2')
                 p2_k1_scores=p2_scores[is_keyword_tokens1].view(bsz * self.num_heads,1) # 4800,1
                 p2_min_scores=torch.min(p2_scores,dim=-1,keepdim=True)[0] # 4800,1
                 offsets_p2_k1=torch.abs(p2_k1_scores-p2_min_scores)
@@ -394,6 +397,7 @@ class CLIPAttention(nn.Module):
                 
             if calibrate_kpos1:
                 # k1 - pos
+                print('calibrate_kpos1')
                 k1_max_scores=torch.max(k1_scores,dim=-1,keepdim=True)[0] # 4800,1
                 k1_prior1_scores=k1_scores[is_prior1].view(bsz * self.num_heads,1)# 4800,1
                 offsets_k1_prior1=torch.abs(k1_max_scores-k1_prior1_scores)
@@ -403,6 +407,7 @@ class CLIPAttention(nn.Module):
 
             if calibrate_kpos2:
                 # k2 - pos
+                print('calibrate_kpos2')
                 k2_max_scores=torch.max(k2_scores,dim=-1,keepdim=True)[0] # 4800,1
                 k2_prior2_scores=k2_scores[is_prior2].view(bsz * self.num_heads,1) # 4800,1
                 offsets_k2_prior2=torch.abs(k2_max_scores-k2_prior2_scores)
@@ -411,6 +416,7 @@ class CLIPAttention(nn.Module):
 
             if calibrate_ppos1:
                 # p1 - pos
+                print('calibrate_ppos1')
                 p1_max_scores=torch.max(p1_scores,dim=-1,keepdim=True)[0] # 4800,1
                 p1_k1_scores=p1_scores[is_keyword_tokens1].view(bsz * self.num_heads,1) # 4800,1
                 offsets_p1_k1=torch.abs(p1_max_scores-p1_k1_scores)
@@ -419,6 +425,7 @@ class CLIPAttention(nn.Module):
 
             if calibrate_ppos2:
                 # p2 - pos
+                print('calibrate_ppos2')
                 p2_max_scores=torch.max(p2_scores,dim=-1,keepdim=True)[0] # 4800,1
                 p2_k2_scores=p2_scores[is_keyword_tokens2].view(bsz * self.num_heads,1) # 4800,1
                 offsets_p2_k2=torch.abs(p2_max_scores-p2_k2_scores)

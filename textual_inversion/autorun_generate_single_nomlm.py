@@ -4,7 +4,7 @@ import os
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'backpack':('backpack','nonliving'),
-    'teddybear':('teddybear','nonliving'),
+    'teddybear':('bear','nonliving'),
     'wooden_pot':('pot','nonliving'),
     'vase':('vase','nonliving'),
     'cat1': ('cat','pet'),
