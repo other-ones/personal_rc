@@ -13,8 +13,6 @@ class Image_adapter(nn.Module):
         self.sigmoid = nn.Sigmoid()
         
     def forward(self, feature):
-        print(feature.shape,'feature.shape')
-        print(self.mask.shape,'feature.shape')
         out_feature = self.adapter(self.sigmoid(self.mask)*feature)+ self.sigmoid(self.mask)*feature
 
         return out_feature   

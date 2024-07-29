@@ -8,20 +8,20 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     'pet_dog1':('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pet_cat1':('cat','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'teddybear':('teddybear','nonliving'),
-    # 'dog6': ('dog','pet'),
-    # 'cat1': ('cat','pet'),
-    # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
+    'backpack':('backpack','nonliving'),
+    'pet_cat1':('cat','pet'),
+    'vase':('vase','nonliving'),
+    'teddybear':('teddybear','nonliving'),
+    'dog6': ('dog','pet'),
+    'cat1': ('cat','pet'),
+    'barn': ('barn','building'),
+    'wooden_pot':('pot','nonliving'),
 
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
     # 'flower1':('flower','flower'),
 }
 info_map_01={
@@ -48,9 +48,7 @@ elif 'ubuntu' in hostname:
     info_map=info_map_01
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
-lambda_mlms=[0]
-target_norms=[0]
-masked_loss=0
+
 
 
 import subprocess as sp
@@ -60,18 +58,27 @@ def get_gpu_memory():
     memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
     return memory_free_values
 
+ports=np.arange(1111,2222)
+target_norms=[0]
+masked_loss=0
+lambda_mlms=[0,0.001]
+include_priors=[1]
+target_devices=[3,4,5,6]
+delay=30
+
+
+
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
-    if stat>2e4:
+    if stat>2e4 and stat_idx in target_devices:
         break
 
-ports=np.arange(1111,2222)
-include_priors=[1]
+
 for include_prior in include_priors:
     if include_prior:
-        log_dir='logs/ti_models/train/single_prior'
+        log_dir='logs/ti_models/sd2/train/single_prior'
     else:
-        log_dir='logs/ti_models/train/single'
+        log_dir='logs/ti_models/sd2/train/single'
     # log_dir='logs/tmp'
     os.makedirs(log_dir,exist_ok=True)   
     for lambda_mlm in lambda_mlms:
@@ -103,13 +110,14 @@ for include_prior in include_priors:
                     continue
                 while True:
                     stats=get_gpu_memory()
+                    stat_dix=stat_idx%len(stats)
                     stat=stats[stat_idx%len(stats)]
-                    if stat>2e4:
+                    if stat>2e4 and stat_dix in target_devices:
                         device_idx=stat_idx
                         stat_idx+=1
                         break
                     print(run_name,'sleep',stat_idx,stat)
-                    time.sleep(10)
+                    time.sleep(delay)
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
                 print(run_name,device_idx)
@@ -132,8 +140,8 @@ for include_prior in include_priors:
                 command+='--seed=7777 \\\n'
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
-                command+='--mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
+                command+='--cls_net_path="saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/cls_net_100000_ckpt.pt" \\\n'
+                command+='--mask_embed_path="saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/mask_embeds_100000_ckpt.pt" \\\n'
                 command+='--mlm_target=masked \\\n'
                 command+='--mlm_batch_size=50 \\\n'
                 command+='--scale_lr \\\n'
@@ -145,12 +153,9 @@ for include_prior in include_priors:
                 command+='--report_to="wandb" \\\n'
                 command+='--project_name="TI MLM SINGLE" \\\n'
                 command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
-
                 os.system(command)
                 print('STARTED')
-                exit()
-
-                time.sleep(15)
+                time.sleep(delay)
             
 
 

@@ -269,21 +269,35 @@ class CLIPAttention(nn.Module):
         bsz, tgt_len, embed_dim = hidden_states.size()
 
         if is_keyword_tokens1 is not None:
+            # is_keyword_tokens1=is_keyword_tokens1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
+            # is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+            # is_keyword_tokens2=is_keyword_tokens2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
+            # is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+
+
             is_keyword_tokens1=is_keyword_tokens1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
             is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+            # is_keyword_tokens1=is_keyword_tokens1.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
+            # is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,77,12 -> 4800,77
         if is_keyword_tokens2 is not None:
             is_keyword_tokens2=is_keyword_tokens2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
             is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+            # is_keyword_tokens2=is_keyword_tokens2.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
+            # is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,77,12 -> 4800,77
             
             # Prior index
         
         if is_prior1 is not None:
             is_prior1=is_prior1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
             is_prior1=is_prior1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+            # is_prior1=is_prior1.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,1,77-> 400,12,77
+            # is_prior1=is_prior1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
 
         if is_prior2 is not None:
             is_prior2=is_prior2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
             is_prior2=is_prior2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+            # is_prior2=is_prior2.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,1,77-> 400,12,77
+            # is_prior2=is_prior2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
             
         # get query proj
         proj_shape = (bsz * self.num_heads, -1, self.head_dim)
@@ -306,7 +320,7 @@ class CLIPAttention(nn.Module):
         attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
 
         if attn_mod_params is not None:
-            # print(torch.sum(attn_weights),'before calibration')
+            print(torch.sum(attn_weights),'before calibration')
             calibrate_kpos1=attn_mod_params['calibrate_kpos1']
             calibrate_kpos2=attn_mod_params['calibrate_kpos2']
             calibrate_kneg1=attn_mod_params['calibrate_kneg1']
@@ -384,6 +398,7 @@ class CLIPAttention(nn.Module):
                 k1_prior1_scores=k1_scores[is_prior1].view(bsz * self.num_heads,1)# 4800,1
                 offsets_k1_prior1=torch.abs(k1_max_scores-k1_prior1_scores)
                 k1_prior1_scores=k1_prior1_scores.view(bsz * self.num_heads,1)+(offsets_k1_prior1*calibrate_kpos1)
+                print(k1_prior1_scores,'k1_prior1_scores')
                 k1_scores[is_prior1]=k1_prior1_scores.view(bsz * self.num_heads)
 
             if calibrate_kpos2:
@@ -417,7 +432,7 @@ class CLIPAttention(nn.Module):
                 k1_scores=k1_scores.view(bsz * self.num_heads, tgt_len)
                 attn_weights[is_keyword_tokens1]=k1_scores
                 attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-                # print(torch.sum(attn_weights),'after keyword1')
+                print(torch.sum(attn_weights),'after keyword1')
 
             if (calibrate_kpos2+calibrate_kneg2):
                 k2_scores=k2_scores.view(bsz * self.num_heads, tgt_len)
@@ -472,7 +487,6 @@ class CLIPAttention(nn.Module):
         
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
         # print(attn_weights.shape,'attn_weights.shape')
-        print(self.num_heads,'self.num_heads')
         if output_attentions:
             # this operation is a bit akward, but it's required to
             # make sure that attn_weights keeps its gradient.

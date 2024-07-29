@@ -1024,18 +1024,13 @@ def main(args):
                     img_state = img_model.encode_image( clip_trans(pixel_values) ).unsqueeze(1)
                 # Predict the noise residual
                 img_state = img_adapter(img_state)
-
                 if accelerator.unwrap_model(unet).config.in_channels == channels * 2:
                     noisy_model_input = torch.cat([noisy_model_input, noisy_model_input], dim=1)
-
                 if args.class_labels_conditioning == "timesteps":
                     class_labels = timesteps
                 else:
                     class_labels = None
-
                 # Predict the noise residual
-                print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
-                print(img_state.shape,'img_state.shape')
                 model_pred = unet(noisy_model_input, timesteps, encoder_hidden_states + img_state, class_labels=class_labels).sample
                 text_pred = unet(noisy_model_input, timesteps, encoder_hidden_states, class_labels=class_labels).sample
 
@@ -1071,20 +1066,17 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
-                progress_bar.update(1)
-                global_step += 1
-
                 if accelerator.is_main_process:
-                    if global_step % args.checkpointing_steps == 0:
+                    if (global_step % args.checkpointing_steps == 0):
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit
                         save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
                         accelerator.save_state(save_path)
                         logger.info(f"Saved state to {save_path}")
-
+                progress_bar.update(1)
+                global_step += 1
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)
-
             if global_step >= args.max_train_steps:
                 break
 
