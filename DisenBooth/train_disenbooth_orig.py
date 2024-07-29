@@ -813,8 +813,15 @@ def main(args):
                     unet_lora_layers_to_save = unet_lora_state_dict(model)
                 elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
                     text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
-                else:
+                elif isinstance(model, type(accelerator.unwrap_model(img_adapter))):
+                    # text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
+                    print(model)
+                    print('adapter')
                     torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
+                else:
+                    print(model)
+                    print('else')
+                    # torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
 
                 # make sure to pop weight so that corresponding model is not saved again
                 weights.pop()

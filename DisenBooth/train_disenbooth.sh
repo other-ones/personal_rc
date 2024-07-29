@@ -24,7 +24,7 @@ accelerate launch train_disenbooth.py \
   --validation_prompt="A <dog6> dog in a bucket" \
   --validation_steps=200 \
   --seed="0" \
-  --run_name='tmp_mlm0005_dog6' \
+  --run_name='tmp_mlm0001_dog6' \
   --lambda_mlm=0.001 \
   --prompt_type='pet' \
   --train_text_encoder

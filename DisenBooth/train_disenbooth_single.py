@@ -546,11 +546,22 @@ def main(args):
 
             for model in models:
                 if isinstance(model, type(accelerator.unwrap_model(unet))):
+                    print('unet lora')
                     unet_lora_layers_to_save = unet_lora_state_dict(model)
                 elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
+                    print('text_encoder lora')
                     text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
-                else:
+                elif isinstance(model, type(accelerator.unwrap_model(cls_net))):
+                    print('cls_net lora')
+                    # text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
+                elif isinstance(model, type(accelerator.unwrap_model(img_adapter))):
+                    print('img_adapter')
                     torch.save(model.state_dict() ,os.path.join(output_dir,"adapter.pt"))
+                    # text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
+                else:
+                    print(model)
+                    print('else')
+                   
 
                 # make sure to pop weight so that corresponding model is not saved again
                 weights.pop()
@@ -567,7 +578,6 @@ def main(args):
 
         while len(models) > 0:
             model = models.pop()
-
             if isinstance(model, type(accelerator.unwrap_model(unet))):
                 unet_ = model
             elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
@@ -705,8 +715,8 @@ def main(args):
             unet, text_encoder, optimizer, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net
         )
     else:
-        unet, optimizer,text_encoder, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net = accelerator.prepare(
-            unet, optimizer,text_encoder, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net
+        unet, optimizer, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net = accelerator.prepare(
+            unet, optimizer, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net
         )
     if args.cls_net_path is not None:
         for defined_key in cls_net.state_dict():
@@ -1025,8 +1035,24 @@ def main(args):
 
                 if accelerator.is_main_process:
                     if (global_step % args.checkpointing_steps == 0):
+                        if args.checkpoints_total_limit is not None:
+                            checkpoints = os.listdir(ckpt_dir)
+                            checkpoints = [d for d in checkpoints if d.startswith("checkpoint-")]
+                            checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
+                            # before we save the new checkpoint, we need to have at _most_ `checkpoints_total_limit - 1` checkpoints
+                            if len(checkpoints) >= args.checkpoints_total_limit:
+                                num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
+                                removing_checkpoints = checkpoints[0:num_to_remove]
+                                logger.info(
+                                    f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
+                                )
+                                logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
+
+                                for removing_checkpoint in removing_checkpoints:
+                                    removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
+                                    shutil.rmtree(removing_checkpoint)
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit
-                        save_path = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
+                        save_path = os.path.join(ckpt_dir, "checkpoint-{:04d}".format(global_step))
                         accelerator.save_state(save_path)
                         logger.info(f"Saved state to {save_path}")
                 progress_bar.update(1)

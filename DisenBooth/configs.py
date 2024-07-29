@@ -57,7 +57,7 @@ def parse_args(input_args=None):
     parser.add_argument('--eval_batch_size',type=int)
     parser.add_argument('--simple_caption',type=int)
     parser.add_argument("--with_prior_preservation",default=0,type=int)
-    parser.add_argument('--mlm_prior',type=float,default=0)
+    parser.add_argument('--mlm_prior_only',type=float,default=0)
 
     # ADDED
     parser.add_argument(
@@ -171,7 +171,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--checkpoints_total_limit",
         type=int,
-        default=1,
+        default=2,
         help=(
             "Max number of checkpoints to store. Passed as `total_limit` to the `Accelerator` `ProjectConfiguration`."
             " See Accelerator::save_state https://huggingface.co/docs/accelerate/package_reference/accelerator#accelerate.Accelerator.save_state"
