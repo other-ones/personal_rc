@@ -26,4 +26,5 @@ accelerate launch train_disenbooth.py \
   --seed="0" \
   --run_name='tmp_mlm0005_dog6' \
   --lambda_mlm=0.001 \
-  --prompt_type='pet' 
+  --prompt_type='pet' \
+  --train_text_encoder

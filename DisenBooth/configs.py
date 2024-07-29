@@ -7,6 +7,7 @@ def parse_args(input_args=None):
     # ADDED
     parser.add_argument('--rank',type=int,default=4)
     parser.add_argument('--break_num',type=int,default=0)
+    parser.add_argument('--text_lr',type=float,default=0)
     parser.add_argument('--calibrate_kneg',type=float,default=0)
     parser.add_argument('--calibrate_kpos',type=float,default=0)
     parser.add_argument('--calibrate_pneg',type=float,default=0)

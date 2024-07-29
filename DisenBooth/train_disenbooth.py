@@ -610,7 +610,7 @@ def main(args):
     # Optimizer creation
     params_to_optimize = (
         [{"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
-         {"params": itertools.chain(text_lora_parameters), "lr": args.text_lr},
+         {"params": itertools.chain(text_lora_parameters), "lr": args.learning_rate},
          {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate}
         ] if args.train_text_encoder
         else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
@@ -744,15 +744,16 @@ def main(args):
         tracker_config.pop("validation_images")
         accelerator.init_trackers("dreambooth-lora", config=tracker_config)
         pipeline_args = {}
-        if text_encoder is not None:
-            pipeline_args["text_encoder"] = unwrap_model(text_encoder)
-        if args.skip_save_text_encoder:
-            pipeline_args["text_encoder"] = None
+        # if text_encoder is not None:
+        #     pipeline_args["text_encoder"] = unwrap_model(text_encoder)
+        # if args.skip_save_text_encoder:
+        #     pipeline_args["text_encoder"] = None
         if vae is not None:
             pipeline_args["vae"] = vae
         pipeline = DiffusionPipeline.from_pretrained(
             args.pretrained_model_name_or_path,
             unet=unwrap_model(unet),
+            text_encoder=accelerator.unwrap_model(text_encoder),
             revision=args.revision,
             variant=args.variant,
             **pipeline_args,
