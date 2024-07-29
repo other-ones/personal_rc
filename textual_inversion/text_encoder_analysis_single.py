@@ -543,7 +543,7 @@ def main():
                                     non_keyword_idxs=non_keyword_idxs,
                                     attn_mod_params=attn_mod_params
                                     )
-                attention_per_layers=out.attentions #[12,12,400,77,77]
+                attention_per_layers=out.attentions #[12,400,12,77,77]
                 k1_p1_attn_list=[]
                 p1_k1_attn_list=[]
                 print(len(attention_per_layers),'len(attention_per_layers)')
@@ -570,7 +570,8 @@ def main():
                 print(p1_k1_attn_list.shape,'p1_k1_attn_list.shape')
                 for k1_p1_attns,p1_k1_attns in zip(k1_p1_attn_list,p1_k1_attn_list):
                     plt.plot(xpoints,k1_p1_attns, 'b',linewidth=0.2)
-                    plt.plot(xpoints,p1_k1_attns, 'r',linewidth=0.2)
+                    # print(k1_p1_attns,'k1_p1_attns')
+                    # plt.plot(xpoints,p1_k1_attns, 'r',linewidth=0.2)
                     # print(k1_p1_attns[-1],p1_k1_attns[-1])
                     count+=1
                 plt.savefig('attn_curve_kpos{}_ppos{}.jpg'.format(args.calibrate_kpos1,args.calibrate_ppos1),dpi=500)

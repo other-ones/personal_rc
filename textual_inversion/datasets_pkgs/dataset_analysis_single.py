@@ -264,8 +264,10 @@ class TextualInversionDatasetSingle(Dataset):
         # prior1
         for _ in range(len(is_prior1),self.tokenizer.model_max_length):
             is_prior1.append(False)
-        assert len(is_prior1)==self.tokenizer.model_max_length
         is_prior1=torch.BoolTensor(is_prior1)
+        assert len(is_prior1)==self.tokenizer.model_max_length
+        assert torch.sum(is_prior1)==1,'torch.sum(is_prior1)==1'
+
         example['is_prior1']=is_prior1
         
 

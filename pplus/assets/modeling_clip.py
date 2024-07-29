@@ -273,13 +273,15 @@ class CLIPAttention(nn.Module):
 
         if is_keyword_tokens1 is not None and is_keyword_tokens2 is not None:
             is_keyword_tokens1=is_keyword_tokens1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            is_keyword_tokens2=is_keyword_tokens2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
             is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
             # is_keyword_tokens1=is_keyword_tokens1.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
-            # is_keyword_tokens2=is_keyword_tokens2.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
             # is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,77,12 -> 4800,77
+            
+            is_keyword_tokens2=is_keyword_tokens2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
+            is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
+            # is_keyword_tokens2=is_keyword_tokens2.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
             # is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,77,12 -> 4800,77
+            
             
             # Prior index
         if is_prior1 is not None and is_prior2 is not None:

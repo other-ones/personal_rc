@@ -27,6 +27,6 @@ accelerate launch --main_process_port 1234  text_encoder_analysis_single.py \
   --include_prior_concept=1 \
   --run_name='tmp' \
   --calibrate_ppos1=0 \
-  --calibrate_kpos1=1
+  --calibrate_kpos1=10000
 
   
