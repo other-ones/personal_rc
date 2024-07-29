@@ -1,8 +1,9 @@
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
 export MODEL_NAME="stabilityai/stable-diffusion-2-1-base";
 export OUTPUT_DIR="./saved_models/disenbooth_models";
-export CUDA_VISIBLE_DEVICES=1;
-accelerate launch train_disenbooth.py \
+export CUDA_VISIBLE_DEVICES=7;
+export PYTHONPAHT=$PWD;
+accelerate launch train_disenbooth_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --train_data_dir1=$DATA_DIR \
   --output_dir=$OUTPUT_DIR \
