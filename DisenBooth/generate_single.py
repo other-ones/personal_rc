@@ -258,7 +258,7 @@ def main(args):
     #     )
     model_id = "stabilityai/stable-diffusion-2-1-base"
     pipeline = StableDiffusionPipeline.from_pretrained(model_id).to("cuda")
-    pipeline.load_lora_weights(args.lora_path)
+    pipeline.load_lora_weights(args.resume_lora_path)
     print('lora loaded')
     if args.include_prior_concept:
         placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
@@ -363,7 +363,7 @@ def main(args):
                 break
             print(sample_dir,'sample_dir')
             images = pipeline(prompt=prompts, 
-                            num_inference_steps=50, 
+                            num_inference_steps=1, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             ).images

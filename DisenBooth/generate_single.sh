@@ -13,5 +13,5 @@ accelerate launch --main_process_port 2731  generate_single.py \
   --prior_concept1='cat' \
   --include_prior_concept=1 \
   --prompt_type='pet' \
-  --eval_batch_size=20 \
+  --eval_batch_size=18 \
   --num_images_per_prompt=15
