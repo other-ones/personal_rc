@@ -145,7 +145,6 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
             is_keyword_tokens1.append(False)
         assert len(is_keyword_tokens1)==tokenizer.model_max_length
         is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
-        # print(is_keyword_tokens1.shape,'is_keyword_tokens1.shape')
         is_keyword_tokens_list1.append(is_keyword_tokens1)
     is_keyword_tokens_list1=torch.stack(is_keyword_tokens_list1)
     logger.info(
@@ -160,6 +159,7 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
         images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
                           silent=args.silent,
                           inj_embeddings1=target_emb,
+                        #   width=512, height=512, 
                           is_keyword_tokens1=is_keyword_tokens_list1).images
     print('Generated')
 
@@ -218,7 +218,7 @@ def main():
         viz_dir = os.path.join(exp_dir,'viz')
         os.makedirs(viz_dir, exist_ok=True)
         codepath=os.path.join(exp_dir,'src')
-        if os.path.exists(codepath):
+        if os.path.exists(codepath) and 'tmp' not in codepath:
             assert False
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
@@ -259,19 +259,7 @@ def main():
     unet = UNet2DConditionModel.from_pretrained(
         args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
     )
-    # Class Augmenter
-    # class Augmenter(nn.Module):
-    #     def __init__(self, embed_dim, width_fac=4):
-    #         super(Augmenter, self).__init__()
-    #         self.W_ff1 = nn.Linear(embed_dim, width_fac * embed_dim)
-    #         self.W_ff2 = nn.Linear(embed_dim * width_fac, embed_dim)
-    #         self.relu = nn.ReLU()
-    #     def forward(self, X):
-    #         # Simple Feedforward network that projects into a higher space (by width_fac) and back to embed_dim
-    #         X = self.W_ff1(X)
-    #         X = self.relu(X)
-    #         return self.W_ff2(X)
-    # augmenter=Augmenter(embed_dim=768*2)
+    
     # # # # # # # # # # 
     # HERE
     # Add the placeholder token in tokenizer
@@ -300,7 +288,14 @@ def main():
     # HERE
     # # # # # # # # # # 
     from contextnet import ContextNet
-    cls_net=ContextNet(768, len(token_embeds))
+    if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
+        cls_net=ContextNet(1024, len(token_embeds)-1)
+        cls_output_dim=len(token_embeds)-1
+    elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
+        cls_net=ContextNet(768, len(token_embeds))
+        cls_output_dim=len(token_embeds)
+    else:
+        assert False,'undefined sd version'
 
 
     # Freeze vae and unet
@@ -647,7 +642,7 @@ def main():
                     mlm_logits=cls_net(clip_text_embedding_masked)
                     masked_idxs_flat=masked_idxs.view(-1)
                     loss_mlm = F.cross_entropy(
-                        mlm_logits.view(-1,len(orig_embeds_params)),
+                        mlm_logits.view(-1,cls_output_dim),
                         mlm_labels.view(-1),
                         ignore_index=-100,
                         reduction='none'
@@ -797,6 +792,7 @@ def main():
                             y0=row_idx*(512+margin_bottom)+512
                             x1=x0+(512+margin_right)
                             y1=y0+margin_bottom
+                            # print(image.size,'image.size')
                             merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
                             merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
                         merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))

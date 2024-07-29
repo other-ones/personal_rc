@@ -1,8 +1,8 @@
-# export MODEL_NAME="stabilityai/stable-diffusion-2-1-base"
-export MODEL_NAME="runwayml/stable-diffusion-v1-5";
+# export MODEL_NAME="runwayml/stable-diffusion-v1-5";
+export MODEL_NAME="stabilityai/stable-diffusion-2-1-base"
 export INSTANCE_DIR="./dog7";
 export OUTPUT_DIR="./output";
-export CUDA_VISIBLE_DEVICES=0;
+export CUDA_VISIBLE_DEVICES=1;
 accelerate launch train_disenbooth.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --instance_data_dir=$INSTANCE_DIR \
