@@ -9,7 +9,7 @@ python eval_clipscore_dir.py  \
 
 
 
-export CUDA_VISIBLE_DEVICES=1;
+export CUDA_VISIBLE_DEVICES=5;
 python eval_clipscore_dir.py  \
---dir_path='../../textual_inversion/results/ti_results/single_prior/calibrate' 
+--dir_path='../../textual_inversion/results/sd2/single_prior' 
 

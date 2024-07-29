@@ -10,7 +10,7 @@ info_map_03={
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
     'vase':('vase','nonliving'),
-    'teddybear':('teddybear','nonliving'),
+    'teddybear':('bear','nonliving'),
     'dog6': ('dog','pet'),
     'cat1': ('cat','pet'),
     'barn': ('barn','building'),
@@ -56,7 +56,7 @@ def get_gpu_memory():
     return memory_free_values
 
 
-log_dir='logs/ti_models/generate/calibrate/single_prior'
+log_dir='logs/ti_models/generate/sd2/single_prior'
 os.makedirs(log_dir,exist_ok=True)    
 
 
@@ -74,9 +74,9 @@ for lambda_mlm in lambda_mlms:
     for idx,concept in enumerate(list(info_map.keys())):
         prior,category=info_map[concept]
         if lambda_mlm:
-            learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
+            learned_embed_path1='saved_models/ti_models/sd2/single_prior/{}/ti_norm{}_prior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
         else:
-            learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
+            learned_embed_path1='saved_models/ti_models/sd2/single_prior/{}/ti_norm{}_prior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
         # print(learned_embed_path1,os.path.exists(learned_embed_path1),)
         # continue
         if not os.path.exists(learned_embed_path1):
@@ -84,8 +84,9 @@ for lambda_mlm in lambda_mlms:
             continue
         
         exp_name=learned_embed_path1.split('/')[-3]
-        output_dir=os.path.join('results/sd2/single/{}'.format(concept))
+        output_dir=os.path.join('results/sd2/single_prior/{}'.format(concept))
         exp_path=os.path.join(output_dir,exp_name)
+        dst_exp_path=exp_path
         if os.path.exists(exp_path):
             print(exp_path,'exists')
             continue
@@ -106,7 +107,7 @@ for lambda_mlm in lambda_mlms:
         log_path=os.path.join(log_dir,exp_name+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
-        command+='--pretrained_model_name_or_path="stabilityai/stable-diffusion-2-1" \\\n'
+        command+='--pretrained_model_name_or_path="stabilityai/stable-diffusion-2-1-base" \\\n'
         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
         command+='--placeholder_token1="<{}>" \\\n'.format(concept)
         command+='--prior_concept1="{}" \\\n'.format(prior)
@@ -114,6 +115,7 @@ for lambda_mlm in lambda_mlms:
         command+='--eval_batch_size=18 \\\n'
         command+='--num_images_per_prompt=15 \\\n'
         command+='--output_dir="{}" \\\n'.format(output_dir)
+        command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
         command+='--seed=1234 \\\n'
         command+='--mask_tokens="[MASK]" \\\n'
         command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)

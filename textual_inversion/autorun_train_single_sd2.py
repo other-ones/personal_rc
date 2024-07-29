@@ -11,7 +11,7 @@ info_map_03={
     'backpack':('backpack','nonliving'),
     'pet_cat1':('cat','pet'),
     'vase':('vase','nonliving'),
-    'teddybear':('teddybear','nonliving'),
+    'teddybear':('bear','nonliving'),
     'dog6': ('dog','pet'),
     'cat1': ('cat','pet'),
     'barn': ('barn','building'),
@@ -61,9 +61,9 @@ def get_gpu_memory():
 ports=np.arange(1111,2222)
 target_norms=[0]
 masked_loss=0
-lambda_mlms=[0,0.001]
+lambda_mlms=[0,0.001,0.0025]
 include_priors=[1]
-target_devices=[3,4]
+target_devices=[0,1,2,3,4,5,6,7]
 delay=45
 
 
@@ -155,10 +155,12 @@ for include_prior in include_priors:
                 command+='--normalize_target1={} \\\n'.format(target_norm)
                 command+='--run_name="{}" \\\n'.format(run_name)
                 command+='--report_to="wandb" \\\n'
-                command+='--project_name="TI MLM SINGLE" \\\n'
+                command+='--project_name="TI MLM SINGLE SD2" \\\n'
                 command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
+                # os.system('cp ../single_config.yaml /home/twkim/.cache/huggingface/accelerate/default_config.yaml')
                 os.system(command)
                 print('STARTED')
+                # os.system('cp ../multi_config.yaml /home/twkim/.cache/huggingface/accelerate/default_config.yaml')
                 time.sleep(delay)
             
 
