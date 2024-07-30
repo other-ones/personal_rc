@@ -3,30 +3,53 @@ from utils import float_to_str
 import time
 import numpy as np
 import os
-concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
+import socket
+hostname = socket.gethostname()
+print(hostname,'hostname')
+info_map_03={
+    'pet_dog1':('dog','pet'),
+    'backpack':('backpack','nonliving'),
     'pet_cat1':('cat','pet'),
     'vase':('vase','nonliving'),
-    'dog6': ('dog','pet'),
+    'cat1': ('cat','pet'),
+    'barn': ('barn','building'),
     'wooden_pot':('pot','nonliving'),
-    # 'pet_dog1':('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'barn': ('barn','building'),
-    # 'teddybear':('teddybear','nonliving'),
-    # 'cat1': ('cat','pet'),
     # 'dog3': ('dog','pet'),
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
     # 'rc_car':('toy','nonliving'),
-    # 'flower1':('flower','flower'),
-    
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'teddybear':('bear','nonliving'),
+    # 'dog6': ('dog','pet'),
 }
+info_map_01={
+    # 'pet_dog1':('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
+    # 'pet_cat1':('cat','pet'),
+    # 'vase':('vase','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'teddybear':('bear','nonliving'),
+    'dog6': ('dog','pet'),
+}
+if '03' in hostname:
+    info_map=info_map_03
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
 # cuda_ids=[0,1,2,3,4,5,6,7]
+concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
+
 lambda_mlms=[
-            # 0, 
+            0, 
             0.001,
-            # 0.01,
+            0.01,
             # 0.1,
             ]
 masked_loss=0
