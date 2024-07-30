@@ -73,7 +73,7 @@ train_text_encoders=[1]
 pps=[0]
 
 mlm_prior_only_list=[0]
-learning_rate=1e-5
+learning_rate=2e-5
 learning_rate_adapter=1e-4
 learning_rate_str=format_exponent(learning_rate)
 learning_rate_adapter_str=format_exponent(learning_rate_adapter)
@@ -160,7 +160,7 @@ for mlm_prior_only in mlm_prior_only_list:
                 command+='--train_batch_size=1 \\\n'
                 command+='--gradient_accumulation_steps=1 \\\n'
                 command+='--max_train_steps=5001 \\\n'
-                command+='--checkpointing_steps=500 \\\n'
+                command+='--checkpointing_steps=1000 \\\n'
                 command+='--validation_steps=100 \\\n'
                 command+='--learning_rate={} \\\n'.format(learning_rate)
                 command+='--learning_rate_adapter={} \\\n'.format(learning_rate_adapter)
