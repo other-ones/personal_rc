@@ -47,9 +47,9 @@ elif 'ubuntu' in hostname:
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 
 lambda_mlms=[
-            0, 
+            # 0, 
             0.0005,
-            # 0.01,
+            0.001,
             # 0.1,
             ]
 masked_loss=0
