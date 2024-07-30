@@ -1,6 +1,8 @@
-# dreambooth
+**/__pycache__
 **/output
 **/*.jpg
+
+# dreambooth
 DisenBooth*/saved_models
 DisenBooth*/__pycache__
 DisenBooth*/packages/**/__pycacahe__
