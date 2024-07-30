@@ -2,6 +2,9 @@ from utils import float_to_str
 import time
 import numpy as np
 import os
+import socket
+hostname = socket.gethostname()
+print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'dog6': ('dog','pet'),
@@ -41,7 +44,12 @@ for stat_idx,stat in enumerate(stats):
         break
 device_idx=stat_idx
 idx=0
-# dirs=['multi','single']
+if '03' in hostname:
+    delay=45
+    target_devices=[0,1,2,3,4,5,6,7]
+else:
+    delay=45
+    target_devices=[0,1]
 dirs=['single']
 for dir in dirs:
     dir_path=os.path.join('saved_models/dreambooth_models',dir)
@@ -70,12 +78,19 @@ for dir in dirs:
             while True:
                 stats=get_gpu_memory()
                 stat=stats[stat_idx%len(stats)]
-                if stat>2e4:
-                    device_idx=stat_idx
-                    stat_idx+=1
+                found=False
+                for stat_idx in target_devices:
+                    stat=stats[stat_idx]    
+                    if stat>2e4:
+                        device_idx=stat_idx
+                        stat_idx+=1
+                        found=True
+                        break
+                    time.sleep(5)
+                if found:
                     break
-                print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
-                time.sleep(10)
+                print('sleep waiting for {}'.format(exp_name))
+                time.sleep(delay)
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print(exp_name,device_idx)
