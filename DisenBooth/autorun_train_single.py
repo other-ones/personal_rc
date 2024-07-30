@@ -71,7 +71,7 @@ os.makedirs(log_dir,exist_ok=True)
 ports=np.arange(1111,2222)
 train_text_encoders=[1]
 pps=[0]
-target_devices=[0,1,2,3,4,5,6,7]
+
 mlm_prior_only_list=[0]
 learning_rate=1e-5
 learning_rate_adapter=1e-4
@@ -81,6 +81,12 @@ learning_rate_adapter_str=format_exponent(learning_rate_adapter)
 # print(adapter_learning_rate_str,'adapter_learning_rate_str')
 # exit()
 # for idx,concept in enumerate(list(info_map.keys())):
+if '03' in hostname:
+    delay=30
+    target_devices=[0,1,2,3,4,5,6,7]
+else:
+    delay=45
+    target_devices=[0,1]
 for mlm_prior_only in mlm_prior_only_list:
     mlm_prior_only_str=float_to_str(mlm_prior_only)
     mlm_prior_only_str=mlm_prior_only_str.replace('.','')
@@ -130,7 +136,7 @@ for mlm_prior_only in mlm_prior_only_list:
                     if found:
                         break
                     print(run_name,'sleep',stat_idx,stat)
-                    time.sleep(30)
+                    time.sleep(delay)
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
                 print(run_name,device_idx)
@@ -173,7 +179,7 @@ for mlm_prior_only in mlm_prior_only_list:
                 command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                 os.system(command)
                 print('STARTED')
-                time.sleep(30)
+                time.sleep(delay)
                 
 
 
