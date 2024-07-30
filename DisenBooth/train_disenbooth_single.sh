@@ -23,7 +23,6 @@ accelerate launch train_disenbooth_single.py \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
   --max_train_steps=2000 \
-  --validation_prompt="A <dog6> dog in a bucket" \
   --validation_steps=100 \
   --seed="0" \
   --run_name='tmp_mlm001_dog6' \
@@ -57,7 +56,6 @@ accelerate launch train_disenbooth_single.py \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
   --max_train_steps=2000 \
-  --validation_prompt="A <dog6> dog in a bucket" \
   --validation_steps=100 \
   --seed="0" \
   --run_name='tmp_mlm0005_dog6' \

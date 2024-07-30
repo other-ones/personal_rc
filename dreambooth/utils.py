@@ -35,3 +35,14 @@ def render_caption(image, text, coords, font_path='../fonts/GoNotoCurrent.ttf'):
 def float_to_str(f):
     s = f"{f:.15f}"  # Start with a high precision
     return s.rstrip('0').rstrip('.') if '.' in s else s
+
+def format_exponent(value):
+    # Convert the float to a string in scientific notation
+    sci_str = "{:e}".format(value)
+    # Replace 'e-' with 'e_' for negative exponents
+    if 'e-' in sci_str:
+        sci_str = sci_str.replace('e-', 'e_')
+    # Replace 'e+' with 'e_' for positive exponents
+    elif 'e+' in sci_str:
+        sci_str = sci_str.replace('e+', 'e_')
+    return sci_str

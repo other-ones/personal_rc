@@ -625,7 +625,7 @@ def main(args):
          {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
         ] if args.train_text_encoder
         else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
-               {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate}
+               {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
             ]
          )
     optimizer = optimizer_class(
@@ -922,6 +922,7 @@ def main(args):
                     target = noise_scheduler.get_velocity(model_input, noise, timesteps)
                 else:
                     raise ValueError(f"Unknown prediction type {noise_scheduler.config.prediction_type}")
+
                 loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
                 loss_aux1 = F.mse_loss(text_pred.float(), target.float(), reduction="mean")
                 loss_aux2 = cal_cos(encoder_hidden_states, img_state, cos)
@@ -1079,6 +1080,12 @@ def main(args):
                 progress_bar.update(1)
                 global_step += 1
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
+                if loss_mlm is not None:
+                    logs['loss_mlm']=loss_mlm.detach().item()
+                if loss_aux1 is not None:
+                    logs['loss_aux1']=loss_aux1.detach().item()
+                if loss_aux2 is not None:
+                    logs['loss_aux1']=loss_aux2.detach().item()
                 progress_bar.set_postfix(**logs)
                 accelerator.log(logs, step=global_step)
                 if global_step >= args.max_train_steps:

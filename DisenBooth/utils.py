@@ -1,7 +1,17 @@
 
 from PIL import Image
 from PIL import ImageDraw,ImageFont
-
+def format_exponent(value):
+    # Convert the float to a string in scientific notation with no decimal places
+    sci_str = "{:e}".format(value)
+    # Split the string into the coefficient and exponent parts
+    coefficient, exponent = sci_str.split('e')
+    # Remove unnecessary trailing zeros and the decimal point
+    coefficient = coefficient.rstrip('0').rstrip('.')
+    coefficient = coefficient.lstrip('0')
+    # Add the underscore to the exponent part
+    exponent = exponent.replace('-', '').replace('0','')
+    return f"{coefficient}e{exponent}"
 def render_caption(image, text, coords, font_path='../fonts/GoNotoCurrent.ttf'):
     # Load the font
     draw = ImageDraw.Draw(image)
