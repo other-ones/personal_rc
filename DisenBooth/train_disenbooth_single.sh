@@ -24,7 +24,7 @@ accelerate launch train_disenbooth_single.py \
   --lr_warmup_steps=0 \
   --max_train_steps=2000 \
   --validation_prompt="A <dog6> dog in a bucket" \
-  --validation_steps=200 \
+  --validation_steps=100 \
   --seed="0" \
   --run_name='tmp_mlm001_dog6' \
   --lambda_mlm=0.01 \
@@ -35,7 +35,7 @@ accelerate launch train_disenbooth_single.py \
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
 export MODEL_NAME="stabilityai/stable-diffusion-2-1-base";
 export OUTPUT_DIR="./saved_models/disenbooth_models";
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=0;
 export PYTHONPAHT=$PWD;
 accelerate launch train_disenbooth_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
@@ -58,9 +58,9 @@ accelerate launch train_disenbooth_single.py \
   --lr_warmup_steps=0 \
   --max_train_steps=2000 \
   --validation_prompt="A <dog6> dog in a bucket" \
-  --validation_steps=200 \
+  --validation_steps=100 \
   --seed="0" \
   --run_name='tmp_mlm0005_dog6' \
-  --lambda_mlm=0.01 \
+  --lambda_mlm=0.005 \
   --prompt_type='pet' \
   --train_text_encoder
