@@ -147,8 +147,6 @@ for mlm_prior_only in mlm_prior_only_list:
                     time.sleep(delay)
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
-                print(exp_path,'exp_path')
-                exit()
                 print(run_name,device_idx)
                 log_path=os.path.join(log_dir,run_name+'.out')
                 command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
