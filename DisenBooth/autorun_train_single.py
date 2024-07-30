@@ -101,7 +101,7 @@ for mlm_prior_only in mlm_prior_only_list:
         else:
             train_text_encoder=1
             learning_rate=2e-5
-            learning_rate_str='1e5'
+            learning_rate_str='2e5'
             learning_rate_adapter=1e-4
             learning_rate_adapter_str='1e4'
         for pp in pps:
