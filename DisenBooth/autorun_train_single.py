@@ -94,10 +94,16 @@ for mlm_prior_only in mlm_prior_only_list:
         device_idx=stat_idx
         if not lambda_mlm: #lambda_mlm==0 -> do not train text_encoder
             train_text_encoder=0
-            learning_rate=learning_rate_adapter
-            learning_rate_str=learning_rate_adapter_str
+            learning_rate=1e-4
+            learning_rate_str='1e4'
+            learning_rate_adapter=1e-4
+            learning_rate_adapter_str='1e4'
         else:
             train_text_encoder=1
+            learning_rate=1e-5
+            learning_rate_str='1e5'
+            learning_rate_adapter=1e-4
+            learning_rate_adapter_str='1e4'
         for pp in pps:
             # for lambda_mlm in lambda_mlms:
             for idx,concept in enumerate(list(info_map.keys())):
@@ -129,19 +135,19 @@ for mlm_prior_only in mlm_prior_only_list:
                     stats=get_gpu_memory()
                     found=False
                     for stat_idx in target_devices:
-                        stat=stats[stat_idx]    
+                        stat=stats[stat_idx]   
                         if stat>2e4:
                             device_idx=stat_idx
                             stat_idx+=1
                             found=True
                             break
+                        
                     if found:
                         break
                     print(run_name,'sleep',stat_idx,stat)
                     time.sleep(delay)
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
-                exit()
                 print(run_name,device_idx)
                 log_path=os.path.join(log_dir,run_name+'.out')
                 command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
