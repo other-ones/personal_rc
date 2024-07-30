@@ -1,7 +1,7 @@
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
 export MODEL_NAME="stabilityai/stable-diffusion-2-1-base";
-export OUTPUT_DIR="./saved_models/disenbooth_models";
-export CUDA_VISIBLE_DEVICES=7;
+export OUTPUT_DIR="./saved_models/disenbooth_models/sd2/single";
+export CUDA_VISIBLE_DEVICES=1;
 export PYTHONPAHT=$PWD;
 accelerate launch train_disenbooth_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
@@ -18,15 +18,15 @@ accelerate launch train_disenbooth_single.py \
   --train_batch_size=1 \
   --gradient_accumulation_steps=1 \
   --checkpointing_steps=200 \
-  --learning_rate=1e-4 \
+  --learning_rate=5e-5 \
   --learning_rate_adapter=1e-4 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
-  --max_train_steps=2000 \
+  --max_train_steps=5001 \
   --validation_steps=100 \
   --seed="0" \
-  --run_name='tmp_mlm001_dog6' \
-  --lambda_mlm=0.01 \
+  --run_name='tmp_mlm0001_dog6_lr5e5_alr1e4' \
+  --lambda_mlm=0.001 \
   --prompt_type='pet' \
   --train_text_encoder
 

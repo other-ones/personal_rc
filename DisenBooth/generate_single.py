@@ -146,48 +146,48 @@ def main(args):
     
     # """original text_encoder"""
     
-    tokenizer = CLIPTokenizer.from_pretrained(
-        model_name,
-        subfolder="tokenizer",
-        revision=args.revision,
-    )
-    text_encoder = CLIPTextModel.from_pretrained(
-        model_name,
-        subfolder="text_encoder",
-        revision=args.revision,
-    )
+    # tokenizer = CLIPTokenizer.from_pretrained(
+    #     model_name,
+    #     subfolder="tokenizer",
+    #     revision=args.revision,
+    # )
+    # text_encoder = CLIPTextModel.from_pretrained(
+    #     model_name,
+    #     subfolder="text_encoder",
+    #     revision=args.revision,
+    # )
 
     # HERE
-    mask_tokens = [args.mask_tokens]
-    placeholder_token1 = [args.placeholder_token1]
-    # placeholder_token2 = [args.placeholder_token2]
-    tokenizer.add_tokens(mask_tokens)
-    tokenizer.add_tokens(placeholder_token1)
-    text_encoder.resize_token_embeddings(len(tokenizer))
-    text_encoder.text_model.encoder.requires_grad_(False)
-    text_encoder.text_model.final_layer_norm.requires_grad_(False)
-    text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    # mask_tokens = [args.mask_tokens]
+    # placeholder_token1 = [args.placeholder_token1]
+    # # placeholder_token2 = [args.placeholder_token2]
+    # tokenizer.add_tokens(mask_tokens)
+    # tokenizer.add_tokens(placeholder_token1)
+    # text_encoder.resize_token_embeddings(len(tokenizer))
+    # text_encoder.text_model.encoder.requires_grad_(False)
+    # text_encoder.text_model.final_layer_norm.requires_grad_(False)
+    # text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
     # HERE
     
     """VAE Initialization"""
-    vae = AutoencoderKL.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
-    )
-    unet = UNet2DConditionModel.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
-    )
+    # vae = AutoencoderKL.from_pretrained(
+    #     args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
+    # )
+    # unet = UNet2DConditionModel.from_pretrained(
+    #     args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+    # )
     """UNet Initialization"""
     print(inspect.getsourcefile(UNet2DConditionModel.from_pretrained), 'inspect')
-    for param in unet.parameters():
-        param.requires_grad = False
-    vae.requires_grad_(False)
+    # for param in unet.parameters():
+    #     param.requires_grad = False
+    # vae.requires_grad_(False)
     weight_dtype = torch.float32
     if accelerator.mixed_precision == "fp16":
         weight_dtype = torch.float16
     elif accelerator.mixed_precision == "bf16":
         weight_dtype = torch.bfloat16
-    vae.to(accelerator.device, dtype=weight_dtype)
-    text_encoder.to(accelerator.device, dtype=weight_dtype)
+    # vae.to(accelerator.device, dtype=weight_dtype)
+    # text_encoder.to(accelerator.device, dtype=weight_dtype)
     if accelerator.is_main_process:
         accelerator.init_trackers("dreambooth", config=vars(args))
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
@@ -201,17 +201,17 @@ def main(args):
         else {}
     )
 
-    noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
-    (unet,
-     noise_scheduler,
-     text_encoder,
-     vae,
-     ) = accelerator.prepare(
-                    unet,
-                    noise_scheduler,
-                    text_encoder,
-                    vae,
-                    )
+    # noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
+    # (unet,
+    #  noise_scheduler,
+    #  text_encoder,
+    #  vae,
+    #  ) = accelerator.prepare(
+    #                 unet,
+    #                 noise_scheduler,
+    #                 text_encoder,
+    #                 vae,
+    #                 )
     # if args.resume_tokenizer_path and args.resume_tokenizer_path!='None':
     #     state_dict = torch.load(args.resume_tokenizer_path, map_location=torch.device('cpu'))
     #     if not isinstance(state_dict,OrderedDict):
@@ -245,7 +245,7 @@ def main(args):
         else {}
     )
     
-    unet=unet.to(accelerator.device)
+    # unet=unet.to(accelerator.device)
     # pipeline = StableDiffusionPipeline(
     #         vae=accelerator.unwrap_model(vae, **extra_args),
     #         unet=accelerator.unwrap_model(unet, **extra_args),

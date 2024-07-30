@@ -1213,6 +1213,7 @@ class LoraLoaderMixin:
             adapter_name=adapter_name,
             _pipeline=self,
         )
+        print('load_lora_weights')
         self.load_lora_into_text_encoder(
             state_dict,
             network_alphas=network_alphas,
@@ -1699,7 +1700,7 @@ class LoraLoaderMixin:
                 `default_{i}` where i is the total number of adapters being loaded.
         """
         low_cpu_mem_usage = low_cpu_mem_usage if low_cpu_mem_usage is not None else _LOW_CPU_MEM_USAGE_DEFAULT
-
+        print('load textencoder lora')
         # If the serialization format is new (introduced in https://github.com/huggingface/diffusers/pull/2918),
         # then the `state_dict` keys should have `self.unet_name` and/or `self.text_encoder_name` as
         # their prefixes.
@@ -1773,6 +1774,7 @@ class LoraLoaderMixin:
 
                     # inject LoRA layers and load the state dict
                     # in transformers we automatically check whether the adapter name is already in use or not
+                    # print('text_encoder here')
                     text_encoder.load_adapter(
                         adapter_name=adapter_name,
                         adapter_state_dict=text_encoder_lora_state_dict,
@@ -1782,6 +1784,7 @@ class LoraLoaderMixin:
                     # scale LoRA layers with `lora_scale`
                     scale_lora_layers(text_encoder, weight=lora_scale)
                 else:
+                    print('HERE1')
                     cls._modify_text_encoder(
                         text_encoder,
                         lora_scale,
@@ -1800,7 +1803,6 @@ class LoraLoaderMixin:
                         logger.info(
                             f"Pipeline {_pipeline.__class__} is offloaded. Therefore low cpu mem usage loading is forced."
                         )
-
                     if low_cpu_mem_usage:
                         device = next(iter(text_encoder_lora_state_dict.values())).device
                         dtype = next(iter(text_encoder_lora_state_dict.values())).dtype
@@ -1835,9 +1837,8 @@ class LoraLoaderMixin:
                                         "Accelerate hooks detected. Since you have called `load_lora_weights()`, the previous hooks will be first removed. Then the LoRA parameters will be loaded and the hooks will be applied again."
                                     )
                                     remove_hook_from_module(component, recurse=is_sequential_cpu_offload)
-
+                print('text_encoder loaded')
                 text_encoder.to(device=text_encoder.device, dtype=text_encoder.dtype)
-
                 # Offload back.
                 if is_model_cpu_offload:
                     _pipeline.enable_model_cpu_offload()

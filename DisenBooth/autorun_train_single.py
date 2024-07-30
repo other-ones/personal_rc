@@ -48,8 +48,8 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 
 lambda_mlms=[
             0, 
-            0.001,
-            0.01,
+            0.0005,
+            # 0.01,
             # 0.1,
             ]
 masked_loss=0
@@ -159,7 +159,7 @@ for mlm_prior_only in mlm_prior_only_list:
                 command+='--resolution=512 \\\n'
                 command+='--train_batch_size=1 \\\n'
                 command+='--gradient_accumulation_steps=1 \\\n'
-                command+='--max_train_steps=3001 \\\n'
+                command+='--max_train_steps=5001 \\\n'
                 command+='--checkpointing_steps=500 \\\n'
                 command+='--validation_steps=100 \\\n'
                 command+='--learning_rate={} \\\n'.format(learning_rate)

@@ -433,7 +433,7 @@ class LoraLoaderMixin:
             raise ValueError("PEFT backend is required for this method.")
 
         from peft import LoraConfig
-
+        # print('load_lora_into_text_encoder')
         # If the serialization format is new (introduced in https://github.com/huggingface/diffusers/pull/2918),
         # then the `state_dict` keys should have `self.unet_name` and/or `self.text_encoder_name` as
         # their prefixes.
