@@ -106,8 +106,6 @@ for mlm_prior_only in mlm_prior_only_list:
                     command+='--max_train_steps=2001 \\\n'
                     command+='--checkpointing_steps=500 \\\n'
                     command+='--validation_steps=100 \\\n'
-                    command+='--learning_rate=1e-6 \\\n'
-                    command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
                     command+='--output_dir="{}" \\\n'.format(output_dir)
                     command+='--seed=7777 \\\n'
