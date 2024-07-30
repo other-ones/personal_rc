@@ -46,7 +46,8 @@ device_idx=stat_idx
 idx=0
 if '03' in hostname:
     delay=30
-    target_devices=[0,1,2,3,4,5,6,7]
+    # target_devices=[0,1,2,3,4,5,6,7]
+    target_devices=[2,3,4,5,6,7]
 else:
     delay=45
     target_devices=[0,1]
