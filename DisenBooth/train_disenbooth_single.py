@@ -624,7 +624,7 @@ def main(args):
          {"params": itertools.chain(text_lora_parameters), "lr": args.learning_rate},
          {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
         ] if args.train_text_encoder
-        else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
+        else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate_adapter},
                {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
             ]
          )
