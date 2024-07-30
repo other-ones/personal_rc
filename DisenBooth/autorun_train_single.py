@@ -73,10 +73,10 @@ train_text_encoders=[1]
 pps=[0]
 
 mlm_prior_only_list=[0]
-learning_rate=2e-5
-learning_rate_adapter=1e-4
-learning_rate_str=format_exponent(learning_rate)
-learning_rate_adapter_str=format_exponent(learning_rate_adapter)
+# learning_rate=2e-5
+# learning_rate_adapter=1e-4
+# learning_rate_str=format_exponent(learning_rate)
+# learning_rate_adapter_str=format_exponent(learning_rate_adapter)
 # print(learning_rate_str,'learning_rate_str')
 # print(adapter_learning_rate_str,'adapter_learning_rate_str')
 # exit()
@@ -100,7 +100,7 @@ for mlm_prior_only in mlm_prior_only_list:
             learning_rate_adapter_str='1e4'
         else:
             train_text_encoder=1
-            learning_rate=1e-5
+            learning_rate=2e-5
             learning_rate_str='1e5'
             learning_rate_adapter=1e-4
             learning_rate_adapter_str='1e4'
