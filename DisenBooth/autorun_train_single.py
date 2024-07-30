@@ -95,6 +95,7 @@ for mlm_prior_only in mlm_prior_only_list:
         if not lambda_mlm: #lambda_mlm==0 -> do not train text_encoder
             train_text_encoder=0
             learning_rate=learning_rate_adapter
+            learning_rate_str=learning_rate_adapter_str
         else:
             train_text_encoder=1
         for pp in pps:
