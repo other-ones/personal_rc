@@ -149,7 +149,7 @@ for mlm_prior_only in mlm_prior_only_list:
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
                 print(run_name,device_idx)
-                log_path=os.path.join(log_dir,run_name+'.out')
+                log_path=os.path.join(log_dir,run_name+'.out')a
                 command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                 command+='accelerate launch --main_process_port {} train_disenbooth_single.py \\\n'.format(ports[idx],idx)
                 command+='--pretrained_model_name_or_path="stabilityai/stable-diffusion-2-1-base" \\\n'
