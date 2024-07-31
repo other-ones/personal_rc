@@ -18,8 +18,8 @@ info_map_03={
     # 'wooden_pot':('pot','nonliving'),
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
     # 'teddybear':('bear','nonliving'),
 }
 info_map_01={
@@ -34,8 +34,8 @@ info_map_01={
     'wooden_pot':('pot','nonliving'),
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
     'teddybear':('bear','nonliving'),
 }
 if '03' in hostname:
@@ -47,8 +47,8 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 
 lambda_mlms=[
             0, 
-            # 0.0005,
-            # 0.001,
+            0.0005,
+            0.001,
             # 0.1,
             ]
 masked_loss=0
