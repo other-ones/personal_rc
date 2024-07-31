@@ -138,7 +138,6 @@ for mlm_prior_only in mlm_prior_only_list:
                         stat=stats[stat_idx]   
                         if stat>2e4:
                             device_idx=stat_idx
-                            stat_idx+=1
                             found=True
                             break
                         time.sleep(5)
