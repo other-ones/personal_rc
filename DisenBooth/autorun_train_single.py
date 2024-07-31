@@ -87,6 +87,7 @@ if '03' in hostname:
 else:
     delay=60
     target_devices=[0,1]
+print(target_devices,'target_devices')
 for mlm_prior_only in mlm_prior_only_list:
     mlm_prior_only_str=float_to_str(mlm_prior_only)
     mlm_prior_only_str=mlm_prior_only_str.replace('.','')
@@ -135,11 +136,13 @@ for mlm_prior_only in mlm_prior_only_list:
                     stats=get_gpu_memory()
                     found=False
                     for stat_idx in target_devices:
+
                         stat=stats[stat_idx]   
                         if stat>2e4:
                             device_idx=stat_idx
                             found=True
                             break
+                        print(stat_idx,'not available')
                         time.sleep(5)
                     if found:
                         break

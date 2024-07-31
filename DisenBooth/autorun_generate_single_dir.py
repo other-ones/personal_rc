@@ -8,19 +8,19 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'dog6': ('dog','pet'),
-    # 'pet_cat1':('cat','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'backpack':('backpack','nonliving'),
-    # 'teddybear':('bear','nonliving'),
-    # 'cat1': ('cat','pet'),
-    # 'pet_dog1':('dog','pet'),
-    # 'barn': ('barn','building'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'dog3': ('dog','pet'),
+    'pet_cat1':('cat','pet'),
+    'vase':('vase','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'backpack':('backpack','nonliving'),
+    'teddybear':('bear','nonliving'),
+    'cat1': ('cat','pet'),
+    'pet_dog1':('dog','pet'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'dog3': ('dog','pet'),
     # 'flower1':('flower','flower'),
 
 }
@@ -63,7 +63,7 @@ for concept in concepts:
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         prior,category=info_map[concept]
-        resume_lora_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-3000')
+        resume_lora_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000')
         if not os.path.exists(resume_lora_path):
             print(resume_lora_path,'does not exist')
             continue
