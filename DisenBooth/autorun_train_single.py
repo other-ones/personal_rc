@@ -20,7 +20,7 @@ info_map_03={
     # 'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
     'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'teddybear':('bear','nonliving'),
+    'teddybear':('bear','nonliving'),
 }
 info_map_01={
     # 'pet_dog1':('dog','pet'),
@@ -36,7 +36,7 @@ info_map_01={
     'cat_statue': ('toy','nonliving'),
     # 'rc_car':('toy','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
-    'teddybear':('bear','nonliving'),
+    # 'teddybear':('bear','nonliving'),
 }
 if '03' in hostname:
     info_map=info_map_03
