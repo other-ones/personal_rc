@@ -9,7 +9,8 @@ accelerate launch --main_process_port 2731  generate_single.py \
   --output_dir="results/disenbooth/sd2/single/dog6" \
   --seed=1234 \
   --mask_tokens="[MASK]" \
-  --resume_lora_path='saved_models/disenbooth_models/sd2/single/dog6/disenbooth_nopp_mlm0001_dog6_train_text_lr1e5_alr1e4/checkpoints/checkpoint-3000' \
+  --resume_unet_path='saved_models/disenbooth_models/sd2/single/dog6/disenbooth_nopp_mlm0001_dog6_train_text_lr2e5_alr1e4/checkpoints/checkpoint-5000/unet_s5000.pt' \
+  --resume_text_encoder_path='saved_models/disenbooth_models/sd2/single/dog6/disenbooth_nopp_mlm0001_dog6_train_text_lr2e5_alr1e4/checkpoints/checkpoint-5000/text_encoder_s5000.pt' \
   --prior_concept1='dog' \
   --include_prior_concept=1 \
   --prompt_type='pet' \
