@@ -47,7 +47,7 @@ idx=0
 if '03' in hostname:
     delay=30
     # target_devices=[0,1,2,3,4,5,6,7]
-    target_devices=[2,3,4,5,6,7]
+    target_devices=[0,1,2,3,4,5,6,7]
 else:
     delay=45
     target_devices=[0,1]
@@ -63,15 +63,19 @@ for concept in info_map.keys():
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         prior,category=info_map[concept]
-        resume_lora_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000')
-        if not os.path.exists(resume_lora_path):
-            print(resume_lora_path,'does not exist')
+        resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000/unet_s5000.pt')
+        if 'nomlm' in exp:
+            resume_text_encoder_path=None
+        else:
+            resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000/text_encoder_s5000.pt')
+        if not os.path.exists(resume_unet_path):
+            print(resume_unet_path,'does not exist')
             continue
-        exp_name=resume_lora_path.split('/')[-3]
+        # exp_name=resume_unet_path.split('/')[-4]
         output_dir=os.path.join('results/disenbooth/single/{}'.format(concept))
-        exp_path=os.path.join(output_dir,exp_name)
+        exp_path=os.path.join(output_dir,exp)
         if os.path.exists(exp_path):
-            print(exp_name,'exists')
+            print(exp,'exists')
             continue
         while True:
             stats=get_gpu_memory()
@@ -86,12 +90,12 @@ for concept in info_map.keys():
                 time.sleep(5)
             if found:
                 break
-            print('sleep waiting for {}'.format(exp_name))
+            print('sleep waiting for {}'.format(exp))
             time.sleep(delay)
             stat_idx+=1
             stat_idx=(stat_idx%len(stats))
-        print(exp_name,device_idx)
-        log_path=os.path.join(log_dir,exp_name+'.out')
+        print(exp,device_idx)
+        log_path=os.path.join(log_dir,exp+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
         command+='--pretrained_model_name_or_path="stabilityai/stable-diffusion-2-1-base" \\\n'
@@ -104,7 +108,8 @@ for concept in info_map.keys():
         command+='--output_dir="{}" \\\n'.format(output_dir)
         command+='--seed=1234 \\\n'
         command+='--mask_tokens="[MASK]" \\\n'
-        command+='--resume_lora_path="{}" \\\n'.format(resume_lora_path)
+        command+='--resume_unet_path="{}" \\\n'.format(resume_unet_path)
+        command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
         command+='--prompt_type="{}" \\\n'.format(category)
         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
         os.system(command)

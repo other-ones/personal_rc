@@ -55,7 +55,18 @@ hostname = socket.gethostname()
 from configs import parse_args
 from torch import nn
 
-
+# ADDED
+from diffusers.loaders import (
+    LoraLoaderMixin,
+    text_encoder_lora_state_dict,
+)
+from diffusers.models.attention_processor import (
+    AttnAddedKVProcessor,
+    AttnAddedKVProcessor2_0,
+    SlicedAttnAddedKVProcessor,
+)
+from diffusers.models.lora import LoRALinearLayer
+# ADDED
 def to_img(x, clip=True):
     x = 0.5 * (x + 1)
     x = x.clamp(0, 1)
@@ -112,7 +123,7 @@ def main(args):
     if args.seed is not None:
         set_seed(args.seed)
 
-    exp_name=args.resume_lora_path.split('/')[-3]
+    exp_name=args.resume_unet_path.split('/')[-4]
     exp_dir=os.path.join(args.output_dir,exp_name)
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
@@ -146,36 +157,95 @@ def main(args):
     
     # """original text_encoder"""
     
-    # tokenizer = CLIPTokenizer.from_pretrained(
-    #     model_name,
-    #     subfolder="tokenizer",
-    #     revision=args.revision,
-    # )
-    # text_encoder = CLIPTextModel.from_pretrained(
-    #     model_name,
-    #     subfolder="text_encoder",
-    #     revision=args.revision,
-    # )
+    tokenizer = CLIPTokenizer.from_pretrained(
+        model_name,
+        subfolder="tokenizer",
+        revision=args.revision,
+    )
+    text_encoder = CLIPTextModel.from_pretrained(
+        model_name,
+        subfolder="text_encoder",
+        revision=args.revision,
+    )
 
     # HERE
-    # mask_tokens = [args.mask_tokens]
-    # placeholder_token1 = [args.placeholder_token1]
-    # # placeholder_token2 = [args.placeholder_token2]
-    # tokenizer.add_tokens(mask_tokens)
-    # tokenizer.add_tokens(placeholder_token1)
-    # text_encoder.resize_token_embeddings(len(tokenizer))
-    # text_encoder.text_model.encoder.requires_grad_(False)
-    # text_encoder.text_model.final_layer_norm.requires_grad_(False)
-    # text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    mask_tokens = [args.mask_tokens]
+    placeholder_token1 = [args.placeholder_token1]
+    # placeholder_token2 = [args.placeholder_token2]
+    tokenizer.add_tokens(mask_tokens)
+    tokenizer.add_tokens(placeholder_token1)
+    text_encoder.resize_token_embeddings(len(tokenizer))
+    text_encoder.text_model.encoder.requires_grad_(False)
+    text_encoder.text_model.final_layer_norm.requires_grad_(False)
+    text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
     # HERE
     
     """VAE Initialization"""
-    # vae = AutoencoderKL.from_pretrained(
-    #     args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
-    # )
-    # unet = UNet2DConditionModel.from_pretrained(
-    #     args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
-    # )
+    vae = AutoencoderKL.from_pretrained(
+        args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
+    )
+    unet = UNet2DConditionModel.from_pretrained(
+        args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+    )
+
+    # Set correct lora layers
+    unet_lora_parameters = []
+    for attn_processor_name, attn_processor in unet.attn_processors.items():
+        # Parse the attention module.
+        attn_module = unet
+        for n in attn_processor_name.split(".")[:-1]:
+            attn_module = getattr(attn_module, n)
+
+        # Set the `lora_layer` attribute of the attention-related matrices.
+        attn_module.to_q.set_lora_layer(
+            LoRALinearLayer(
+                in_features=attn_module.to_q.in_features, out_features=attn_module.to_q.out_features, rank=args.rank
+            )
+        )
+        attn_module.to_k.set_lora_layer(
+            LoRALinearLayer(
+                in_features=attn_module.to_k.in_features, out_features=attn_module.to_k.out_features, rank=args.rank
+            )
+        )
+        attn_module.to_v.set_lora_layer(
+            LoRALinearLayer(
+                in_features=attn_module.to_v.in_features, out_features=attn_module.to_v.out_features, rank=args.rank
+            )
+        )
+        attn_module.to_out[0].set_lora_layer(
+            LoRALinearLayer(
+                in_features=attn_module.to_out[0].in_features,
+                out_features=attn_module.to_out[0].out_features,
+                rank=args.rank,
+            )
+        )
+
+        # Accumulate the LoRA params to optimize.
+        unet_lora_parameters.extend(attn_module.to_q.lora_layer.parameters())
+        unet_lora_parameters.extend(attn_module.to_k.lora_layer.parameters())
+        unet_lora_parameters.extend(attn_module.to_v.lora_layer.parameters())
+        unet_lora_parameters.extend(attn_module.to_out[0].lora_layer.parameters())
+
+        if isinstance(attn_processor, (AttnAddedKVProcessor, SlicedAttnAddedKVProcessor, AttnAddedKVProcessor2_0)):
+            attn_module.add_k_proj.set_lora_layer(
+                LoRALinearLayer(
+                    in_features=attn_module.add_k_proj.in_features,
+                    out_features=attn_module.add_k_proj.out_features,
+                    rank=args.rank,
+                )
+            )
+            attn_module.add_v_proj.set_lora_layer(
+                LoRALinearLayer(
+                    in_features=attn_module.add_v_proj.in_features,
+                    out_features=attn_module.add_v_proj.out_features,
+                    rank=args.rank,
+                )
+            )
+            unet_lora_parameters.extend(attn_module.add_k_proj.lora_layer.parameters())
+            unet_lora_parameters.extend(attn_module.add_v_proj.lora_layer.parameters())
+    if args.resume_text_encoder_path:
+        text_lora_parameters = LoraLoaderMixin._modify_text_encoder(text_encoder, dtype=torch.float32, rank=args.rank)
+
     """UNet Initialization"""
     print(inspect.getsourcefile(UNet2DConditionModel.from_pretrained), 'inspect')
     # for param in unet.parameters():
@@ -200,18 +270,17 @@ def main(args):
         if accepts_keep_fp32_wrapper
         else {}
     )
-
-    # noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
-    # (unet,
-    #  noise_scheduler,
-    #  text_encoder,
-    #  vae,
-    #  ) = accelerator.prepare(
-    #                 unet,
-    #                 noise_scheduler,
-    #                 text_encoder,
-    #                 vae,
-    #                 )
+    noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
+    (unet,
+     noise_scheduler,
+     text_encoder,
+     vae,
+     ) = accelerator.prepare(
+                    unet,
+                    noise_scheduler,
+                    text_encoder,
+                    vae,
+                    )
     # if args.resume_tokenizer_path and args.resume_tokenizer_path!='None':
     #     state_dict = torch.load(args.resume_tokenizer_path, map_location=torch.device('cpu'))
     #     if not isinstance(state_dict,OrderedDict):
@@ -219,20 +288,20 @@ def main(args):
     #     tokenizer.load_state_dict(state_dict,strict=True)
     #     print('tokenizer parameters loaded')
     #     del state_dict
-    # if args.resume_unet_path and args.resume_unet_path!='None':
-    #     state_dict = torch.load(args.resume_unet_path, map_location=torch.device('cpu'))
-    #     if not isinstance(state_dict,OrderedDict):
-    #         state_dict=state_dict()
-    #     unet.load_state_dict(state_dict,strict=True)
-    #     print('unet parameters loaded')
-    #     del state_dict
-    # if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
-    #     state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
-    #     if not isinstance(state_dict,OrderedDict):
-    #         state_dict=state_dict()
-    #     text_encoder.load_state_dict(state_dict,strict=True)
-    #     print('text_encoder parameters loaded')
-    #     del state_dict
+    if args.resume_unet_path and args.resume_unet_path!='None':
+        state_dict = torch.load(args.resume_unet_path, map_location=torch.device('cpu'))
+        if not isinstance(state_dict,OrderedDict):
+            state_dict=state_dict()
+        unet.load_state_dict(state_dict,strict=True)
+        print('unet parameters loaded')
+        del state_dict
+    if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
+        state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
+        if not isinstance(state_dict,OrderedDict):
+            state_dict=state_dict()
+        text_encoder.load_state_dict(state_dict,strict=True)
+        print('text_encoder parameters loaded')
+        del state_dict
     
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
         inspect.signature(
@@ -246,19 +315,19 @@ def main(args):
     )
     
     # unet=unet.to(accelerator.device)
-    # pipeline = StableDiffusionPipeline(
-    #         vae=accelerator.unwrap_model(vae, **extra_args),
-    #         unet=accelerator.unwrap_model(unet, **extra_args),
-    #         text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
-    #         tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
-    #         scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
-    #         feature_extractor=None,
-    #         safety_checker=None,
-    #         requires_safety_checker=False,
-    #     )
-    model_id = "stabilityai/stable-diffusion-2-1-base"
-    pipeline = StableDiffusionPipeline.from_pretrained(model_id).to("cuda")
-    pipeline.load_lora_weights(args.resume_lora_path)
+    pipeline = StableDiffusionPipeline(
+            vae=accelerator.unwrap_model(vae, **extra_args),
+            unet=accelerator.unwrap_model(unet, **extra_args),
+            text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
+            tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
+            scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
+            feature_extractor=None,
+            safety_checker=None,
+            requires_safety_checker=False,
+        )
+    # model_id = "stabilityai/stable-diffusion-2-1-base"
+    # pipeline = StableDiffusionPipeline.from_pretrained(model_id).to("cuda")
+    # pipeline.load_lora_weights(args.resume_lora_path)
     print('lora loaded')
     if args.include_prior_concept:
         placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
