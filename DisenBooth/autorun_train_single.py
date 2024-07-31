@@ -85,7 +85,7 @@ if '03' in hostname:
     delay=45
     target_devices=[0,1,2,3,4,5,6,7]
 else:
-    delay=45
+    delay=60
     target_devices=[0,1]
 for mlm_prior_only in mlm_prior_only_list:
     mlm_prior_only_str=float_to_str(mlm_prior_only)
@@ -141,7 +141,7 @@ for mlm_prior_only in mlm_prior_only_list:
                             stat_idx+=1
                             found=True
                             break
-                        
+                        time.sleep(5)
                     if found:
                         break
                     print(run_name,'sleep',stat_idx,stat)
