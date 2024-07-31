@@ -748,7 +748,7 @@ def main(args):
                 concept["class_data_dir"] = os.path.join(class_images_dir, "images.txt")
                 args.concepts_list[i] = concept
                 accelerator.wait_for_everyone()
-            else:
+            else: # HERE
                 cur_class_images = len(list(class_images_dir.iterdir()))
 
                 if cur_class_images < args.num_class_images:
@@ -1191,7 +1191,6 @@ def main(args):
                     grads_text_encoder.data[index_grads_to_zero, :] = grads_text_encoder.data[
                         index_grads_to_zero, :
                     ].fill_(0)
-
                 if accelerator.sync_gradients:
                     params_to_clip = (
                         itertools.chain(text_encoder.parameters(), custom_diffusion_layers.parameters())

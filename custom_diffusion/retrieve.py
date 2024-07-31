@@ -20,7 +20,7 @@ import requests
 from clip_retrieval.clip_client import ClipClient
 from PIL import Image
 from tqdm import tqdm
-
+#  https://the-eye.eu/public/AI/cah/laion400m-indexes
 
 def retrieve(class_prompt, class_data_dir, num_class_images):
     factor = 1.5

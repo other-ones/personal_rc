@@ -4,6 +4,7 @@
 **/**/**/**/__pycache__
 **/output
 **/*.jpg
+**/priors
 
 # dreambooth
 DisenBooth*/saved_models
