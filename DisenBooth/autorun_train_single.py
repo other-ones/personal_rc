@@ -82,7 +82,7 @@ mlm_prior_only_list=[0]
 # for idx,concept in enumerate(list(info_map.keys())):
 if '03' in hostname:
     delay=45
-    target_devices=[2,3,4,5,6,7]
+    target_devices=[0,1,2,3,4,5,6,7]
 else:
     delay=60
     target_devices=[0,1]

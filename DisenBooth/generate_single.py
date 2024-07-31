@@ -123,7 +123,7 @@ def main(args):
     if args.seed is not None:
         set_seed(args.seed)
 
-    exp_name=args.resume_unet_path.split('/')[-3]
+    exp_name=args.resume_unet_path.split('/')[-4]
     exp_dir=os.path.join(args.output_dir,exp_name)
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
@@ -157,16 +157,16 @@ def main(args):
     
     # """original text_encoder"""
     
-    # tokenizer = CLIPTokenizer.from_pretrained(
-    #     model_name,
-    #     subfolder="tokenizer",
-    #     revision=args.revision,
-    # )
-    # text_encoder = CLIPTextModel.from_pretrained(
-    #     model_name,
-    #     subfolder="text_encoder",
-    #     revision=args.revision,
-    # )
+    tokenizer = CLIPTokenizer.from_pretrained(
+        model_name,
+        subfolder="tokenizer",
+        revision=args.revision,
+    )
+    text_encoder = CLIPTextModel.from_pretrained(
+        model_name,
+        subfolder="text_encoder",
+        revision=args.revision,
+    )
 
     # HERE
     mask_tokens = [args.mask_tokens]
@@ -243,8 +243,8 @@ def main(args):
             )
             unet_lora_parameters.extend(attn_module.add_k_proj.lora_layer.parameters())
             unet_lora_parameters.extend(attn_module.add_v_proj.lora_layer.parameters())
-
-    
+    if args.resume_text_encoder_path:
+        text_lora_parameters = LoraLoaderMixin._modify_text_encoder(text_encoder, dtype=torch.float32, rank=args.rank)
 
     """UNet Initialization"""
     print(inspect.getsourcefile(UNet2DConditionModel.from_pretrained), 'inspect')
@@ -270,18 +270,17 @@ def main(args):
         if accepts_keep_fp32_wrapper
         else {}
     )
-
-    # noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
-    # (unet,
-    #  noise_scheduler,
-    #  text_encoder,
-    #  vae,
-    #  ) = accelerator.prepare(
-    #                 unet,
-    #                 noise_scheduler,
-    #                 text_encoder,
-    #                 vae,
-    #                 )
+    noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
+    (unet,
+     noise_scheduler,
+     text_encoder,
+     vae,
+     ) = accelerator.prepare(
+                    unet,
+                    noise_scheduler,
+                    text_encoder,
+                    vae,
+                    )
     # if args.resume_tokenizer_path and args.resume_tokenizer_path!='None':
     #     state_dict = torch.load(args.resume_tokenizer_path, map_location=torch.device('cpu'))
     #     if not isinstance(state_dict,OrderedDict):
