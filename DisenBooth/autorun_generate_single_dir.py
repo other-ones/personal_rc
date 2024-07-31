@@ -7,14 +7,14 @@ hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
-    'dog6': ('dog','pet'),
+    'pet_dog1':('dog','pet'),
     'pet_cat1':('cat','pet'),
+    'dog6': ('dog','pet'),
     'vase':('vase','nonliving'),
     'wooden_pot':('pot','nonliving'),
     'backpack':('backpack','nonliving'),
     'teddybear':('bear','nonliving'),
     'cat1': ('cat','pet'),
-    'pet_dog1':('dog','pet'),
     'barn': ('barn','building'),
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
@@ -56,7 +56,7 @@ log_dir='logs/disenbooth/generate/single'
 os.makedirs(log_dir,exist_ok=True)    
 concepts=os.listdir(dir_path)
 concepts=sorted(concepts)
-for concept in concepts:
+for concept in info_map.keys():
     if concept not in info_map:
         continue
     concept_path=os.path.join(dir_path,concept)

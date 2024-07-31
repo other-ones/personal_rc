@@ -1075,7 +1075,11 @@ def main(args):
                                     shutil.rmtree(removing_checkpoint)
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit
                         save_path = os.path.join(ckpt_dir, "checkpoint-{:04d}".format(global_step))
-                        accelerator.save_state(save_path)
+                        # accelerator.save_state(save_path)
+                        save_path_unet=os.path.join(save_path,'unet_s{:04d}.pt'.format(global_step))
+                        save_path_text_encoder=os.path.join(save_path,'text_encoder_s{:04d}.pt'.format(global_step))
+                        torch.save(unet.state_dict(),save_path_unet)
+                        torch.save(text_encoder.state_dict(),save_path_text_encoder)
                         logger.info(f"Saved state to {save_path}")
                 progress_bar.update(1)
                 global_step += 1
