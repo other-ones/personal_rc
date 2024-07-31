@@ -8,36 +8,35 @@ hostname = socket.gethostname()
 print(hostname,'hostname')
 info_map_03={
     'pet_dog1':('dog','pet'),
-    'backpack':('backpack','nonliving'),
     'pet_cat1':('cat','pet'),
-    'vase':('vase','nonliving'),
-    'cat1': ('cat','pet'),
-    'barn': ('barn','building'),
-    'wooden_pot':('pot','nonliving'),
     'dog3': ('dog','pet'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'teddybear':('bear','nonliving'),
-    # 'dog6': ('dog','pet'),
-}
-info_map_01={
-    # 'pet_dog1':('dog','pet'),
+    'dog6': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
-    # 'pet_cat1':('cat','pet'),
     # 'vase':('vase','nonliving'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
     # 'wooden_pot':('pot','nonliving'),
-
-    # 'dog3': ('dog','pet'),
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'teddybear':('bear','nonliving'),
+}
+info_map_01={
+    # 'pet_dog1':('dog','pet'),
+    # 'pet_cat1':('cat','pet'),
+    # 'dog3': ('dog','pet'),
+    # 'dog6': ('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'vase':('vase','nonliving'),
+    'cat1': ('cat','pet'),
+    'barn': ('barn','building'),
+    'wooden_pot':('pot','nonliving'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
     'pink_sunglasses':('sunglasses','sunglasses'),
     'teddybear':('bear','nonliving'),
-    'dog6': ('dog','pet'),
 }
 if '03' in hostname:
     info_map=info_map_03
