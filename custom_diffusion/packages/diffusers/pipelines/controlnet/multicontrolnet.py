@@ -31,7 +31,7 @@ class MultiControlNetModel(ModelMixin):
 
     def forward(
         self,
-        sample: torch.Tensor,
+        sample: torch.FloatTensor,
         timestep: Union[torch.Tensor, float, int],
         encoder_hidden_states: torch.Tensor,
         controlnet_cond: List[torch.tensor],
@@ -100,15 +100,19 @@ class MultiControlNetModel(ModelMixin):
             variant (`str`, *optional*):
                 If specified, weights are saved in the format pytorch_model.<variant>.bin.
         """
-        for idx, controlnet in enumerate(self.nets):
-            suffix = "" if idx == 0 else f"_{idx}"
+        idx = 0
+        model_path_to_save = save_directory
+        for controlnet in self.nets:
             controlnet.save_pretrained(
-                save_directory + suffix,
+                model_path_to_save,
                 is_main_process=is_main_process,
                 save_function=save_function,
                 safe_serialization=safe_serialization,
                 variant=variant,
             )
+
+            idx += 1
+            model_path_to_save = model_path_to_save + f"_{idx}"
 
     @classmethod
     def from_pretrained(cls, pretrained_model_path: Optional[Union[str, os.PathLike]], **kwargs):

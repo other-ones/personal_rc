@@ -24,9 +24,15 @@ from tqdm import tqdm
 
 def retrieve(class_prompt, class_data_dir, num_class_images):
     factor = 1.5
+    print(class_prompt,'class_prompt')
+    print(class_data_dir,'class_data_dir')
+    print(num_class_images,'num_class_images')
     num_images = int(factor * num_class_images)
     client = ClipClient(
-        url="https://knn.laion.ai/knn-service", indice_name="laion_400m", num_images=num_images, aesthetic_weight=0.1
+        url="https://knn.laion.ai/knn-service", 
+        indice_name="laion_400m", 
+        num_images=num_images, 
+        aesthetic_weight=0.1
     )
 
     os.makedirs(f"{class_data_dir}/images", exist_ok=True)
@@ -34,6 +40,7 @@ def retrieve(class_prompt, class_data_dir, num_class_images):
         return
 
     while True:
+        print(class_prompt,'class_prompt')
         class_images = client.query(text=class_prompt)
         if len(class_images) >= factor * num_class_images or num_images > 1e4:
             break

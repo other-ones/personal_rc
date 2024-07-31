@@ -11,7 +11,7 @@ from ...utils import (
 
 
 _dummy_objects = {}
-_import_structure = {"pipeline_output": ["AnimateDiffPipelineOutput"]}
+_import_structure = {}
 
 try:
     if not (is_transformers_available() and is_torch_available()):
@@ -21,9 +21,7 @@ except OptionalDependencyNotAvailable:
 
     _dummy_objects.update(get_objects_from_module(dummy_torch_and_transformers_objects))
 else:
-    _import_structure["pipeline_animatediff"] = ["AnimateDiffPipeline"]
-    _import_structure["pipeline_animatediff_sdxl"] = ["AnimateDiffSDXLPipeline"]
-    _import_structure["pipeline_animatediff_video2video"] = ["AnimateDiffVideoToVideoPipeline"]
+    _import_structure["pipeline_animatediff"] = ["AnimateDiffPipeline", "AnimateDiffPipelineOutput"]
 
 if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
     try:
@@ -33,10 +31,7 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
         from ...utils.dummy_torch_and_transformers_objects import *
 
     else:
-        from .pipeline_animatediff import AnimateDiffPipeline
-        from .pipeline_animatediff_sdxl import AnimateDiffSDXLPipeline
-        from .pipeline_animatediff_video2video import AnimateDiffVideoToVideoPipeline
-        from .pipeline_output import AnimateDiffPipelineOutput
+        from .pipeline_animatediff import AnimateDiffPipeline, AnimateDiffPipelineOutput
 
 else:
     import sys

@@ -1,4 +1,4 @@
-# Copyright 2024 ETH Zurich Computer Vision Lab and The HuggingFace Team. All rights reserved.
+# Copyright 2023 ETH Zurich Computer Vision Lab and The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,16 +31,16 @@ class RePaintSchedulerOutput(BaseOutput):
     Output class for the scheduler's step function output.
 
     Args:
-        prev_sample (`torch.Tensor` of shape `(batch_size, num_channels, height, width)` for images):
+        prev_sample (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)` for images):
             Computed sample (x_{t-1}) of previous timestep. `prev_sample` should be used as next model input in the
             denoising loop.
-        pred_original_sample (`torch.Tensor` of shape `(batch_size, num_channels, height, width)` for images):
+        pred_original_sample (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)` for images):
             The predicted denoised sample (x_{0}) based on the model output from
              the current timestep. `pred_original_sample` can be used to preview progress or for guidance.
     """
 
-    prev_sample: torch.Tensor
-    pred_original_sample: torch.Tensor
+    prev_sample: torch.FloatTensor
+    pred_original_sample: torch.FloatTensor
 
 
 # Copied from diffusers.schedulers.scheduling_ddpm.betas_for_alpha_bar
@@ -78,7 +78,7 @@ def betas_for_alpha_bar(
             return math.exp(t * -12.0)
 
     else:
-        raise ValueError(f"Unsupported alpha_transform_type: {alpha_transform_type}")
+        raise ValueError(f"Unsupported alpha_tranform_type: {alpha_transform_type}")
 
     betas = []
     for i in range(num_diffusion_timesteps):
@@ -134,7 +134,9 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
             self.betas = torch.linspace(beta_start, beta_end, num_train_timesteps, dtype=torch.float32)
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
-            self.betas = torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+            self.betas = (
+                torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+            )
         elif beta_schedule == "squaredcos_cap_v2":
             # Glide cosine schedule
             self.betas = betas_for_alpha_bar(num_train_timesteps)
@@ -143,7 +145,7 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
             betas = torch.linspace(-6, 6, num_train_timesteps)
             self.betas = torch.sigmoid(betas) * (beta_end - beta_start) + beta_start
         else:
-            raise NotImplementedError(f"{beta_schedule} is not implemented for {self.__class__}")
+            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
 
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
@@ -160,19 +162,19 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
         self.eta = eta
 
-    def scale_model_input(self, sample: torch.Tensor, timestep: Optional[int] = None) -> torch.Tensor:
+    def scale_model_input(self, sample: torch.FloatTensor, timestep: Optional[int] = None) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.
 
         Args:
-            sample (`torch.Tensor`):
+            sample (`torch.FloatTensor`):
                 The input sample.
             timestep (`int`, *optional*):
                 The current timestep in the diffusion chain.
 
         Returns:
-            `torch.Tensor`:
+            `torch.FloatTensor`:
                 A scaled input sample.
         """
         return sample
@@ -245,11 +247,11 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
     def step(
         self,
-        model_output: torch.Tensor,
+        model_output: torch.FloatTensor,
         timestep: int,
-        sample: torch.Tensor,
-        original_image: torch.Tensor,
-        mask: torch.Tensor,
+        sample: torch.FloatTensor,
+        original_image: torch.FloatTensor,
+        mask: torch.FloatTensor,
         generator: Optional[torch.Generator] = None,
         return_dict: bool = True,
     ) -> Union[RePaintSchedulerOutput, Tuple]:
@@ -258,15 +260,15 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
         process from the learned model outputs (most often the predicted noise).
 
         Args:
-            model_output (`torch.Tensor`):
+            model_output (`torch.FloatTensor`):
                 The direct output from learned diffusion model.
             timestep (`int`):
                 The current discrete timestep in the diffusion chain.
-            sample (`torch.Tensor`):
+            sample (`torch.FloatTensor`):
                 A current instance of a sample created by the diffusion process.
-            original_image (`torch.Tensor`):
+            original_image (`torch.FloatTensor`):
                 The original image to inpaint on.
-            mask (`torch.Tensor`):
+            mask (`torch.FloatTensor`):
                 The mask where a value of 0.0 indicates which part of the original image to inpaint.
             generator (`torch.Generator`, *optional*):
                 A random number generator.
@@ -351,10 +353,10 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
     def add_noise(
         self,
-        original_samples: torch.Tensor,
-        noise: torch.Tensor,
+        original_samples: torch.FloatTensor,
+        noise: torch.FloatTensor,
         timesteps: torch.IntTensor,
-    ) -> torch.Tensor:
+    ) -> torch.FloatTensor:
         raise NotImplementedError("Use `DDPMScheduler.add_noise()` to train for sampling with RePaint.")
 
     def __len__(self):

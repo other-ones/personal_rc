@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2024 The HuggingFace Inc. team.
+# Copyright 2023 The HuggingFace Inc. team.
 # Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,6 @@ import numpy as np
 import PIL.Image
 from flax.core.frozen_dict import FrozenDict
 from huggingface_hub import create_repo, snapshot_download
-from huggingface_hub.utils import validate_hf_hub_args
 from PIL import Image
 from tqdm.auto import tqdm
 
@@ -33,6 +32,7 @@ from ..models.modeling_flax_utils import FLAX_WEIGHTS_NAME, FlaxModelMixin
 from ..schedulers.scheduling_utils_flax import SCHEDULER_CONFIG_NAME, FlaxSchedulerMixin
 from ..utils import (
     CONFIG_NAME,
+    DIFFUSERS_CACHE,
     BaseOutput,
     PushToHubMixin,
     http_user_agent,
@@ -112,7 +112,6 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
         - **config_name** ([`str`]) -- The configuration filename that stores the class and module names of all the
           diffusion pipeline's components.
     """
-
     config_name = "model_index.json"
 
     def register_modules(self, **kwargs):
@@ -227,7 +226,6 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
                 )
 
     @classmethod
-    @validate_hf_hub_args
     def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], **kwargs):
         r"""
         Instantiate a Flax-based diffusion pipeline from pretrained pipeline weights.
@@ -254,7 +252,9 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
             force_download (`bool`, *optional*, defaults to `False`):
                 Whether or not to force the (re-)download of the model weights and configuration files, overriding the
                 cached versions if they exist.
-
+            resume_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to resume downloading the model weights and configuration files. If set to `False`, any
+                incompletely downloaded files are deleted.
             proxies (`Dict[str, str]`, *optional*):
                 A dictionary of proxy servers to use by protocol or endpoint, for example, `{'http': 'foo.bar:3128',
                 'http://hostname': 'foo.bar:4012'}`. The proxies are used on each request.
@@ -263,7 +263,7 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
             local_files_only (`bool`, *optional*, defaults to `False`):
                 Whether to only load local model weights and configuration files or not. If set to `True`, the model
                 won't be downloaded from the Hub.
-            token (`str` or *bool*, *optional*):
+            use_auth_token (`str` or *bool*, *optional*):
                 The token to use as HTTP bearer authorization for remote files. If `True`, the token generated from
                 `diffusers-cli login` (stored in `~/.huggingface`) is used.
             revision (`str`, *optional*, defaults to `"main"`):
@@ -294,7 +294,7 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
         >>> # see more in [the documentation](https://huggingface.co/docs/hub/security-tokens)
         >>> pipeline, params = FlaxDiffusionPipeline.from_pretrained(
         ...     "runwayml/stable-diffusion-v1-5",
-        ...     variant="bf16",
+        ...     revision="bf16",
         ...     dtype=jnp.bfloat16,
         ... )
 
@@ -308,15 +308,16 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
         ... )
 
         >>> dpm_pipe, dpm_params = FlaxStableDiffusionPipeline.from_pretrained(
-        ...     model_id, variant="bf16", dtype=jnp.bfloat16, scheduler=dpmpp
+        ...     model_id, revision="bf16", dtype=jnp.bfloat16, scheduler=dpmpp
         ... )
         >>> dpm_params["scheduler"] = dpmpp_state
         ```
         """
-        cache_dir = kwargs.pop("cache_dir", None)
+        cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
+        resume_download = kwargs.pop("resume_download", False)
         proxies = kwargs.pop("proxies", None)
         local_files_only = kwargs.pop("local_files_only", False)
-        token = kwargs.pop("token", None)
+        use_auth_token = kwargs.pop("use_auth_token", None)
         revision = kwargs.pop("revision", None)
         from_pt = kwargs.pop("from_pt", False)
         use_memory_efficient_attention = kwargs.pop("use_memory_efficient_attention", False)
@@ -329,9 +330,10 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
             config_dict = cls.load_config(
                 pretrained_model_name_or_path,
                 cache_dir=cache_dir,
+                resume_download=resume_download,
                 proxies=proxies,
                 local_files_only=local_files_only,
-                token=token,
+                use_auth_token=use_auth_token,
                 revision=revision,
             )
             # make sure we only download sub-folders and `diffusers` filenames
@@ -359,9 +361,10 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
             cached_folder = snapshot_download(
                 pretrained_model_name_or_path,
                 cache_dir=cache_dir,
+                resume_download=resume_download,
                 proxies=proxies,
                 local_files_only=local_files_only,
-                token=token,
+                use_auth_token=use_auth_token,
                 revision=revision,
                 allow_patterns=allow_patterns,
                 ignore_patterns=ignore_patterns,
@@ -534,13 +537,12 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
         model = pipeline_class(**init_kwargs, dtype=dtype)
         return model, params
 
-    @classmethod
-    def _get_signature_keys(cls, obj):
+    @staticmethod
+    def _get_signature_keys(obj):
         parameters = inspect.signature(obj.__init__).parameters
         required_parameters = {k: v for k, v in parameters.items() if v.default == inspect._empty}
         optional_parameters = set({k for k, v in parameters.items() if v.default != inspect._empty})
         expected_modules = set(required_parameters.keys()) - {"self"}
-
         return expected_modules, optional_parameters
 
     @property
@@ -559,7 +561,7 @@ class FlaxDiffusionPipeline(ConfigMixin, PushToHubMixin):
         ... )
 
         >>> text2img = FlaxStableDiffusionPipeline.from_pretrained(
-        ...     "runwayml/stable-diffusion-v1-5", variant="bf16", dtype=jnp.bfloat16
+        ...     "runwayml/stable-diffusion-v1-5", revision="bf16", dtype=jnp.bfloat16
         ... )
         >>> img2img = FlaxStableDiffusionImg2ImgPipeline(**text2img.components)
         ```
