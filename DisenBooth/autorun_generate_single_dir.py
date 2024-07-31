@@ -63,7 +63,7 @@ for concept in concepts:
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         prior,category=info_map[concept]
-        resume_lora_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-3000')
+        resume_lora_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000')
         if not os.path.exists(resume_lora_path):
             print(resume_lora_path,'does not exist')
             continue
