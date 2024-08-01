@@ -177,8 +177,9 @@ def main(args):
     tokenizer.add_tokens(placeholder_token1)
     text_encoder.resize_token_embeddings(len(tokenizer))
     placeholder_token_id1 = tokenizer.convert_tokens_to_ids(placeholder_token1)
-    if args.learned_embed_path1:
+    if args.learned_embed_path1 is not None and args.learned_embed_path1 !='None':
         learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
+        learned_embed1=learned_embed1[args.placeholder_token1]
         if args.normalize_target1:
             target_emb=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
         else:

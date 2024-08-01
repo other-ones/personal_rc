@@ -6,24 +6,48 @@ import socket
 hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map={
-    'pet_dog1':('dog','pet'),
-    'pet_cat1':('cat','pet'),
+info_map_03={
+    # qlab03
     'dog6': ('dog','pet'),
-    'vase':('vase','nonliving'),
+    'pet_cat1':('cat','pet'),
     'wooden_pot':('pot','nonliving'),
-    'backpack':('backpack','nonliving'),
-    'teddybear':('bear','nonliving'),
-    'cat1': ('cat','pet'),
-    'barn': ('barn','building'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    'dog3': ('dog','pet'),
-    # 'flower1':('flower','flower'),
+    'vase':('vase','nonliving'),
+    # 'pet_dog1':('dog','pet'),
+    # 'dog3': ('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'chair1': ('chair','nonliving'),
 
+    # qlab01
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'teddybear':('bear','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
 }
+info_map_01={
+    # qlab03
+    # 'pet_dog1':('dog','pet'),
+    # 'pet_cat1':('cat','pet'),
+    # 'dog3': ('dog','pet'),
+    # 'dog6': ('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
+    # 'vase':('vase','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+    # 'chair1': ('chair','nonliving'),
+
+    # qlab01
+    'teddybear':('bear','nonliving'),
+    'rc_car':('toy','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+}
+if '03' in hostname:
+    info_map=info_map_03
+elif 'ubuntu' in hostname:
+    info_map=info_map_01
 lambda_mlm=0.001
 
 
@@ -67,7 +91,7 @@ for concept in info_map.keys():
         if 'nomlm' in exp:
             learned_embed_path1=None
         else:
-            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embed_{}.pt'.format(target_step,target_step))
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds_{}.pt'.format(target_step,target_step))
         resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/unet_{}.pt'.format(target_step,target_step))
         if not os.path.exists(resume_unet_path):
             print(resume_unet_path,'does not exist')
@@ -88,7 +112,7 @@ for concept in info_map.keys():
                     device_idx=stat_idx
                     found=True
                     break
-                time.sleep(5)
+                # time.sleep(5)
             if found:
                 break
             print('sleep waiting for {}'.format(exp))
@@ -114,9 +138,10 @@ for concept in info_map.keys():
         command+='--prompt_type="{}" \\\n'.format(category)
         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
         os.system(command)
-        print('STARTED')
+        print('STARTED, sleeping..')
         idx+=1
         time.sleep(delay)
+        print('woke up')
 
     
 
