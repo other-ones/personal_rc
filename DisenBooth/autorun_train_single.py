@@ -47,7 +47,7 @@ concepts=list(info_map.keys())
 
 lambda_mlms=[
             0, 
-            0.001,
+            # 0.001,
             # 0.0005,
             # 0.1,
             ]
@@ -81,7 +81,7 @@ mlm_prior_only_list=[0]
 # exit()
 # for idx,concept in enumerate(list(info_map.keys())):
 if '03' in hostname:
-    delay=45
+    delay=30
     target_devices=[0,1,2,3,4,5,6,7]
 else:
     delay=60
@@ -124,14 +124,12 @@ for mlm_prior_only in mlm_prior_only_list:
                 stats=get_gpu_memory()
                 found=False
                 for stat_idx in target_devices:
-
                     stat=stats[stat_idx]   
                     if stat>2e4:
                         device_idx=stat_idx
                         found=True
                         break
                     print(stat_idx,'not available')
-                    time.sleep(5)
                 if found:
                     break
                 print(run_name,'sleep',stat_idx,stat)
@@ -177,8 +175,10 @@ for mlm_prior_only in mlm_prior_only_list:
             # command+='--project_name="disenbooth MLM SINGLE" \\\n'
             command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
             os.system(command)
-            print('STARTED')
+            print('STARTED, sleeping..')
             time.sleep(delay)
+            print('woke up')
+
                 
 
 

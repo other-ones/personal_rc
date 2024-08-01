@@ -63,13 +63,12 @@ for concept in info_map.keys():
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         prior,category=info_map[concept]
+        target_step=3000
         if 'nomlm' in exp:
-            resume_text_encoder_path=None
-            target_step=3000
+            learned_embed_path1=None
         else:
-            target_step=5000
-            resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}text_encoder_s{}.pt'.format(target_step,target_step))
-        resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/unet_s{}.pt'.format(target_step,target_step))
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embed_{}.pt'.format(target_step,target_step))
+        resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/unet_{}.pt'.format(target_step,target_step))
         if not os.path.exists(resume_unet_path):
             print(resume_unet_path,'does not exist')
             continue
@@ -111,7 +110,7 @@ for concept in info_map.keys():
         command+='--seed=1234 \\\n'
         command+='--mask_tokens="[MASK]" \\\n'
         command+='--resume_unet_path="{}" \\\n'.format(resume_unet_path)
-        command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
+        command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
         command+='--prompt_type="{}" \\\n'.format(category)
         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
         os.system(command)

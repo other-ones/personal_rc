@@ -391,6 +391,7 @@ def main(args):
     tokenizer.add_tokens(placeholder_tokens)
     mask_token_ids = tokenizer.convert_tokens_to_ids(mask_tokens)
     placeholder_token_id1 = tokenizer.convert_tokens_to_ids(placeholder_tokens)
+    
     # 2) Resize token_embeddings
     text_encoder.resize_token_embeddings(len(tokenizer))
     token_embeds = text_encoder.get_input_embeddings().weight.data
@@ -399,6 +400,14 @@ def main(args):
         mask_embeds=torch.load(args.mask_embed_path)[args.mask_tokens].to(accelerator.device)
         mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
         mask_embeds=mask_embeds.detach()
+    
+
+    if args.initialize_token:
+        initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
+        initializer_token_id = initializer_token_ids[0]
+        prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
+        for token_id in placeholder_token_id1:
+            token_embeds[token_id] = token_embeds[initializer_token_id].clone()
     if args.learned_embed_path1:
         learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
         print('load ti embeddings')
@@ -406,6 +415,8 @@ def main(args):
         with torch.no_grad():
             token_embeds[placeholder_token_id1] = learned_embed1.clone()
         del learned_embed1
+    with torch.no_grad():
+        learned_embeds_copy=token_embeds[placeholder_token_id1].detach().to(accelerator.device)
 
     # Context Net
     from contextnet import ContextNet
@@ -426,7 +437,13 @@ def main(args):
     # We only train the additional adapter LoRA layers
     if vae is not None:
         vae.requires_grad_(False)
-    text_encoder.requires_grad_(False)
+    # text_encoder.requires_grad_(False)
+    if args.lambda_mlm:
+        text_encoder.text_model.encoder.requires_grad_(False)
+        text_encoder.text_model.final_layer_norm.requires_grad_(False)
+        text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    else:
+        text_encoder.requires_grad_(False)
     unet.requires_grad_(False)
     img_model.requires_grad_(False)
 
@@ -457,10 +474,10 @@ def main(args):
         else:
             raise ValueError("xformers is not available. Make sure it is installed correctly")
 
-    if args.gradient_checkpointing:
-        unet.enable_gradient_checkpointing()
-        if args.train_text_encoder:
-            text_encoder.gradient_checkpointing_enable()
+    # if args.gradient_checkpointing:
+    #     unet.enable_gradient_checkpointing()
+    #     if args.train_text_encoder:
+    #         text_encoder.gradient_checkpointing_enable()
 
     # now we will add new LoRA weights to the attention layers
     # It's important to realize here how many attention weights will be added and of which sizes
@@ -533,9 +550,9 @@ def main(args):
 
     # The text encoder comes from 🤗 transformers, so we cannot directly modify it.
     # So, instead, we monkey-patch the forward calls of its attention-blocks.
-    if args.train_text_encoder:
-        # ensure that dtype is float32, even if rest of the model that isn't trained is loaded in fp16
-        text_lora_parameters = LoraLoaderMixin._modify_text_encoder(text_encoder, dtype=torch.float32, rank=args.rank)
+    # if args.train_text_encoder:
+    #     # ensure that dtype is float32, even if rest of the model that isn't trained is loaded in fp16
+    #     text_lora_parameters = LoraLoaderMixin._modify_text_encoder(text_encoder, dtype=torch.float32, rank=args.rank)
 
     # create custom saving & loading hooks so that `accelerator.save_state(...)` serializes in a nice format
     def save_model_hook(models, weights, output_dir):
@@ -623,7 +640,7 @@ def main(args):
         [{"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
          {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
          {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
-        ] if args.train_text_encoder
+        ] if args.lambda_mlm
         else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate_adapter},
                {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
             ]
@@ -711,7 +728,7 @@ def main(args):
     )
 
     # Prepare everything with our `accelerator`.
-    if args.train_text_encoder:
+    if args.lambda_mlm:
         unet, text_encoder, optimizer, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net = accelerator.prepare(
             unet, text_encoder, optimizer, train_dataloader, lr_scheduler, img_model, img_adapter,cls_net
         )
@@ -819,14 +836,14 @@ def main(args):
         # Only show the progress bar once on each machine.
         disable=not accelerator.is_local_main_process,
     )
+    cos_sim=torch.nn.CosineSimilarity().to(accelerator.device)
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
-        if args.train_text_encoder:
+        if args.lambda_mlm:
             text_encoder.train()
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(unet):
-                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                 # 1. Load Batch
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
                 is_keyword_tokens = batch["is_keyword_tokens"].to(dtype=weight_dtype)
@@ -871,6 +888,7 @@ def main(args):
                 #         batch["attention_mask"],
                 #         text_encoder_use_attention_mask=args.text_encoder_use_attention_mask,
                 #     )
+                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                 if args.normalize_target1:
                     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
                 else:
@@ -957,19 +975,22 @@ def main(args):
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
-                index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
-                assert isinstance(mask_token_ids,list)
-                assert isinstance(placeholder_token_id1,list)
-                if args.freeze_mask_embedding:
-                    index_no_updates[min(placeholder_token_id1) : max(placeholder_token_id1) + 1] = False
-                else:
-                    # no_update = False -> update them
-                    # setting mask_tokens=False -> update mask tokens
-                    index_no_updates[min(placeholder_token_id1+mask_token_ids) : max(placeholder_token_id1+mask_token_ids) + 1] = False
-                with torch.no_grad():
-                    accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
-                        index_no_updates
-                    ] = orig_embeds_params[index_no_updates]
+
+                if args.lambda_mlm:
+                    index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
+                    assert isinstance(mask_token_ids,list)
+                    assert isinstance(placeholder_token_id1,list)
+                    # placeholder_token_id1: no_update=False -> update them
+                    if args.freeze_mask_embedding:
+                        index_no_updates[min(placeholder_token_id1) : max(placeholder_token_id1) + 1] = False
+                    else:
+                        # no_update = False -> do update them
+                        # setting mask_tokens=False -> update mask tokens
+                        index_no_updates[min(placeholder_token_id1+mask_token_ids) : max(placeholder_token_id1+mask_token_ids) + 1] = False
+                    with torch.no_grad():
+                        accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
+                            index_no_updates
+                        ] = orig_embeds_params[index_no_updates]
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
@@ -1109,6 +1130,8 @@ def main(args):
                         norm_target=torch.norm(target_emb,p=1,dim=-1)
                     logs['loss_mlm']=loss_mlm.detach().item()
                     logs['norm_target']=norm_target.item()
+                    orient_dev=cos_sim(learned_embeds_copy,learned_embeds)
+                    logs['orient_dev']=orient_dev.item()
                 if loss_aux1 is not None:
                     logs['loss_aux1']=loss_aux1.detach().item()
                 if loss_aux2 is not None:

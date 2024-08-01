@@ -171,10 +171,24 @@ def main(args):
     # HERE
     mask_tokens = [args.mask_tokens]
     placeholder_token1 = [args.placeholder_token1]
+
     # placeholder_token2 = [args.placeholder_token2]
     tokenizer.add_tokens(mask_tokens)
     tokenizer.add_tokens(placeholder_token1)
     text_encoder.resize_token_embeddings(len(tokenizer))
+    placeholder_token_id1 = tokenizer.convert_tokens_to_ids(placeholder_token1)
+    if args.learned_embed_path1:
+        learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
+        if args.normalize_target1:
+            target_emb=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
+        else:
+            target_emb=learned_embed1
+        print('load ti embeddings')
+        with torch.no_grad():
+            token_embeds[placeholder_token_id1] = target_emb.clone()
+        del learned_embed1
+    
+
     text_encoder.text_model.encoder.requires_grad_(False)
     text_encoder.text_model.final_layer_norm.requires_grad_(False)
     text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
@@ -295,13 +309,13 @@ def main(args):
         unet.load_state_dict(state_dict,strict=True)
         print('unet parameters loaded')
         del state_dict
-    if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
-        state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
-        if not isinstance(state_dict,OrderedDict):
-            state_dict=state_dict()
-        text_encoder.load_state_dict(state_dict,strict=True)
-        print('text_encoder parameters loaded')
-        del state_dict
+    # if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
+    #     state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
+    #     if not isinstance(state_dict,OrderedDict):
+    #         state_dict=state_dict()
+    #     text_encoder.load_state_dict(state_dict,strict=True)
+    #     print('text_encoder parameters loaded')
+    #     del state_dict
     
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
         inspect.signature(
@@ -426,6 +440,8 @@ def main(args):
     validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
     caption_data={}
     with torch.no_grad():
+        learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+        
         for batch_idx in range(num_batches):
             prompts=eval_prompts[batch_idx*batch_size:(batch_idx+1)*batch_size]
             if not len(prompts):
