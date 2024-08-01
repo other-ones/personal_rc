@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--initialize_token',type=int)
     parser.add_argument('--run_name',type=str)
     parser.add_argument('--mask_tokens',type=str)
     parser.add_argument('--mlm_weight',type=float,default=1)

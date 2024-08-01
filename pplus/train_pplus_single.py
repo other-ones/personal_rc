@@ -294,9 +294,10 @@ def main():
     token_embeds = text_encoder.get_input_embeddings().weight.data
     prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
     # Initializer
-    with torch.no_grad():
-        for token_id in placeholder_token_ids:
-            token_embeds[token_id] = token_embeds[initializer_token_id].clone()
+    if args.initialize_token:
+        with torch.no_grad():
+            for token_id in placeholder_token_ids:
+                token_embeds[token_id] = token_embeds[initializer_token_id].clone()
     
     # mask_embeds=token_embeds[mask_token_ids]
     if args.mask_embed_path is not None:
