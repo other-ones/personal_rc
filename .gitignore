@@ -21,6 +21,7 @@ custom_diffusion*/*.png
 custom_diffusion*/wandb
 custom_diffusion*/output
 custom_diffusion*/priors
+
 # dreambooth
 DisenBooth*/saved_models
 DisenBooth*/__pycache__

@@ -5,6 +5,8 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--freeze_model',type=str,default="crossattn_kv",choices=["crossattn_kv", "crossattn"],help="crossattn to enable fine-tuning of all params in the cross attention",)
+    parser.add_argument('--hflip',action='store_true')
     parser.add_argument('--break_num',type=int,default=0)
     parser.add_argument('--calibrate_kneg',type=float,default=0)
     parser.add_argument('--calibrate_kpos',type=float,default=0)

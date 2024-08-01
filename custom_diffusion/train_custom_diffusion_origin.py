@@ -1,3 +1,4 @@
+import cv2
 import sys
 sys.path.insert(0, './packages')
 #!/usr/bin/env python
@@ -256,6 +257,11 @@ class CustomDiffusionDataset(Dataset):
             mask[
                 top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
             ] = 1.0
+            # print(mask.shape,'mask.shape')
+            # print(outer,'outer')
+            # print(inner,'inner')
+            # cv2.imwrite('mask.jpg',(mask*255).astype(np.uint8))
+            # exit()
         return instance_image, mask
 
     def __getitem__(self, index):
@@ -1161,10 +1167,10 @@ def main(args):
                     model_pred, model_pred_prior = torch.chunk(model_pred, 2, dim=0)
                     target, target_prior = torch.chunk(target, 2, dim=0)
                     mask = torch.chunk(batch["mask"], 2, dim=0)[0]
+                    # print(mask.max().item(),mask.min().item(),'mask')
                     # Compute instance loss
                     loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
                     loss = ((loss * mask).sum([1, 2, 3]) / mask.sum([1, 2, 3])).mean()
-
                     # Compute prior loss
                     prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
 

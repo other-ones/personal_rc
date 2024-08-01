@@ -2,7 +2,7 @@ export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export OUTPUT_DIR="outputs";
 export INSTANCE_DIR="/data/twkim/diffusion/personalization/collected/images/pet_cat1";
 export CUDA_VISIBLE_DEVICES=6,7;
-accelerate launch train_custom_diffusion.py \
+accelerate launch train_custom_diffusion_origin.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --instance_data_dir=$INSTANCE_DIR \
   --output_dir=$OUTPUT_DIR \

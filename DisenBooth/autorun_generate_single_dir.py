@@ -63,11 +63,13 @@ for concept in info_map.keys():
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         prior,category=info_map[concept]
-        resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000/unet_s5000.pt')
         if 'nomlm' in exp:
             resume_text_encoder_path=None
+            target_step=3000
         else:
-            resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-5000/text_encoder_s5000.pt')
+            target_step=5000
+            resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}text_encoder_s{}.pt'.format(target_step,target_step))
+        resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/unet_s{}.pt'.format(target_step,target_step))
         if not os.path.exists(resume_unet_path):
             print(resume_unet_path,'does not exist')
             continue

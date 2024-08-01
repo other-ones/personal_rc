@@ -460,10 +460,7 @@ def main(args):
         )
 
     logging_dir = Path(args.output_dir, args.logging_dir)
-    
-
     accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
-
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
