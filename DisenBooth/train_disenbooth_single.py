@@ -1034,7 +1034,7 @@ def main(args):
                                     tokenizer=tokenizer, 
                                     args=args, 
                                     accelerator=accelerator, 
-                                    target_emb=target_emb,
+                                    target_emb=target_emb.detach(),
                                     pipeline=pipeline,
                                     step=global_step
                                 )
