@@ -1122,6 +1122,9 @@ def main(args):
                         save_path_unet=os.path.join(save_path,'unet_{:04d}.pt'.format(global_step))
                         torch.save(unet.state_dict(),save_path_unet)
                         logger.info(f"Saved state to {save_path_unet}")
+                        save_path_adapter=os.path.join(save_path,'adapter_{:04d}.pt'.format(global_step))
+                        torch.save(img_adapter.state_dict() ,save_path_adapter)
+                        logger.info(f"Saved state to {save_path_adapter}")
                         if args.lambda_mlm:
                             learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                             save_path_learned_embeds=os.path.join(save_path,'learned_embeds_{:04d}.pt'.format(global_step))

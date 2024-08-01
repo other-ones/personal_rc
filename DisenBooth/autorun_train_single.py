@@ -138,7 +138,7 @@ for mlm_prior_only in mlm_prior_only_list:
                     print(stat_idx,'not available')
                 if found:
                     break
-                print(run_name,'sleep',stat_idx,stat)
+                print(run_name,'sleep')
                 time.sleep(delay)
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
