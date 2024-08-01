@@ -8,13 +8,13 @@ hostname = socket.gethostname()
 print(hostname,'hostname')
 info_map_03={
     # qlab03
-    'pet_dog1':('dog','pet'),
-    'pet_cat1':('cat','pet'),
-    'dog3': ('dog','pet'),
     'dog6': ('dog','pet'),
+    'pet_cat1':('cat','pet'),
     'wooden_pot':('pot','nonliving'),
-    # 'backpack':('backpack','nonliving'),
     'vase':('vase','nonliving'),
+    # 'pet_dog1':('dog','pet'),
+    # 'dog3': ('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
     # 'chair1': ('chair','nonliving'),
@@ -39,9 +39,9 @@ info_map_01={
     # 'chair1': ('chair','nonliving'),
 
     # qlab01
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
     'teddybear':('bear','nonliving'),
+    'rc_car':('toy','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
 }
 if '03' in hostname:
