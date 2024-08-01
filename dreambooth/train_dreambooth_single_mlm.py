@@ -633,6 +633,13 @@ def main(args):
         mask_embeds=torch.load(args.mask_embed_path)[args.mask_tokens].to(accelerator.device)
         mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
         mask_embeds=mask_embeds.detach()
+
+    if args.initialize_token:
+        initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
+        initializer_token_id = initializer_token_ids[0]
+        prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
+        for token_id in placeholder_token_id1:
+            token_embeds[token_id] = token_embeds[initializer_token_id].clone()
     # Add learned concept
     if args.learned_embed_path1:
         learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
