@@ -1137,7 +1137,7 @@ def main(args):
                         target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
                     else:
                         target_emb=learned_embeds
-                    norm_target=torch.norm(target_emb,p=1,dim=-1)
+                    x=torch.norm(target_emb,p=1,dim=-1)
                     logs['norm_target']=norm_target.item()
 
                 if loss_mlm is not None:

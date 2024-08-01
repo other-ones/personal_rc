@@ -7,22 +7,26 @@ import socket
 hostname = socket.gethostname()
 print(hostname,'hostname')
 info_map_03={
+    # qlab03
     'pet_dog1':('dog','pet'),
     'pet_cat1':('cat','pet'),
     'dog3': ('dog','pet'),
     'dog6': ('dog','pet'),
-    'backpack':('backpack','nonliving'),
-    'vase':('vase','nonliving'),
-    'cat1': ('cat','pet'),
-    'barn': ('barn','building'),
-    'wooden_pot':('pot','nonliving'),
-    'chair1': ('chair','nonliving'),
+    # 'backpack':('backpack','nonliving'),
+    # 'vase':('vase','nonliving'),
+    # 'cat1': ('cat','pet'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+    # 'chair1': ('chair','nonliving'),
+
+    # qlab01
     # 'cat_statue': ('toy','nonliving'),
     # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'teddybear':('bear','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
 }
 info_map_01={
+    # qlab03
     # 'pet_dog1':('dog','pet'),
     # 'pet_cat1':('cat','pet'),
     # 'dog3': ('dog','pet'),
@@ -33,10 +37,12 @@ info_map_01={
     # 'barn': ('barn','building'),
     # 'wooden_pot':('pot','nonliving'),
     # 'chair1': ('chair','nonliving'),
+
+    # qlab01
     'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
     'teddybear':('bear','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
 }
 if '03' in hostname:
     info_map=info_map_03
