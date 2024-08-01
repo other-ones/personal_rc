@@ -157,11 +157,17 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
     else:
         autocast_ctx = torch.autocast(accelerator.device.type)
     with autocast_ctx:
-        images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
-                          silent=args.silent,
-                          inj_embeddings1=target_emb,
-                        #   width=512, height=512, 
-                          is_keyword_tokens1=is_keyword_tokens_list1).images
+        if args.lambda_mlm:
+            images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
+                            silent=args.silent,
+                            inj_embeddings1=target_emb,
+                            #   width=512, height=512, 
+                            is_keyword_tokens1=is_keyword_tokens_list1).images
+        else:
+            images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
+                            silent=args.silent,
+                            #   width=512, height=512, 
+                            ).images
     print('Generated')
 
 
@@ -888,15 +894,18 @@ def main(args):
                 #         batch["attention_mask"],
                 #         text_encoder_use_attention_mask=args.text_encoder_use_attention_mask,
                 #     )
-                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                if args.normalize_target1:
-                    target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
+                if args.lambda_mlm:
+                    learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                    if args.normalize_target1:
+                        target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
+                    else:
+                        target_emb=learned_embeds
+                    encoder_hidden_states = text_encoder(input_ids,
+                                            is_keyword_tokens1=is_keyword_tokens,
+                                            inj_embeddings1=target_emb
+                                            )[0].to(dtype=weight_dtype)
                 else:
-                    target_emb=learned_embeds
-                encoder_hidden_states = text_encoder(input_ids,
-                                        is_keyword_tokens1=is_keyword_tokens,
-                                        inj_embeddings1=target_emb
-                                        )[0].to(dtype=weight_dtype)
+                    encoder_hidden_states = text_encoder(input_ids,)[0].to(dtype=weight_dtype)
                 with torch.no_grad():
                     img_state = img_model.encode_image( clip_trans(pixel_values) ).unsqueeze(1)
                 # Predict the noise residual
@@ -1111,12 +1120,12 @@ def main(args):
                         save_path_unet=os.path.join(save_path,'unet_{:04d}.pt'.format(global_step))
                         torch.save(unet.state_dict(),save_path_unet)
                         logger.info(f"Saved state to {save_path_unet}")
-
-                        learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                        save_path_learned_embeds=os.path.join(save_path,'learned_embeds_{:04d}.pt'.format(global_step))
-                        learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
-                        torch.save(learned_embeds_dict, save_path_learned_embeds)
-                        logger.info(f"Saved state to {save_path_learned_embeds}")
+                        if args.lambda_mlm:
+                            learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                            save_path_learned_embeds=os.path.join(save_path,'learned_embeds_{:04d}.pt'.format(global_step))
+                            learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
+                            torch.save(learned_embeds_dict, save_path_learned_embeds)
+                            logger.info(f"Saved state to {save_path_learned_embeds}")
                 progress_bar.update(1)
                 global_step += 1
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
