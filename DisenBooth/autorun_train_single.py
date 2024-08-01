@@ -93,7 +93,7 @@ for mlm_prior_only in mlm_prior_only_list:
     for idx,concept in enumerate(list(info_map.keys())):
         device_idx=stat_idx
         for lambda_mlm in lambda_mlms:
-            if not lambda_mlm: #lambda_mlm==0 -> do not train text_encoder
+            if lambda_mlm==0: #lambda_mlm==0 -> do not train text_encoder
                 train_text_encoder=0
             else:
                 train_text_encoder=1

@@ -805,7 +805,7 @@ def main():
                                 run.log({"examples": wandb_image})
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 with torch.no_grad():
-                    # target_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
+                    target_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
                     # target_embeds_log=target_embeds.detach()
                     # if args.normalize_target1:
                     #     norm_target=torch.norm(learned_embeds_scaled,p=1,dim=-1)
