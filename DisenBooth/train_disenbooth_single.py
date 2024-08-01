@@ -1101,7 +1101,7 @@ def main(args):
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 if loss_mlm is not None:
                     with torch.no_grad():
-                        learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
+                        learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                         if args.normalize_target1:
                             target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
                         else:
