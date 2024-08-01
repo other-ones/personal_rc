@@ -186,7 +186,7 @@ def main(args):
             target_emb=learned_embed1
         print('load ti embeddings')
         with torch.no_grad():
-            token_embeds[placeholder_token_id1] = target_emb.clone()
+            text_encoder.get_input_embeddings().weight[placeholder_token_id1] = target_emb.clone()
         del learned_embed1
     
 
