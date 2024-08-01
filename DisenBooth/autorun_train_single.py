@@ -12,11 +12,11 @@ info_map_03={
     'pet_cat1':('cat','pet'),
     'dog3': ('dog','pet'),
     'dog6': ('dog','pet'),
-    'backpack':('backpack','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    # 'backpack':('backpack','nonliving'),
     'vase':('vase','nonliving'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
     # 'chair1': ('chair','nonliving'),
 
     # qlab01
