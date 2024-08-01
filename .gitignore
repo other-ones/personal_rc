@@ -7,6 +7,21 @@
 **/priors
 
 # dreambooth
+custom_diffusion*/__pycache__
+custom_diffusion*/packages/**/__pycacahe__
+custom_diffusion*/dog
+custom_diffusion*/fonts
+custom_diffusion*/saved_models
+custom_diffusion*/disenbooth_models
+custom_diffusion*/logs*
+custom_diffusion*/results*
+custom_diffusion*/priors
+custom_diffusion*/*.jpg
+custom_diffusion*/*.png
+custom_diffusion*/wandb
+custom_diffusion*/output
+custom_diffusion*/priors
+# dreambooth
 DisenBooth*/saved_models
 DisenBooth*/__pycache__
 DisenBooth*/packages/**/__pycacahe__
