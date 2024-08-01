@@ -5,7 +5,7 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
-    parser.add_argument('--initialize_token',type=int,default=0)
+    parser.add_argument('--initialize_token',type=int,default=1)
     parser.add_argument('--learning_rate_adapter',type=float,default=0)
     parser.add_argument('--rank',type=int,default=4)
     parser.add_argument('--break_num',type=int,default=0)

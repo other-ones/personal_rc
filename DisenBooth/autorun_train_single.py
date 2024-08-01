@@ -166,6 +166,7 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--silent=0 \\\n'
             command+='--simple_caption=1 \\\n'
             command+='--masked_loss={} \\\n'.format(masked_loss)
+            command+='--initialize_token=1 \\\n'
             command+='--normalize_target1=0 \\\n'
             command+='--mlm_prior_only={} \\\n'.format(mlm_prior_only)
             command+='--run_name="{}" \\\n'.format(run_name)

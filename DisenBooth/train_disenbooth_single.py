@@ -408,7 +408,7 @@ def main(args):
         mask_embeds=mask_embeds.detach()
     
 
-    if args.initialize_token:
+    if args.initialize_token and args.lambda_mlm:
         initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
         initializer_token_id = initializer_token_ids[0]
         prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
@@ -421,6 +421,8 @@ def main(args):
         with torch.no_grad():
             token_embeds[placeholder_token_id1] = learned_embed1.clone()
         del learned_embed1
+
+
     with torch.no_grad():
         learned_embeds_copy=token_embeds[placeholder_token_id1].detach().to(accelerator.device)
 
@@ -1129,18 +1131,20 @@ def main(args):
                 progress_bar.update(1)
                 global_step += 1
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
-                if loss_mlm is not None:
-                    with torch.no_grad():
-                        learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                        if args.normalize_target1:
-                            target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
-                        else:
-                            target_emb=learned_embeds
-                        norm_target=torch.norm(target_emb,p=1,dim=-1)
-                    logs['loss_mlm']=loss_mlm.detach().item()
+                with torch.no_grad():
+                    learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                    if args.normalize_target1:
+                        target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
+                    else:
+                        target_emb=learned_embeds
+                    norm_target=torch.norm(target_emb,p=1,dim=-1)
                     logs['norm_target']=norm_target.item()
+
+                if loss_mlm is not None:
+                    logs['loss_mlm']=loss_mlm.detach().item()
                     orient_dev=cos_sim(learned_embeds_copy,learned_embeds)
-                    logs['orient_dev']=orient_dev.item()
+                    orient_dev='{:.5f}'.format(orient_dev.item())
+                    logs['orient_dev']=orient_dev
                 if loss_aux1 is not None:
                     logs['loss_aux1']=loss_aux1.detach().item()
                 if loss_aux2 is not None:
