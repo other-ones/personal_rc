@@ -118,8 +118,10 @@ for mlm_prior_only in mlm_prior_only_list:
                 # run_name=prefix
                 if lambda_mlm:
                     run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+                    max_steps=5001
                 else:
                     run_name+="_nomlm_{}".format(concept)
+                    max_steps=3001
                 if masked_loss:
                     run_name+='_masked'
                 if train_text_encoder:
@@ -160,7 +162,7 @@ for mlm_prior_only in mlm_prior_only_list:
                 command+='--resolution=512 \\\n'
                 command+='--train_batch_size=1 \\\n'
                 command+='--gradient_accumulation_steps=1 \\\n'
-                command+='--max_train_steps=5001 \\\n'
+                command+='--max_train_steps={} \\\n'.format(max_steps)
                 command+='--checkpointing_steps=1000 \\\n'
                 command+='--validation_steps=100 \\\n'
                 command+='--learning_rate={} \\\n'.format(learning_rate)
