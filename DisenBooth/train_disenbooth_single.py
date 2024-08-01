@@ -543,15 +543,15 @@ def main(args):
             # there are only two options here. Either are just the unet attn processor layers
             # or there are the unet and text encoder atten layers
             unet_lora_layers_to_save = None
-            text_encoder_lora_layers_to_save = None
-
             for model in models:
                 if isinstance(model, type(accelerator.unwrap_model(unet))):
                     print('unet lora')
                     unet_lora_layers_to_save = unet_lora_state_dict(model)
                 elif isinstance(model, type(accelerator.unwrap_model(text_encoder))):
-                    print('text_encoder lora')
-                    text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
+                    print('learned_embeds')
+                    learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                    learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
+                    torch.save(learned_embeds_dict, os.path.join(output_dir,"learned_embeds.pt"))
                 elif isinstance(model, type(accelerator.unwrap_model(cls_net))):
                     print('cls_net lora')
                     # text_encoder_lora_layers_to_save = text_encoder_lora_state_dict(model)
@@ -621,7 +621,7 @@ def main(args):
     # Optimizer creation
     params_to_optimize = (
         [{"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
-         {"params": itertools.chain(text_lora_parameters), "lr": args.learning_rate},
+         {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
          {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
         ] if args.train_text_encoder
         else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate_adapter},
@@ -819,7 +819,7 @@ def main(args):
         # Only show the progress bar once on each machine.
         disable=not accelerator.is_local_main_process,
     )
-
+    orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
         if args.train_text_encoder:
@@ -948,18 +948,28 @@ def main(args):
                     loss_mlm=loss_mlm.mean()
                     loss+=(loss_mlm*args.lambda_mlm)
 
-
                 accelerator.backward(loss)
                 if accelerator.sync_gradients:
                     params_to_clip = (
-                        itertools.chain(unet_lora_parameters, text_lora_parameters)
-                        if args.train_text_encoder
-                        else unet_lora_parameters
+                        unet_lora_parameters
                     )
                     accelerator.clip_grad_norm_(params_to_clip, args.max_grad_norm)
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
+                index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
+                assert isinstance(mask_token_ids,list)
+                assert isinstance(placeholder_token_id1,list)
+                if args.freeze_mask_embedding:
+                    index_no_updates[min(placeholder_token_id1) : max(placeholder_token_id1) + 1] = False
+                else:
+                    # no_update = False -> update them
+                    # setting mask_tokens=False -> update mask tokens
+                    index_no_updates[min(placeholder_token_id1+mask_token_ids) : max(placeholder_token_id1+mask_token_ids) + 1] = False
+                with torch.no_grad():
+                    accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
+                        index_no_updates
+                    ] = orig_embeds_params[index_no_updates]
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
@@ -1077,20 +1087,27 @@ def main(args):
                         save_path = os.path.join(ckpt_dir, "checkpoint-{:04d}".format(global_step))
                         os.makedirs(save_path,exist_ok=True)
                         # accelerator.save_state(save_path)
-                        save_path_unet=os.path.join(save_path,'unet_s{:04d}.pt'.format(global_step))
-                        save_path_text_encoder=os.path.join(save_path,'text_encoder_s{:04d}.pt'.format(global_step))
+                        save_path_unet=os.path.join(save_path,'unet_{:04d}.pt'.format(global_step))
                         torch.save(unet.state_dict(),save_path_unet)
-                        torch.save(text_encoder.state_dict(),save_path_text_encoder)
-                        logger.info(f"Saved state to {save_path}")
+                        logger.info(f"Saved state to {save_path_unet}")
+
+                        learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                        save_path_learned_embeds=os.path.join(save_path,'learned_embeds_{:04d}.pt'.format(global_step))
+                        learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
+                        torch.save(learned_embeds_dict, save_path_learned_embeds)
+                        logger.info(f"Saved state to {save_path_learned_embeds}")
                 progress_bar.update(1)
                 global_step += 1
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 if loss_mlm is not None:
+                    with torch.no_grad():
+                        norm_target=torch.norm(target_emb,p=1,dim=-1)
                     logs['loss_mlm']=loss_mlm.detach().item()
+                    logs['norm_target']=norm_target.item()
                 if loss_aux1 is not None:
                     logs['loss_aux1']=loss_aux1.detach().item()
                 if loss_aux2 is not None:
-                    logs['loss_aux1']=loss_aux2.detach().item()
+                    logs['loss_aux2']=loss_aux2.detach().item()
                 progress_bar.set_postfix(**logs)
                 accelerator.log(logs, step=global_step)
                 if global_step >= args.max_train_steps:

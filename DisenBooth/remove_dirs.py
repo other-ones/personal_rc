@@ -7,6 +7,6 @@ for concept in concepts:
     exps=os.listdir(concept_path)
     for exp in exps:
         exp_path=os.path.join(concept_path,exp)
-        if 'nomlm' in exp:
+        if not 'nomlm' in exp:
             shutil.rmtree(exp_path)
             print(exp_path,'deleted')
