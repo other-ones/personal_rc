@@ -238,21 +238,12 @@ def main(args):
     # If passed along, set the training seed now.
     if args.seed is not None:
         set_seed(args.seed)
-    if args.concepts_list is None:
-        args.concepts_list = [
-            {
-                "instance_prompt": args.instance_prompt,
-                "class_prompt": args.class_prompt,
-                "instance_data_dir": args.instance_data_dir,
-                "class_data_dir": args.class_data_dir,
-            }
-        ]
-    else:
-        with open(args.concepts_list, "r") as f:
-            args.concepts_list = json.load(f)
+    
 
     # Generate class images if prior preservation is enabled.
-    
+    class_images_dir=Path(args.class_data_dir1)
+    if not class_images_dir.exists():
+        class_images_dir.mkdir(parents=True, exist_ok=True)
     cur_class_images = len(list(class_images_dir.iterdir()))
     if cur_class_images < args.num_class_images:
         torch_dtype = torch.float16 if accelerator.device.type == "cuda" else torch.float32
@@ -273,7 +264,7 @@ def main(args):
 
         num_new_images = args.num_class_images - cur_class_images
         logger.info(f"Number of class images to sample: {num_new_images}.")
-        sample_dataset = PromptDataset(concept["class_prompt"], num_new_images)
+        sample_dataset = PromptDataset(args.class_prompt1, num_new_images)
         sample_dataloader = torch.utils.data.DataLoader(sample_dataset, batch_size=args.sample_batch_size)
 
         sample_dataloader = accelerator.prepare(sample_dataloader)
