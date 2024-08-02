@@ -5,6 +5,8 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--real_prior',action='store_true')
+    parser.add_argument('--concepts_list',type=str)
     parser.add_argument('--freeze_model',type=str,default="crossattn_kv",choices=["crossattn_kv", "crossattn"],help="crossattn to enable fine-tuning of all params in the cross attention",)
     parser.add_argument('--hflip',action='store_true')
     parser.add_argument('--break_num',type=int,default=0)
@@ -15,10 +17,8 @@ def parse_args(input_args=None):
     parser.add_argument('--sim_margin',type=float)
     parser.add_argument('--dissim_layers',type=str,default='1to12')
     parser.add_argument('--make_composition',type=int,required=False)
-    parser.add_argument("--class_data_dir1",type=str,default=None,required=False,help="A folder containing the training data of class images.")
-    parser.add_argument("--class_data_dir2",type=str,default=None,required=False,help="A folder containing the training data of class images.")
-    parser.add_argument("--class_prompt1",type=str,default=None,help="The prompt to specify images in the same class as provided instance images.",)
-    parser.add_argument("--class_prompt2",type=str,default=None,help="The prompt to specify images in the same class as provided instance images.",)
+    parser.add_argument("--class_data_dir",type=str,default=None,required=False,help="A folder containing the training data of class images.")
+    parser.add_argument("--class_prompt",type=str,default=None,help="The prompt to specify images in the same class as provided instance images.",)
     parser.add_argument('--learned_embed_path1',type=str)
     parser.add_argument('--learned_embed_path2',type=str)
     parser.add_argument('--learned_embed_path_multi',type=str)
@@ -404,15 +404,15 @@ def parse_args(input_args=None):
         args.local_rank = env_local_rank
 
     if args.with_prior_preservation:
-        if args.class_data_dir1 is None:
+        if args.class_data_dir is None:
             raise ValueError("You must specify a data directory for class images.")
-        if args.class_prompt1 is None:
+        if args.class_prompt is None:
             raise ValueError("You must specify prompt for class images.")
     else:
         # logger is not available yet
-        if args.class_data_dir1 is not None:
+        if args.class_data_dir is not None:
             warnings.warn("You need not use --class_data_dir without --with_prior_preservation.")
-        if args.class_prompt1 is not None:
+        if args.class_prompt is not None:
             warnings.warn("You need not use --class_prompt without --with_prior_preservation.")
 
     if args.train_text_encoder and args.pre_compute_text_embeddings:

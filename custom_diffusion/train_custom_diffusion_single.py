@@ -1,4 +1,4 @@
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+from datasets_pkgs.dataset_custom_diffusion import CustomDiffusionDataset
 from configs import parse_args
 # ADDED
 import sys
@@ -193,10 +193,8 @@ def main(args):
             "You cannot use both --report_to=wandb and --hub_token due to a security risk of exposing your token."
             " Please use `huggingface-cli login` to authenticate with the Hub."
         )
-
     logging_dir = Path(args.output_dir, args.logging_dir)
     accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
-
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
@@ -324,7 +322,7 @@ def main(args):
         if args.output_dir is not None:
             os.makedirs(args.output_dir, exist_ok=True)
 
-        if args.push_to_hub:
+        if args.push_to_hub: # NO 
             repo_id = create_repo(
                 repo_id=args.hub_model_id or Path(args.output_dir).name, exist_ok=True, token=args.hub_token
             ).repo_id
@@ -346,7 +344,6 @@ def main(args):
 
     # import correct text encoder class
     text_encoder_cls = import_model_class_from_model_name_or_path(args.pretrained_model_name_or_path, args.revision)
-
     # Load scheduler and models
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
     text_encoder = text_encoder_cls.from_pretrained(args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision, variant=args.variant)
@@ -359,8 +356,8 @@ def main(args):
     placeholder_token_id1 = []
     initializer_token_id = []
     if args.placeholder_token1 is not None:
-        # args.placeholder_token1 = args.placeholder_token1.split("+")
-        # args.prior_concept1 = args.prior_concept1.split("+")
+        args.placeholder_token1 = args.placeholder_token1.split("+")
+        args.prior_concept1 = args.prior_concept1.split("+")
         if len(args.placeholder_token1) > len(args.prior_concept1):
             raise ValueError("You must specify + separated initializer token for each modifier token.")
         for placeholder_token1, initializer_token in zip(
@@ -397,7 +394,7 @@ def main(args):
             text_encoder.text_model.encoder.parameters(),
             text_encoder.text_model.final_layer_norm.parameters(),
             text_encoder.text_model.embeddings.position_embedding.parameters(),
-        )
+        ) # input_tokens are excluded
         freeze_params(params_to_freeze)
     ########################################################
     ########################################################
@@ -454,8 +451,9 @@ def main(args):
     train_q_out = False if args.freeze_model == "crossattn_kv" else True
     custom_diffusion_attn_procs = {}
     st = unet.state_dict()
-    # CHECKHERE
+    # CHECK HERE
     for name, _ in unet.attn_processors.items():
+        print(name,'attn_processors_name')
         cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
         if name.startswith("mid_block"):
             hidden_size = unet.config.block_out_channels[-1]
@@ -763,6 +761,7 @@ def main(args):
                         f"Running validation... \n Generating {args.num_validation_images} images with prompt:"
                         f" {args.validation_prompt}."
                     )
+
                     # create pipeline
                     pipeline = DiffusionPipeline.from_pretrained(
                         args.pretrained_model_name_or_path,
