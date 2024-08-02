@@ -53,9 +53,10 @@ concepts=list(info_map.keys())
 
 lambda_mlms=[
             0, 
-            0.001,
+            # 0.001,
+            # 0.005,
             # 0.0005,
-            # 0.1,
+            0.01,
             ]
 masked_loss=0
 
@@ -166,7 +167,7 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
             command+='--cls_net_path="saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/cls_net_100000_ckpt.pt" \\\n'
             command+='--mask_embed_path="saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/mask_embeds_100000_ckpt.pt" \\\n'
-            command+='--mlm_target=masked \\\n'
+            command+='--mlm_target="masked" \\\n'
             command+='--mlm_batch_size=30 \\\n'
             command+='--prompt_type="{}" \\\n'.format(category)
             command+='--silent=0 \\\n'
