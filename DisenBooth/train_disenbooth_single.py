@@ -646,7 +646,7 @@ def main(args):
     # Optimizer creation
     params_to_optimize = (
         [{"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate},
-         {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
+         {"params": text_encoder.get_input_embeddings().parameters(), "lr": 1e-4},
          {"params": itertools.chain(img_adapter.parameters()), "lr":args.learning_rate_adapter}
         ] if args.lambda_mlm
         else [ {"params": itertools.chain(unet_lora_parameters), "lr": args.learning_rate_adapter},

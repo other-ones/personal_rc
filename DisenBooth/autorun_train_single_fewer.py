@@ -59,11 +59,13 @@ lambda_mlms=[
             # 0.1,
             ]
 masked_loss=0
-lambda_subject=0.001
-lambda_cos=0.0001
+# lambda_subject default: 0.01
+lambda_subject=0.01
 lambda_subject_str=float_to_str(lambda_subject)
 lambda_subject_str=lambda_subject_str.replace('.','')
 
+# lambda_cos default: 0.001
+lambda_cos=0.001
 lambda_cos_str=float_to_str(lambda_cos)
 lambda_cos_str=lambda_cos_str.replace('.','')
 import subprocess as sp
@@ -126,6 +128,7 @@ for mlm_prior_only in mlm_prior_only_list:
                 run_name+='_masked'
             run_name+='_lr{}_alr{}'.format(learning_rate_str,learning_rate_adapter_str)
             run_name+='_subj{}_cos{}'.format(lambda_subject_str,lambda_cos_str)
+            run_name+='_token1e4'
             # run_name+='_mlmprior{}'.format(mlm_prior_only_str)
             output_dir=os.path.join('saved_models/disenbooth_models/sd2/single',concept)
             exp_path=os.path.join(output_dir,run_name)
