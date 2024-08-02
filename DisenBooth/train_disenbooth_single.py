@@ -955,7 +955,7 @@ def main(args):
                 loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
                 loss_aux1 = F.mse_loss(text_pred.float(), target.float(), reduction="mean")
                 loss_aux2 = cal_cos(encoder_hidden_states, img_state, cos)
-                loss = loss + 0.01*loss_aux1 + 0.001*loss_aux2
+                loss = loss + (args.lambda_subject*loss_aux1) + (args.lambda_cos*loss_aux2)
                 # 3. MLM Loss
                 loss_mlm=None
                 if args.lambda_mlm:
