@@ -9,8 +9,8 @@ print(hostname,'hostname')
 info_map_03={
     # qlab03
     'dog6': ('dog','pet'),
-    'pet_cat1':('cat','pet'),
-    'wooden_pot':('pot','nonliving'),
+    # 'pet_cat1':('cat','pet'),
+    # 'wooden_pot':('pot','nonliving'),
     'vase':('vase','nonliving'),
     # 'pet_dog1':('dog','pet'),
     # 'dog3': ('dog','pet'),
@@ -53,10 +53,10 @@ concepts=list(info_map.keys())
 
 lambda_mlms=[
             0, 
-            # 0.001,
-            # 0.005,
-            # 0.0005,
-            0.1,
+            0.001,
+            # # 0.005,
+            # # 0.0005,
+            # 0.1,
             ]
 masked_loss=0
 
@@ -114,15 +114,15 @@ for mlm_prior_only in mlm_prior_only_list:
             run_name='disenbooth'
             if lambda_mlm:
                 run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-                max_steps=3001
+                max_steps=2501
             else:
                 run_name+="_nomlm_{}".format(concept)
-                max_steps=3001
+                max_steps=2501
             if masked_loss:
                 run_name+='_masked'
             run_name+='_lr{}_alr{}'.format(learning_rate_str,learning_rate_adapter_str)
             # run_name+='_mlmprior{}'.format(mlm_prior_only_str)
-            output_dir=os.path.join('saved_models/disenbooth_models/sd2/single',concept)
+            output_dir=os.path.join('saved_models/disenbooth_models/fewer/single',concept)
             exp_path=os.path.join(output_dir,run_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -155,7 +155,7 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--train_batch_size=1 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
             command+='--max_train_steps={} \\\n'.format(max_steps)
-            command+='--checkpointing_steps=1000 \\\n'
+            command+='--checkpointing_steps=500 \\\n'
             command+='--validation_steps=100 \\\n'
             command+='--learning_rate={} \\\n'.format(learning_rate)
             command+='--learning_rate_adapter={} \\\n'.format(learning_rate_adapter)
