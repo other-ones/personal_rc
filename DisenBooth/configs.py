@@ -5,6 +5,7 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--exp_dir',type=str)
     parser.add_argument('--lambda_subject',type=float,default=0.01)
     parser.add_argument('--lambda_cos',type=int,default=0.001)
     parser.add_argument('--initialize_token',type=int,default=1)
