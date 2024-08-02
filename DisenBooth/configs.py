@@ -7,7 +7,7 @@ def parse_args(input_args=None):
     # ADDED
     parser.add_argument('--exp_dir',type=str)
     parser.add_argument('--lambda_subject',type=float,default=0.01)
-    parser.add_argument('--lambda_cos',type=int,default=0.001)
+    parser.add_argument('--lambda_cos',type=float,default=0.001)
     parser.add_argument('--initialize_token',type=int,default=1)
     parser.add_argument('--learning_rate_adapter',type=float,default=0)
     parser.add_argument('--rank',type=int,default=4)

@@ -54,7 +54,7 @@ concepts=list(info_map.keys())
 lambda_mlms=[
             # 0, 
             0.001,
-            # # 0.005,
+            0.005,
             # # 0.0005,
             # 0.1,
             ]
@@ -102,7 +102,7 @@ if '03' in hostname:
 else:
     delay=60
     target_devices=[0,1]
-max_steps=3001
+max_steps=2501
 print(target_devices,'target_devices')
 for mlm_prior_only in mlm_prior_only_list:
     mlm_prior_only_str=float_to_str(mlm_prior_only)
@@ -122,12 +122,10 @@ for mlm_prior_only in mlm_prior_only_list:
             lambda_mlm_str=lambda_mlm_str.replace('.','')
             prior,category=info_map[concept]
             run_name='disenbooth'
-            # if lambda_mlm:
-            #     run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-            #     max_steps=3001
-            # else:
-            #     run_name+="_nomlm_{}".format(concept)
-            #     max_steps=3001
+            if lambda_mlm:
+                run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+            else:
+                run_name+="_nomlm_{}".format(concept)
             if masked_loss:
                 run_name+='_masked'
             run_name+='_lr{}_alr{}'.format(learning_rate_str,learning_rate_adapter_str)
@@ -162,7 +160,7 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
-            command+='--checkpoints_total_limit=3 \\\n'
+            command+='--checkpoints_total_limit=2 \\\n'
             command+='--resolution=512 \\\n'
             command+='--train_batch_size=1 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
