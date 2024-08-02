@@ -9,8 +9,8 @@ print(hostname,'hostname')
 info_map_03={
     # qlab03
     'dog6': ('dog','pet'),
-    # 'pet_cat1':('cat','pet'),
-    # 'wooden_pot':('pot','nonliving'),
+    'pet_cat1':('cat','pet'),
+    'wooden_pot':('pot','nonliving'),
     'vase':('vase','nonliving'),
     # 'pet_dog1':('dog','pet'),
     # 'dog3': ('dog','pet'),
