@@ -80,7 +80,7 @@ log_dir='logs/disenbooth/generate/fewer/single'
 os.makedirs(log_dir,exist_ok=True)    
 concepts=os.listdir(dir_path)
 concepts=sorted(concepts)
-target_steps=[2500,2000,1500]
+target_steps=[2500,2000]
 for target_step in target_steps:
     for concept in info_map.keys():
         if concept not in info_map:
@@ -132,6 +132,7 @@ for target_step in target_steps:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
+            command+='--exp_dir={} \\\n'.format(exp_dir)
             command+='--eval_batch_size=16 \\\n'
             command+='--num_images_per_prompt=15 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)

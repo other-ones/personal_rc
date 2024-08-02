@@ -137,7 +137,7 @@ def main(args):
         codepath=os.path.join(exp_dir,'src')
         # if os.path.exists(codepath) and 'tmp' not in codepath:
         #     assert False
-        caption_path = os.path.join(args.output_dir,exp_name,'captions.json')
+        caption_path = os.path.join(exp_dir,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
