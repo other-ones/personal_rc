@@ -17,7 +17,7 @@ accelerate launch train_custom_diffusion_single.py \
   --with_prior_preservation=1 --prior_loss_weight=1.0 \
   --class_prompt1="cat" --num_class_images=200 \
   --placeholder_token1 "<pet_cat1>"
-  # --real_prior acc
+  # --real_prior
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
