@@ -59,8 +59,13 @@ lambda_mlms=[
             # 0.1,
             ]
 masked_loss=0
+lambda_subject=0.001
+lambda_cos=0.0001
+lambda_subject_str=float_to_str(lambda_subject)
+lambda_subject_str=lambda_subject_str.replace('.','')
 
-
+lambda_cos_str=float_to_str(lambda_cos)
+lambda_cos_str=lambda_cos_str.replace('.','')
 import subprocess as sp
 def get_gpu_memory():
     command = "nvidia-smi --query-gpu=memory.free --format=csv"
@@ -93,6 +98,7 @@ if '03' in hostname:
 else:
     delay=60
     target_devices=[0,1]
+max_steps=3001
 print(target_devices,'target_devices')
 for mlm_prior_only in mlm_prior_only_list:
     mlm_prior_only_str=float_to_str(mlm_prior_only)
@@ -112,17 +118,18 @@ for mlm_prior_only in mlm_prior_only_list:
             lambda_mlm_str=lambda_mlm_str.replace('.','')
             prior,category=info_map[concept]
             run_name='disenbooth'
-            if lambda_mlm:
-                run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-                max_steps=2501
-            else:
-                run_name+="_nomlm_{}".format(concept)
-                max_steps=2501
+            # if lambda_mlm:
+            #     run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+            #     max_steps=3001
+            # else:
+            #     run_name+="_nomlm_{}".format(concept)
+            #     max_steps=3001
             if masked_loss:
                 run_name+='_masked'
             run_name+='_lr{}_alr{}'.format(learning_rate_str,learning_rate_adapter_str)
+            run_name+='_subj{}_cos{}'.format(lambda_subject_str,lambda_cos_str)
             # run_name+='_mlmprior{}'.format(mlm_prior_only_str)
-            output_dir=os.path.join('saved_models/disenbooth_models/fewer/single',concept)
+            output_dir=os.path.join('saved_models/disenbooth_models/sd2/single',concept)
             exp_path=os.path.join(output_dir,run_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -151,11 +158,12 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
+            command+='--checkpoints_total_limit=1 \\\n'
             command+='--resolution=512 \\\n'
             command+='--train_batch_size=1 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
             command+='--max_train_steps={} \\\n'.format(max_steps)
-            command+='--checkpointing_steps=500 \\\n'
+            command+='--checkpointing_steps=1000 \\\n'
             command+='--validation_steps=100 \\\n'
             command+='--learning_rate={} \\\n'.format(learning_rate)
             command+='--learning_rate_adapter={} \\\n'.format(learning_rate_adapter)
@@ -165,6 +173,7 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--seed=7777 \\\n'
             command+='--mask_tokens="[MASK]" \\\n'
             command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
+            command+='--lambda_subject={} --lambda_cos={} \\\n'.format(lambda_subject,lambda_cos)
             command+='--cls_net_path="saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/cls_net_100000_ckpt.pt" \\\n'
             command+='--mask_embed_path="saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/mask_embeds_100000_ckpt.pt" \\\n'
             command+='--mlm_target="masked" \\\n'

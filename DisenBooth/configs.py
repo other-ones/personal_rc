@@ -5,6 +5,8 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--lambda_subject',type=float,default=0.01)
+    parser.add_argument('--lambda_cos',type=int,default=0.001)
     parser.add_argument('--initialize_token',type=int,default=1)
     parser.add_argument('--learning_rate_adapter',type=float,default=0)
     parser.add_argument('--rank',type=int,default=4)
@@ -174,7 +176,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--checkpoints_total_limit",
         type=int,
-        default=10,
+        default=1,
         help=(
             "Max number of checkpoints to store. Passed as `total_limit` to the `Accelerator` `ProjectConfiguration`."
             " See Accelerator::save_state https://huggingface.co/docs/accelerate/package_reference/accelerator#accelerate.Accelerator.save_state"
