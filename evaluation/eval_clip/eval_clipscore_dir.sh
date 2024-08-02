@@ -16,7 +16,7 @@ python eval_clipscore_dir.py  \
 
 
 
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=0;
 python eval_clipscore_dir.py  \
 --dir_path='../../DisenBooth/results/disenbooth/single' 
 
