@@ -124,7 +124,10 @@ def main(args):
         set_seed(args.seed)
 
     exp_name=args.resume_unet_path.split('/')[-4]
-    exp_dir=os.path.join(args.output_dir,exp_name)
+    if not args.exp_dir:
+        exp_dir=os.path.join(args.output_dir,exp_name)
+    else:
+        exp_dir=args.exp_dir
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
     os.makedirs(sample_dir, exist_ok=True)
