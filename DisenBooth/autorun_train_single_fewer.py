@@ -98,7 +98,7 @@ if '03' in hostname:
 else:
     delay=60
     target_devices=[0,1]
-max_steps=2501
+max_steps=5001
 print(target_devices,'target_devices')
 for mlm_prior_only in mlm_prior_only_list:
     mlm_prior_only_str=float_to_str(mlm_prior_only)
@@ -110,20 +110,18 @@ for mlm_prior_only in mlm_prior_only_list:
                 train_text_encoder=0
             else:
                 train_text_encoder=1
-            learning_rate=1e-4
+            learning_rate=1e-5
+            learning_rate_str='1e5'
             learning_rate_adapter=1e-4
-            learning_rate_str='1e4'
             learning_rate_adapter_str='1e4'
             lambda_mlm_str=float_to_str(lambda_mlm)
             lambda_mlm_str=lambda_mlm_str.replace('.','')
             prior,category=info_map[concept]
             run_name='disenbooth'
-            # if lambda_mlm:
-            #     run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-            #     max_steps=3001
-            # else:
-            #     run_name+="_nomlm_{}".format(concept)
-            #     max_steps=3001
+            if lambda_mlm:
+                run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+            else:
+                run_name+="_nomlm_{}".format(concept)
             if masked_loss:
                 run_name+='_masked'
             run_name+='_lr{}_alr{}'.format(learning_rate_str,learning_rate_adapter_str)
@@ -158,12 +156,12 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
-            command+='--checkpoints_total_limit=4 \\\n'
+            command+='--checkpoints_total_limit=2 \\\n'
             command+='--resolution=512 \\\n'
             command+='--train_batch_size=1 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
             command+='--max_train_steps={} \\\n'.format(max_steps)
-            command+='--checkpointing_steps=1000 \\\n'
+            command+='--checkpointing_steps=2500 \\\n'
             command+='--validation_steps=100 \\\n'
             command+='--learning_rate={} \\\n'.format(learning_rate)
             command+='--learning_rate_adapter={} \\\n'.format(learning_rate_adapter)

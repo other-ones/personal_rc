@@ -75,7 +75,7 @@ if '03' in hostname:
 else:
     delay=45
     target_devices=[0,1]
-dir_path=os.path.join('saved_models/disenbooth_models/fewer/single')
+dir_path=os.path.join('saved_models/disenbooth_models/sd2/single')
 log_dir='logs/disenbooth/generate/fewer/single'
 os.makedirs(log_dir,exist_ok=True)    
 concepts=os.listdir(dir_path)
