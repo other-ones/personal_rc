@@ -179,7 +179,7 @@ for mlm_prior_only in mlm_prior_only_list:
             if train_text_encoder:
                 command+='--train_text_encoder \\\n'
             # command+='--report_to="wandb" \\\n'
-            # command+='--project_name="disenbooth MLM SINGLE" \\\n'
+            # command+='--project_name="DisenBooth MLM SINGLE" \\\n'
             command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
             os.system(command)
             print('STARTED, sleeping..')
