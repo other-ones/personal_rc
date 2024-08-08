@@ -28,7 +28,7 @@ info_map_01={
     # 'pet_dog1':('dog','pet'),
     # 'pet_cat1':('cat','pet'),
     # 'dog3': ('dog','pet'),
-    # 'dog6': ('dog','pet'),
+    'dog6': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
     # 'vase':('vase','nonliving'),
     # 'cat1': ('cat','pet'),
@@ -36,9 +36,9 @@ info_map_01={
     # 'chair1': ('chair','nonliving'),
 
     # qlab01
-    'teddybear':('bear','nonliving'),
-    'wooden_pot':('pot','nonliving'),
-    'rc_car':('toy','nonliving'),
+    # 'teddybear':('bear','nonliving'),
+    # 'wooden_pot':('pot','nonliving'),
+    # 'rc_car':('toy','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
 }
