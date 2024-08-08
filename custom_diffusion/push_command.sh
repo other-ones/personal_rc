@@ -4,6 +4,6 @@ cd ../;
 git add .;
 git commit -m "update";
 git push origin main;
-cd DisenBooth;
+cd cusom_diffusion;
 
 
