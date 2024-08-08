@@ -884,7 +884,7 @@ def main(args):
                     input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
                     input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                     # for MLM
-                    for _ in range(args.mstep):
+                    for _ in range(args.msteps):
                         clip_text_embedding_masked = text_encoder(input_ids_masked,
                                                                 mask_embedding=mask_embeds.unsqueeze(0),
                                                                 mask_idxs=masked_idxs,
@@ -901,7 +901,7 @@ def main(args):
                         )
                         loss_mlm[masked_idxs_flat]*=args.mlm_weight
                         loss_mlm=loss_mlm.mean()
-                    accelerator.backward(loss)
+                    accelerator.backward(loss_mlm)
                     # Zero out the gradients for all token embeddings except the newly added
                     # embeddings for the concept, as we only want to optimize the concept embeddings
                     if args.placeholder_token1 is not None:
