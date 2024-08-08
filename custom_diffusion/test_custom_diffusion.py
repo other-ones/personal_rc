@@ -14,7 +14,8 @@ from diffusers.loaders import AttnProcsLayers
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--resume_path')
-    parser.add_argument('--modifier_token')
+    parser.add_argument('--placeholder_token1')
+    parser.add_argument('--prior_concept1')
     parser.add_argument('--pretrained_model_name_or_path')
     args=parser.parse_args()
 weight_dtype = torch.float32
@@ -77,11 +78,11 @@ for key in defined_state_dict:
     else:
         new_state_dict[key]=defined_state_dict[key]    
 pipe.unet.load_state_dict(new_state_dict,strict=True)
-pipe.load_textual_inversion(args.resume_path,token="<new1>", weight_name="<new1>.bin")
+pipe.load_textual_inversion(args.resume_path,token=args.placeholder_token1, weight_name="{}.bin".format(args.placeholder_token1))
 image = pipe(
-    "<new1> cat sitting in a bucket",
-    num_inference_steps=100,
+    "a picture of {} {}".format(args.placeholder_token1,args.prior_concept1),
+    num_inference_steps=25,
     guidance_scale=6.0,
     eta=1.0,
 ).images[0]
-image.save("cat.png")
+image.save("{}.png".format(args.prior_concept1))

@@ -81,10 +81,10 @@ def log_validation(
     
     if args.prompt_type=='pet':
         validation_prompts=[
-            # "a picture of {} swimming in a pool".format(placeholder),
+            "a picture of {} swimming in a pool".format(placeholder),
             "a picture of {} with the Great Wall of China in the background".format(placeholder),
             "a picture of {} in times square".format(placeholder),
-            # "{} on a boat in the sea".format(placeholder),
+            "{} on a boat in the sea".format(placeholder),
             # "{} in a purple wizard outfit".format(placeholder),
             "{} playing with a ball".format(placeholder),
             # "{} wearing sunglasses".format(placeholder),
@@ -93,8 +93,8 @@ def log_validation(
     
     elif args.prompt_type in ['nonliving']:
         validation_prompts = [
-            # 'a {0} in the jungle'.format(placeholder),
-            # 'a {0} in the snow'.format(placeholder),
+            'a {0} in the jungle'.format(placeholder),
+            'a {0} in the snow'.format(placeholder),
             'a {0} with a blue house in the background'.format(placeholder),
             'a {0} with the Eiffel Tower in the background'.format(placeholder),
             # 'a purple {0}'.format(placeholder),
@@ -103,9 +103,9 @@ def log_validation(
             ]
     elif args.prompt_type in ['building']:
         validation_prompts = [
-            # '{} in snowy ice.'.format(placeholder),
+            '{} in snowy ice.'.format(placeholder),
             '{} at a beach with a view of the seashore.'.format(placeholder),
-            # 'Photo of the {} with the sun rising in the sky.'.format(placeholder),
+            'Photo of the {} with the sun rising in the sky.'.format(placeholder),
             # 'cat sitting in front of {} in snowy ice.'.format(placeholder),
             # '{} digital painting 3d render geometric style.'.format(placeholder),
             'painting of {} in the style of van gogh.'.format(placeholder),
@@ -113,8 +113,8 @@ def log_validation(
             ]
     elif args.prompt_type in ['sunglasses']:
         validation_prompts=[
-            # 'photo of a {}'.format(placeholder),
-            # 'close shot of {} on the sandy beach with a view of the seashore'.format(placeholder),
+            'photo of a {}'.format(placeholder),
+            'close shot of {} on the sandy beach with a view of the seashore'.format(placeholder),
             'A scientist wearing {} examines a test tube'.format(placeholder),
             # 'A dog wearing {} on the porch'.format(placeholder),
             'A giraffe wearing {}'.format(placeholder),
@@ -172,7 +172,7 @@ def log_validation(
     #         "negative_prompt_embeds": negative_prompt_embeds,
     #     }
     # else:
-    pipeline_args = {"prompt": args.validation_prompt}
+    # pipeline_args = {"prompt": args.validation_prompt}
 
     # run inference
     generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
@@ -890,6 +890,10 @@ def main(args):
                         index_grads_to_zero = index_grads_to_zero & (
                             torch.arange(len(tokenizer)) != placeholder_token_id1[i]
                         )
+                    # print(index_grads_to_zero,'index_grads_to_zero')
+                    # print(torch.sum(index_grads_to_zero),'index_grads_to_zero.sum')
+                    # print(len(tokenizer),'len(tokenizer)')
+                    # exit()
                     grads_text_encoder.data[index_grads_to_zero, :] = grads_text_encoder.data[
                         index_grads_to_zero, :
                     ].fill_(0)
@@ -950,7 +954,7 @@ def main(args):
 
             if accelerator.is_main_process:
                 images = []
-                if args.validation_prompt is not None and global_step % args.validation_steps == 0:
+                if global_step % args.validation_steps == 0:
                     images,validation_prompts = log_validation(
                             # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
                             accelerator.unwrap_model(text_encoder),
@@ -982,8 +986,6 @@ def main(args):
                         merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
                         merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
                     merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
-
-
                     # visualize input
                     input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
                     input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
@@ -1043,6 +1045,17 @@ def main(args):
                 progress_bar.update(1)
                 global_step += 1
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
+            if loss_mlm is not None:
+                logs['loss_mlm']=loss_mlm.detach().item()
+            learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].detach()
+            if args.normalize_target1:
+                target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
+            else:
+                target_emb=learned_embeds
+            norm_target=torch.norm(target_emb.detach(),p=1,dim=-1)
+            norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
+            logs['norm_mask']=norm_mask.item()
+            logs['norm_target']=norm_target.item()
             progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:

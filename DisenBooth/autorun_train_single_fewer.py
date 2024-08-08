@@ -161,6 +161,7 @@ for mlm_prior_only in mlm_prior_only_list:
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--checkpoints_total_limit=2 \\\n'
             command+='--resolution=512 \\\n'
+            command+='--checkpoints_total_limit=4 \\\n'
             command+='--train_batch_size=1 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
             command+='--max_train_steps={} \\\n'.format(max_steps)
