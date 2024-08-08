@@ -50,7 +50,7 @@ elif 'ubuntu' in hostname:
     delay=40
 lambda_mlms=[
             # 0, 
-            # 0.001,
+            0.001,
             0.005,
             ]
 masked_loss=0
