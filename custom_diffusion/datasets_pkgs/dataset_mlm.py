@@ -43,33 +43,33 @@ roi_mask_transforms = transforms.Compose(
 
 # Generate captions by combining elements from each list with different formats
 prefixes=[
-    "a photo of a {}",
-    "a rendering of a {}",
-    "a cropped photo of the {}",
-    "the photo of a {}",
-    "a photo of a clean {}",
-    "a photo of a dirty {}",
-    "a dark photo of the {}",
-    "a photo of my {}",
-    "a photo of the cool {}",
-    "a close-up photo of a {}",
-    "a bright photo of the {}",
-    "a cropped photo of a {}",
-    "a photo of the {}",
-    "a good photo of the {}",
-    "a photo of one {}",
-    "a close-up photo of the {}",
-    "a rendition of the {}",
-    "a photo of the clean {}",
-    "a rendition of a {}",
-    "a photo of a nice {}",
-    "a good photo of a {}",
-    "a photo of the nice {}",
-    "a photo of the small {}",
-    "a photo of the weird {}",
-    "a photo of the large {}",
-    "a photo of a cool {}",
-    "a photo of a small {}",
+    "photo of a {}",
+    # "a rendering of a {}",
+    # "a cropped photo of the {}",
+    # "the photo of a {}",
+    # "a photo of a clean {}",
+    # "a photo of a dirty {}",
+    # "a dark photo of the {}",
+    # "a photo of my {}",
+    # "a photo of the cool {}",
+    # "a close-up photo of a {}",
+    # "a bright photo of the {}",
+    # "a cropped photo of a {}",
+    # "a photo of the {}",
+    # "a good photo of the {}",
+    # "a photo of one {}",
+    # "a close-up photo of the {}",
+    # "a rendition of the {}",
+    # "a photo of the clean {}",
+    # "a rendition of a {}",
+    # "a photo of a nice {}",
+    # "a good photo of a {}",
+    # "a photo of the nice {}",
+    # "a photo of the small {}",
+    # "a photo of the weird {}",
+    # "a photo of the large {}",
+    # "a photo of a cool {}",
+    # "a photo of a small {}",
 ]
 
 if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
@@ -98,7 +98,7 @@ class TextualInversionDataset(Dataset):
         size=512,
         repeats=100,
         interpolation="bicubic",
-        flip_p=0,
+        flip_p=0.5,
         center_crop=False,
         mlm_target='all',
         mask_prob=0.15,
@@ -112,7 +112,11 @@ class TextualInversionDataset(Dataset):
         class_prompt=None,
         simple_caption=False,
         mlm_prior=0,
+        aug=True,
+        mask_size=64
     ):  
+        self.mask_size = mask_size
+        self.aug = aug
         self.mlm_prior=mlm_prior
         global prefixes
         if simple_caption:
@@ -173,8 +177,29 @@ class TextualInversionDataset(Dataset):
             "lanczos": PIL_INTERPOLATION["lanczos"],
         }[interpolation]
 
-        self.flip_transform = transforms.RandomHorizontalFlip(p=self.flip_p)
-
+        self.flip = transforms.RandomHorizontalFlip(p=self.flip_p)
+        # self.flip = transforms.RandomHorizontalFlip(0.5 * hflip)
+    def preprocess(self, image, scale, resample):
+        outer, inner = self.size, scale
+        factor = self.size // self.mask_size
+        if scale > self.size:
+            outer, inner = scale, self.size
+        top, left = np.random.randint(0, outer - inner + 1), np.random.randint(0, outer - inner + 1)
+        image = image.resize((scale, scale), resample=resample)
+        image = np.array(image).astype(np.uint8)
+        image = (image / 127.5 - 1.0).astype(np.float32)
+        instance_image = np.zeros((self.size, self.size, 3), dtype=np.float32)
+        mask = np.zeros((self.size // factor, self.size // factor))
+        if scale > self.size:
+            instance_image = image[top : top + inner, left : left + inner, :]
+            mask = np.ones((self.size // factor, self.size // factor))
+        else:
+            instance_image[top : top + inner, left : left + inner, :] = image
+            mask[
+                top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
+            ] = 1.0
+            
+        return instance_image, mask
     def __len__(self):
         return self._length
 
@@ -188,35 +213,23 @@ class TextualInversionDataset(Dataset):
             mask_path=mask_path.replace('.jpeg','.png')
             mask=cv2.imread(mask_path,-1)
             mask=cv2.resize(mask,(512,512),cv2.INTER_NEAREST)
-            image = Image.open(img_path)
-            if not image.mode == "RGB":
-                image = image.convert("RGB")
+            instance_image = Image.open(img_path) 
 
-            if np.random.rand()<0.5:
-                image=image.transpose(Image.FLIP_LEFT_RIGHT)
-                mask=cv2.flip(mask,1)
-           
-            # default to score-sde preprocessing
-            img = np.array(image).astype(np.uint8)
-            if self.center_crop: #NO
-                crop = min(img.shape[0], img.shape[1])
-                (
-                    h,
-                    w,
-                ) = (
-                    img.shape[0],
-                    img.shape[1],
+            if not instance_image.mode == "RGB":
+                instance_image = instance_image.convert("RGB")
+            instance_image = self.flip(instance_image)
+            # apply resize augmentation and create a valid image region mask
+            random_scale = self.size
+            if self.aug:
+                random_scale = (
+                    np.random.randint(self.size // 3, self.size + 1)
+                    if np.random.uniform() < 0.66
+                    else np.random.randint(int(1.2 * self.size), int(1.4 * self.size))
                 )
-                img = img[(h - crop) // 2 : (h + crop) // 2, (w - crop) // 2 : (w + crop) // 2]
-
-            image = Image.fromarray(img)
-            image = image.resize((self.size, self.size), resample=self.interpolation)
-            image = self.flip_transform(image)
-            image = np.array(image).astype(np.uint8)
-            image = (image / 127.5 - 1.0).astype(np.float32)
-            example["pixel_values"] = torch.from_numpy(image).permute(2, 0, 1)
-            mask_tensor=torch.from_numpy(mask).unsqueeze(-1).permute(2, 0, 1) # binary mask
-            example["masks"] = mask_tensor
+            instance_image, mask = self.preprocess(instance_image, random_scale, self.interpolation)
+            example["pixel_values"] = torch.from_numpy(instance_image).permute(2, 0, 1)
+            example["mask"] = torch.from_numpy(mask)
+            
 
             # prior_image
             if self.class_images_path:
@@ -229,6 +242,7 @@ class TextualInversionDataset(Dataset):
                 class_image = (class_image / 127.5 - 1.0).astype(np.float32)
                 class_image=torch.from_numpy(class_image).permute(2, 0, 1)
                 example["class_images"] = class_image
+                example["class_mask"] = torch.ones_like(example["mask"])
                 class_text_inputs=self.tokenizer(
                     self.class_prompt,
                     truncation=True,
@@ -245,7 +259,7 @@ class TextualInversionDataset(Dataset):
                     word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
                     num_tokens=len(word_token_ids)
                     for tok_id in word_token_ids:
-                        if self.placeholder_token in cap_word:
+                        if self.placeholder_token == cap_word:
                             is_keyword_tokens_prior.append(True)
                         else:
                             is_keyword_tokens_prior.append(False)
@@ -255,25 +269,28 @@ class TextualInversionDataset(Dataset):
                 assert len(is_keyword_tokens_prior)==self.tokenizer.model_max_length
                 is_keyword_tokens_prior=torch.BoolTensor(is_keyword_tokens_prior)
                 example["is_keyword_tokens_prior"]=is_keyword_tokens_prior
-                
             # prior_image
 
-            # 2. Caption for TI
+           
             placeholder_string = self.placeholder_token
-            
             if self.include_prior_concept:
-                text = random.choice(prefixes).format(placeholder_string)+' {}'.format(self.prior_concept)
+                instance_prompt = prefixes[0].format(placeholder_string)+' {}'.format(self.prior_concept)
             else:
-                text = random.choice(prefixes).format(placeholder_string)
+                instance_prompt = prefixes[0].format(placeholder_string)
+             # 2. Caption for TI
+            if random_scale < 0.6 * self.size:
+                instance_prompt = np.random.choice(["a far away ", "very small "]) + instance_prompt
+            elif random_scale > self.size:
+                instance_prompt = np.random.choice(["zoomed in ", "close up "]) + instance_prompt
             example["input_ids"] = self.tokenizer(
-                text,
+                instance_prompt,
                 padding="max_length",
                 truncation=True,
                 max_length=self.tokenizer.model_max_length,
                 return_tensors="pt",
             ).input_ids[0]
             is_keyword_tokens=[False]
-            text_words=text.split()
+            text_words=instance_prompt.split()
             for word_idx in range(len(text_words)):
                 cap_word=text_words[word_idx]
                 word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
@@ -294,16 +311,14 @@ class TextualInversionDataset(Dataset):
         assert self.include_prior_concept
         
         
-        placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
-        # if self.include_prior_concept:
-        #     placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
-        # else:
-        #     placeholder='{}'.format(self.placeholder_token)
+        # placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
+        if self.include_prior_concept:
+            placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
+        else:
+            placeholder='{}'.format(self.placeholder_token)
         if np.random.rand()<self.mlm_prior:
             placeholder=placeholder.replace(self.placeholder_token+' ','')
         caption_pos=mlm_pos.replace('<new>','{}'.format(placeholder)) # caption without masked embedding
-        # print(caption_pos,'caption_pos')
-        # exit()
         caption_neg=mlm_neg.replace('<new>','{}'.format(placeholder)) #
 
         example["input_ids_pos"] = self.tokenizer(
@@ -339,14 +354,14 @@ class TextualInversionDataset(Dataset):
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
                 # 1) input ids and indices for mask token
-                if np.random.rand()<self.mask_prob and (self.placeholder_token not in cap_word) and (cap_word not in self.prior_concept): 
+                if np.random.rand()<self.mask_prob and (self.placeholder_token != cap_word) and (cap_word != self.prior_concept): 
                     masked_idxs.append(True)
                     input_ids_masked.append(self.mask_token_ids)
                 else:
                     masked_idxs.append(False)
                     input_ids_masked.append(tok_id)
                 # 2) keyword indices and labels for MLM
-                if self.placeholder_token in cap_word:
+                if self.placeholder_token == cap_word:
                     assert num_tokens==1
                     is_keyword_tokens_mlm.append(True)
                     mlm_labels.append(-100)

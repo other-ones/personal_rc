@@ -69,7 +69,7 @@ del st
 pipe.unet.set_attn_processor(custom_diffusion_attn_procs)
 custom_diffusion_layers = AttnProcsLayers(pipe.unet.attn_processors)
 defined_state_dict=pipe.unet.state_dict()
-saved_state_dict = torch.load(args.resume_path+'/unet.pt', map_location=torch.device('cpu'))
+saved_state_dict = torch.load(args.resume_path+'/custom_diffusion.pt', map_location=torch.device('cpu'))
 new_state_dict={}
 for key in defined_state_dict:
     if key in saved_state_dict:

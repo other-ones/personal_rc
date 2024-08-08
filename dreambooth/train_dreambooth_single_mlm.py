@@ -1201,7 +1201,6 @@ def main(args):
                             merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
                             merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
                         merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
-
                         # visualize input
                         input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
                         input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()

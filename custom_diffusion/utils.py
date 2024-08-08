@@ -1,6 +1,8 @@
 
 from PIL import Image
 from PIL import ImageDraw,ImageFont
+
+
 def format_exponent(value):
     # Convert the float to a string in scientific notation with no decimal places
     sci_str = "{:e}".format(value)

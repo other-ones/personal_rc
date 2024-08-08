@@ -149,6 +149,7 @@ def collate_fn(examples, with_prior_preservation):
     mask = torch.stack(mask)
     pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
     mask = mask.to(memory_format=torch.contiguous_format).float()
+    print(mask.shape,'mask.shape collate')
 
     batch = {"input_ids": input_ids, "pixel_values": pixel_values, "mask": mask.unsqueeze(1)}
     return batch
@@ -257,11 +258,7 @@ class CustomDiffusionDataset(Dataset):
             mask[
                 top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
             ] = 1.0
-            # print(mask.shape,'mask.shape')
-            # print(outer,'outer')
-            # print(inner,'inner')
-            # cv2.imwrite('mask.jpg',(mask*255).astype(np.uint8))
-            # exit()
+            
         return instance_image, mask
 
     def __getitem__(self, index):
@@ -287,7 +284,8 @@ class CustomDiffusionDataset(Dataset):
         elif random_scale > self.size:
             instance_prompt = np.random.choice(["zoomed in ", "close up "]) + instance_prompt
 
-        example["instance_images"] = torch.from_numpy(instance_image).permute(2, 0, 1)
+        example["instance_images"] = torch.from_numpy(instance_image).permute(2, 0, 1) 
+        # exit()
         example["mask"] = torch.from_numpy(mask)
         example["instance_prompt_ids"] = self.tokenizer(
             instance_prompt,
@@ -1005,7 +1003,6 @@ def main(args):
             # layer_name = f"Layer {i}"
             print(key,'layer_name')
             assert 'custom_diffusion' in key
-    del tmp_state_dict
     accelerator.register_for_checkpointing(custom_diffusion_layers)
 
     if args.gradient_checkpointing:
