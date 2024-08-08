@@ -36,7 +36,7 @@ info_map_01={
     # 'chair1': ('chair','nonliving'),
 
     # qlab01
-    'teddybear':('bear','nonliving'),
+    'teddybear':('teddybear','nonliving'),
     # 'wooden_pot':('pot','nonliving'),
     # 'rc_car':('toy','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
@@ -50,8 +50,8 @@ elif 'ubuntu' in hostname:
     delay=40
 lambda_mlms=[
             # 0, 
-            0.001,
-            # 0.005,
+            # 0.001,
+            0.005,
             ]
 masked_loss=0
 if '03' in hostname:

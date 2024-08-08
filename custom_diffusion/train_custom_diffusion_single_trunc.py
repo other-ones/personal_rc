@@ -875,7 +875,6 @@ def main(args):
                 # MLM with Truncation
                 loss_mlm=None
                 if args.lambda_mlm:
-                    
                     for _ in range(args.msteps):
                         # for MLM
                         batch_mlm=load_mlm_batch(mlm_loader)
