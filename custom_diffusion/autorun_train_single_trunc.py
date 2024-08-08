@@ -49,7 +49,7 @@ elif 'ubuntu' in hostname:
     info_map=info_map_01
     delay=40
 lambda_mlms=[
-            # 0, 
+            0, 
             0.001,
             0.005,
             ]
