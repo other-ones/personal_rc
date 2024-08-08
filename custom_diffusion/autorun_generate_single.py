@@ -8,8 +8,8 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
     'dog6': ('dog','pet'),
+    'vase':('vase','nonliving'),
     # 'pet_cat1':('cat','pet'),
-    # 'vase':('vase','nonliving'),
     # 'pet_dog1':('dog','pet'),
     # 'dog3': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
