@@ -4,6 +4,6 @@ cd ../;
 git add .;
 git commit -m "update";
 git push origin main;
-cd cusom_diffusion;
+cd custom_diffusion;
 
 
