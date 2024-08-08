@@ -875,16 +875,17 @@ def main(args):
                 # MLM with Truncation
                 loss_mlm=None
                 if args.lambda_mlm:
-                    # for MLM
-                    batch_mlm=load_mlm_batch(mlm_loader)
-                    is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
-                    masked_idxs=batch_mlm["masked_idxs"]
-                    mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
-                    non_special_idxs=batch_mlm["non_special_idxs"]
-                    input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
-                    input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
-                    # for MLM
+                    
                     for _ in range(args.msteps):
+                        # for MLM
+                        batch_mlm=load_mlm_batch(mlm_loader)
+                        is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
+                        masked_idxs=batch_mlm["masked_idxs"]
+                        mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
+                        non_special_idxs=batch_mlm["non_special_idxs"]
+                        input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
+                        input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
+                        # for MLM
                         clip_text_embedding_masked = text_encoder(input_ids_masked,
                                                                 mask_embedding=mask_embeds.unsqueeze(0),
                                                                 mask_idxs=masked_idxs,

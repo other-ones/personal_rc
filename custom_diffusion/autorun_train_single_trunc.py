@@ -49,9 +49,9 @@ elif 'ubuntu' in hostname:
     info_map=info_map_01
     delay=40
 lambda_mlms=[
-            0, 
+            # 0, 
             0.001,
-            0.005,
+            # 0.005,
             ]
 masked_loss=0
 if '03' in hostname:
@@ -120,9 +120,9 @@ for lambda_mlm in lambda_mlms:
             command+='--resolution=512 \\\n'
             command+='--train_batch_size=2 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
-            command+='--max_train_steps=1001 \\\n'
+            command+='--max_train_steps=501 \\\n'
             command+='--validation_steps=100 \\\n'
-            command+='--checkpoints_total_limit=4 \\\n'
+            command+='--checkpoints_total_limit=2 \\\n'
             command+='--checkpointing_steps=250 \\\n'
             command+='--learning_rate=1e-5 \\\n'
             command+='--lr_scheduler="constant" \\\n'
