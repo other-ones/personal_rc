@@ -1006,7 +1006,6 @@ def main(args):
             print(key,'layer_name')
             assert 'custom_diffusion' in key
     del tmp_state_dict
-    exit()
     accelerator.register_for_checkpointing(custom_diffusion_layers)
 
     if args.gradient_checkpointing:
