@@ -5,6 +5,7 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--mstep',type=int,default=1)
     parser.add_argument('--resume_path',type=str)
     parser.add_argument('--class_data_dir1',type=str)
     parser.add_argument("--class_prompt1",type=str,default=None,help="The prompt to specify images in the same class as provided instance images.",)
