@@ -8,8 +8,8 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
     'dog6': ('dog','pet'),
-    'pet_cat1':('cat','pet'),
     'vase':('vase','nonliving'),
+    # 'pet_cat1':('cat','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'dog3': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
@@ -55,7 +55,7 @@ lambda_mlms=[
             ]
 masked_loss=0
 if '03' in hostname:
-    delay=30
+    delay=45
     target_devices=[0,1,2,3,4,5,6,7]
 else:
     delay=60
@@ -76,7 +76,7 @@ ports=np.arange(1111,2222)
 fixtes=[0]
 pps=[1]
 mlm_priors=[0]
-msteps_list=[2,3,5]
+msteps_list=[2,3]
 # for idx,concept in enumerate(list(info_map.keys())):
 for lambda_mlm in lambda_mlms:
     for idx,concept in enumerate(list(info_map.keys())):
@@ -100,10 +100,11 @@ for lambda_mlm in lambda_mlms:
                 stats=get_gpu_memory()
                 for device_idx in target_devices:
                     stat=stats[device_idx]   
-                    if stat>2e4:
+                    if stat>(2.2e4):
                         idle_devices.append(str(device_idx))
                     else:
                         print(device_idx,'not available')
+                    idx+=1
                 if len(idle_devices)>=2:
                     break
                 print(run_name,'sleep')
@@ -112,7 +113,7 @@ for lambda_mlm in lambda_mlms:
             running_devices=','.join(idle_devices[:2])
             print(run_name,running_devices)
             command='export CUDA_VISIBLE_DEVICES={};'.format(running_devices)
-            command+='accelerate launch --main_process_port {} train_custom_diffusion_single_trunc.py \\\n'.format(ports[idx],idx)
+            command+='accelerate launch --main_process_port {} train_custom_diffusion_single_trunc.py \\\n'.format(ports[idx])
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
