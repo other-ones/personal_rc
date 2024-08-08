@@ -152,8 +152,8 @@ for lambda_mlm in lambda_mlms:
             command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
             os.system(command)
             print('STARTED')
-            time.sleep(delay)
             idx+=1
+            time.sleep(delay)
 
             
 

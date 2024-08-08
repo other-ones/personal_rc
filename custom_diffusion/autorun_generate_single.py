@@ -8,7 +8,7 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
     'dog6': ('dog','pet'),
-    'vase':('vase','nonliving'),
+    # 'vase':('vase','nonliving'),
     # 'pet_cat1':('cat','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'dog3': ('dog','pet'),
@@ -59,7 +59,7 @@ def get_gpu_memory():
 
 
 
-target_step=250
+target_step=500
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -81,8 +81,10 @@ for dir in dirs:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
+            if 'with_ti' in exp :
+                continue
             prior,category=info_map[concept]
-            resume_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-250')
+            resume_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
             if not os.path.exists(resume_path):
                 print(resume_path,'does not exist')
                 continue
