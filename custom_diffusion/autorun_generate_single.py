@@ -59,7 +59,7 @@ def get_gpu_memory():
 
 
 
-target_step=500
+target_step=250
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -81,12 +81,14 @@ for dir in dirs:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
-            if 'with_ti' in exp :
+            if 'with_ti' in exp or 'mstep' in exp:
                 continue
             prior,category=info_map[concept]
             resume_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
             if not os.path.exists(resume_path):
                 print(resume_path,'does not exist')
+                continue
+            if not(('_mlm01_' in exp) or ('_mlm001_' in exp)):
                 continue
             exp_name=resume_path.split('/')[-3]
             exp_name+='_s{}'.format(target_step)
