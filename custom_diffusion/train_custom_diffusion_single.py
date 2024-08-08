@@ -636,6 +636,7 @@ def main(args):
         class_prompt=args.class_prompt1,
         simple_caption=args.simple_caption,
         mlm_prior=args.mlm_prior,
+        aug=not(args.noaug),
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
