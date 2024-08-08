@@ -9,7 +9,6 @@ info_map_03={
     # qlab03
     'dog6': ('dog','pet'),
     'pet_cat1':('cat','pet'),
-    'wooden_pot':('pot','nonliving'),
     'vase':('vase','nonliving'),
     # 'pet_dog1':('dog','pet'),
     # 'dog3': ('dog','pet'),
@@ -34,19 +33,21 @@ info_map_01={
     # 'vase':('vase','nonliving'),
     # 'cat1': ('cat','pet'),
     # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
     # 'chair1': ('chair','nonliving'),
 
     # qlab01
     'teddybear':('bear','nonliving'),
+    'wooden_pot':('pot','nonliving'),
     'rc_car':('toy','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
 }
 if '03' in hostname:
     info_map=info_map_03
+    delay=25
 elif 'ubuntu' in hostname:
     info_map=info_map_01
+    delay=40
 
 
 import subprocess as sp
@@ -100,7 +101,7 @@ for dir in dirs:
                     stat_idx+=1
                     break
                 print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
-                time.sleep(15)
+                time.sleep(delay)
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print(exp_name,device_idx)
@@ -123,7 +124,7 @@ for dir in dirs:
             os.system(command)
             print('STARTED')
             idx+=1
-            time.sleep(15)
+            time.sleep(delay)
 
     
 
