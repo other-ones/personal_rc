@@ -322,8 +322,8 @@ def save_new_embed(text_encoder, modifier_token_id, accelerator, args, output_di
     for x, y in zip(modifier_token_id, args.modifier_token):
         learned_embeds_dict = {}
         learned_embeds_dict[y] = learned_embeds[x]
+        print(torch.sum(learned_embeds[x].abs()),'learned_embeds[x]')
         filename = f"{output_dir}/{y}.bin"
-
         if safe_serialization:
             safetensors.torch.save_file(learned_embeds_dict, filename, metadata={"format": "pt"})
         else:
@@ -476,7 +476,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--checkpoints_total_limit",
         type=int,
-        default=None,
+        default=1,
         help=("Max number of checkpoints to store."),
     )
     parser.add_argument(
@@ -683,6 +683,27 @@ def main(args):
         log_with=args.report_to,
         project_config=accelerator_project_config,
     )
+    if accelerator.is_main_process:
+        sample_dir=os.path.join(args.output_dir,'samples')
+        ckpt_dir=os.path.join(args.output_dir,'checkpoints')
+        code_dir=os.path.join(args.output_dir,'src')
+        os.makedirs(sample_dir,exist_ok=True)
+        os.makedirs(ckpt_dir,exist_ok=True)
+        os.makedirs(code_dir,exist_ok=True)
+        os.system('cp *.py {} -R'.format(code_dir))
+        os.system('cp packages {} -R'.format(code_dir))
+        os.system('cp datasets_pkgs {} -R'.format(code_dir))
+        # 1. command
+        command_path=os.path.join(code_dir,'command.txt')
+        command_file=open(command_path,'w')
+        command_file.write('cwd\t{}\n'.format(os.getcwd()))
+        idx=0
+        while idx<len(sys.argv):
+            item=sys.argv[idx]
+            print(item,'item')
+            command_file.write('{}\n'.format(item))
+            idx+=1
+        command_file.close()
 
     # Disable AMP for MPS.
     if torch.backends.mps.is_available():
@@ -940,7 +961,6 @@ def main(args):
     train_kv = True
     train_q_out = False if args.freeze_model == "crossattn_kv" else True
     custom_diffusion_attn_procs = {}
-
     st = unet.state_dict()
     for name, _ in unet.attn_processors.items():
         cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
@@ -979,7 +999,14 @@ def main(args):
     del st
     unet.set_attn_processor(custom_diffusion_attn_procs)
     custom_diffusion_layers = AttnProcsLayers(unet.attn_processors)
-
+    tmp_state_dict=custom_diffusion_layers.state_dict()
+    if accelerator.is_main_process:
+        for key in tmp_state_dict:
+            # layer_name = f"Layer {i}"
+            print(key,'layer_name')
+            assert 'custom_diffusion' in key
+    del tmp_state_dict
+    exit()
     accelerator.register_for_checkpointing(custom_diffusion_layers)
 
     if args.gradient_checkpointing:
@@ -1013,7 +1040,8 @@ def main(args):
 
     # Optimizer creation
     optimizer = optimizer_class(
-        itertools.chain(text_encoder.get_input_embeddings().parameters(), custom_diffusion_layers.parameters())
+        itertools.chain(text_encoder.get_input_embeddings().parameters(), 
+        custom_diffusion_layers.parameters())
         if args.modifier_token is not None
         else custom_diffusion_layers.parameters(),
         lr=args.learning_rate,
@@ -1136,24 +1164,19 @@ def main(args):
                 # Convert images to latent space
                 latents = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample()
                 latents = latents * vae.config.scaling_factor
-
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents)
                 bsz = latents.shape[0]
                 # Sample a random timestep for each image
                 timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (bsz,), device=latents.device)
                 timesteps = timesteps.long()
-
                 # Add noise to the latents according to the noise magnitude at each timestep
                 # (this is the forward diffusion process)
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
-
                 # Get the text embedding for conditioning
                 encoder_hidden_states = text_encoder(batch["input_ids"])[0]
-
                 # Predict the noise residual
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
-
                 # Get the target for loss depending on the prediction type
                 if noise_scheduler.config.prediction_type == "epsilon":
                     target = noise
@@ -1181,6 +1204,7 @@ def main(args):
                     loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
                     loss = ((loss * mask).sum([1, 2, 3]) / mask.sum([1, 2, 3])).mean()
                 accelerator.backward(loss)
+
                 # Zero out the gradients for all token embeddings except the newly added
                 # embeddings for the concept, as we only want to optimize the concept embeddings
                 if args.modifier_token is not None:
@@ -1210,14 +1234,11 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
-                progress_bar.update(1)
-                global_step += 1
-
                 if global_step % args.checkpointing_steps == 0:
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit is not None:
-                            checkpoints = os.listdir(args.output_dir)
+                            checkpoints = os.listdir(ckpt_dir)
                             checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
                             checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
 
@@ -1225,30 +1246,39 @@ def main(args):
                             if len(checkpoints) >= args.checkpoints_total_limit:
                                 num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
                                 removing_checkpoints = checkpoints[0:num_to_remove]
-
                                 logger.info(
                                     f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
                                 )
                                 logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
 
                                 for removing_checkpoint in removing_checkpoints:
-                                    removing_checkpoint = os.path.join(args.output_dir, removing_checkpoint)
+                                    removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
                                     shutil.rmtree(removing_checkpoint)
 
-                        save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-                        accelerator.save_state(save_path)
-                        logger.info(f"Saved state to {save_path}")
-
-            logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
-            progress_bar.set_postfix(**logs)
-            accelerator.log(logs, step=global_step)
-
-            if global_step >= args.max_train_steps:
-                break
+                        save_path = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
+                        unet = unet.to(torch.float32)
+                        unet.save_attn_procs(save_path, safe_serialization=not args.no_safe_serialization)
+                        save_new_embed(
+                            text_encoder,
+                            modifier_token_id,
+                            accelerator,
+                            args,
+                            save_path,
+                            safe_serialization=not args.no_safe_serialization,
+                        )
+                        save_path_unet = os.path.join(ckpt_dir, f"checkpoint-{global_step}/unet.pt")
+                        cur_state_dict=unet.state_dict()
+                        save_state_dict={}
+                        for key in cur_state_dict:
+                            if 'custom_diffusion' in key:
+                                save_state_dict[key]=cur_state_dict[key]
+                        torch.save(save_state_dict,save_path_unet)
+                        # save_path_acc = os.path.join(ckpt_dir+'_acc', f"checkpoint-{global_step}")
+                        # accelerator.save_state(save_path_acc)
+            
 
             if accelerator.is_main_process:
                 images = []
-
                 if args.validation_prompt is not None and global_step % args.validation_steps == 0:
                     logger.info(
                         f"Running validation... \n Generating {args.num_validation_images} images with prompt:"
@@ -1276,7 +1306,9 @@ def main(args):
                         ]
                         for _ in range(args.num_validation_images)
                     ]
-
+                    stacked_img = np.concatenate([np.asarray(img) for img in images],axis=1)
+                    stacked_img=Image.fromarray(stacked_img)
+                    stacked_img.save(os.path.join(sample_dir,'sample_{:05d}.jpg'.format(global_step)))
                     for tracker in accelerator.trackers:
                         if tracker.name == "tensorboard":
                             np_images = np.stack([np.asarray(img) for img in images])
@@ -1293,61 +1325,103 @@ def main(args):
 
                     del pipeline
                     torch.cuda.empty_cache()
-
+            if accelerator.sync_gradients:
+                #
+                progress_bar.update(1)
+                global_step += 1
+            logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
+            progress_bar.set_postfix(**logs)
+            accelerator.log(logs, step=global_step)
+            if global_step >= args.max_train_steps:
+                break
+            #
     # Save the custom diffusion layers
     accelerator.wait_for_everyone()
     if accelerator.is_main_process:
-        unet = unet.to(torch.float32)
-        unet.save_attn_procs(args.output_dir, safe_serialization=not args.no_safe_serialization)
-        save_new_embed(
-            text_encoder,
-            modifier_token_id,
-            accelerator,
-            args,
-            args.output_dir,
-            safe_serialization=not args.no_safe_serialization,
-        )
+        # if args.checkpoints_total_limit is not None:
+        #     checkpoints = os.listdir(ckpt_dir)
+        #     checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
+        #     checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
+
+        #     # before we save the new checkpoint, we need to have at _most_ `checkpoints_total_limit - 1` checkpoints
+        #     if len(checkpoints) >= args.checkpoints_total_limit:
+        #         num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
+        #         removing_checkpoints = checkpoints[0:num_to_remove]
+        #         logger.info(
+        #             f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
+        #         )
+        #         logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
+
+        #         for removing_checkpoint in removing_checkpoints:
+        #             removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
+        #             shutil.rmtree(removing_checkpoint)
+        # save_path = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
+        # unet = unet.to(torch.float32)
+        # unet.save_attn_procs(save_path, safe_serialization=not args.no_safe_serialization)
+        # save_new_embed(
+        #     text_encoder,
+        #     modifier_token_id,
+        #     accelerator,
+        #     args,
+        #     save_path,
+        #     safe_serialization=not args.no_safe_serialization,
+        # )
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         # Final inference
-        # Load previous pipeline
-        pipeline = DiffusionPipeline.from_pretrained(
-            args.pretrained_model_name_or_path, revision=args.revision, variant=args.variant, torch_dtype=weight_dtype
-        )
-        pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
-        pipeline = pipeline.to(accelerator.device)
+        # # Load previous pipeline
+        # pipeline = DiffusionPipeline.from_pretrained(
+        #     args.pretrained_model_name_or_path, revision=args.revision, variant=args.variant, torch_dtype=weight_dtype
+        # )
+        # pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
+        # pipeline = pipeline.to(accelerator.device)
+        # # load attention processors
+        # weight_name = (
+        #     "pytorch_custom_diffusion_weights.safetensors"
+        #     if not args.no_safe_serialization
+        #     else "pytorch_custom_diffusion_weights.bin"
+        # )
+        # pipeline.unet.load_attn_procs(save_path, weight_name=weight_name)
+        # for token in args.modifier_token:
+        #     token_weight_name = f"{token}.safetensors" if not args.no_safe_serialization else f"{token}.bin"
+        #     # token_weight_name = f"{token}.bin"
+        #     pipeline.load_textual_inversion(save_path, token=token,weight_name=token_weight_name)
 
-        # load attention processors
-        weight_name = (
-            "pytorch_custom_diffusion_weights.safetensors"
-            if not args.no_safe_serialization
-            else "pytorch_custom_diffusion_weights.bin"
-        )
-        pipeline.unet.load_attn_procs(args.output_dir, weight_name=weight_name)
-        for token in args.modifier_token:
-            token_weight_name = f"{token}.safetensors" if not args.no_safe_serialization else f"{token}.bin"
-            pipeline.load_textual_inversion(args.output_dir, weight_name=token_weight_name)
-
-        # run inference
-        if args.validation_prompt and args.num_validation_images > 0:
-            generator = torch.Generator(device=accelerator.device).manual_seed(args.seed) if args.seed else None
-            images = [
-                pipeline(args.validation_prompt, num_inference_steps=25, generator=generator, eta=1.0).images[0]
-                for _ in range(args.num_validation_images)
-            ]
-
-            for tracker in accelerator.trackers:
-                if tracker.name == "tensorboard":
-                    np_images = np.stack([np.asarray(img) for img in images])
-                    tracker.writer.add_images("test", np_images, epoch, dataformats="NHWC")
-                if tracker.name == "wandb":
-                    tracker.log(
-                        {
-                            "test": [
-                                wandb.Image(image, caption=f"{i}: {args.validation_prompt}")
-                                for i, image in enumerate(images)
-                            ]
-                        }
-                    )
+        # # run inference
+        # if args.validation_prompt and args.num_validation_images > 0:
+        #     generator = torch.Generator(device=accelerator.device).manual_seed(args.seed) if args.seed else None
+        #     images = [
+        #         pipeline(args.validation_prompt, num_inference_steps=25, generator=generator, eta=1.0).images[0]
+        #         for _ in range(args.num_validation_images)
+        #     ]
+        #     stacked_img = np.concatenate([np.asarray(img) for img in images],axis=1)
+        #     stacked_img=Image.fromarray(stacked_img)
+        #     stacked_img.save(os.path.join(sample_dir,'sample_final.jpg'.format(global_step)))
+        #     for tracker in accelerator.trackers:
+        #         if tracker.name == "tensorboard":
+        #             np_images = np.stack([np.asarray(img) for img in images])
+        #             tracker.writer.add_images("test", np_images, epoch, dataformats="NHWC")
+        #         if tracker.name == "wandb":
+        #             tracker.log(
+        #                 {
+        #                     "test": [
+        #                         wandb.Image(image, caption=f"{i}: {args.validation_prompt}")
+        #                         for i, image in enumerate(images)
+        #                     ]
+        #                 }
+        #             )
 
         if args.push_to_hub:
             save_model_card(

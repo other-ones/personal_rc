@@ -12,7 +12,7 @@ import torch
 from PIL import Image
 
 sys.path.append('./')
-from src.diffusers_model_pipeline import CustomDiffusionPipeline, CustomDiffusionXLPipeline
+from diffusers_model_pipeline import CustomDiffusionPipeline, CustomDiffusionXLPipeline
 
 
 def sample(ckpt, delta_ckpt, from_file, prompt, compress, batch_size, freeze_model, sdxl=False):

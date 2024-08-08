@@ -79,7 +79,6 @@ else:
             "AuraFlowTransformer2DModel",
             "AutoencoderKL",
             "AutoencoderKLTemporalDecoder",
-            "AutoencoderOobleck",
             "AutoencoderTiny",
             "ConsistencyDecoderVAE",
             "ControlNetModel",
@@ -100,8 +99,6 @@ else:
             "SD3ControlNetModel",
             "SD3MultiControlNetModel",
             "SD3Transformer2DModel",
-            "SparseControlNetModel",
-            "StableAudioDiTModel",
             "StableCascadeUNet",
             "T2IAdapter",
             "T5FilmDecoder",
@@ -212,7 +209,7 @@ except OptionalDependencyNotAvailable:
     ]
 
 else:
-    _import_structure["schedulers"].extend(["CosineDPMSolverMultistepScheduler", "DPMSolverSDEScheduler"])
+    _import_structure["schedulers"].extend(["DPMSolverSDEScheduler"])
 
 try:
     if not (is_torch_available() and is_transformers_available()):
@@ -232,10 +229,8 @@ else:
             "AmusedImg2ImgPipeline",
             "AmusedInpaintPipeline",
             "AmusedPipeline",
-            "AnimateDiffControlNetPipeline",
             "AnimateDiffPipeline",
             "AnimateDiffSDXLPipeline",
-            "AnimateDiffSparseControlNetPipeline",
             "AnimateDiffVideoToVideoPipeline",
             "AudioLDM2Pipeline",
             "AudioLDM2ProjectionModel",
@@ -296,8 +291,6 @@ else:
             "SemanticStableDiffusionPipeline",
             "ShapEImg2ImgPipeline",
             "ShapEPipeline",
-            "StableAudioPipeline",
-            "StableAudioProjectionModel",
             "StableCascadeCombinedPipeline",
             "StableCascadeDecoderPipeline",
             "StableCascadePriorPipeline",
@@ -520,7 +513,6 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
             AuraFlowTransformer2DModel,
             AutoencoderKL,
             AutoencoderKLTemporalDecoder,
-            AutoencoderOobleck,
             AutoencoderTiny,
             ConsistencyDecoderVAE,
             ControlNetModel,
@@ -541,8 +533,6 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
             SD3ControlNetModel,
             SD3MultiControlNetModel,
             SD3Transformer2DModel,
-            SparseControlNetModel,
-            StableAudioDiTModel,
             T2IAdapter,
             T5FilmDecoder,
             Transformer2DModel,
@@ -639,7 +629,7 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
     except OptionalDependencyNotAvailable:
         from .utils.dummy_torch_and_torchsde_objects import *  # noqa F403
     else:
-        from .schedulers import CosineDPMSolverMultistepScheduler, DPMSolverSDEScheduler
+        from .schedulers import DPMSolverSDEScheduler
 
     try:
         if not (is_torch_available() and is_transformers_available()):
@@ -653,10 +643,8 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
             AmusedImg2ImgPipeline,
             AmusedInpaintPipeline,
             AmusedPipeline,
-            AnimateDiffControlNetPipeline,
             AnimateDiffPipeline,
             AnimateDiffSDXLPipeline,
-            AnimateDiffSparseControlNetPipeline,
             AnimateDiffVideoToVideoPipeline,
             AudioLDM2Pipeline,
             AudioLDM2ProjectionModel,
@@ -715,8 +703,6 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
             SemanticStableDiffusionPipeline,
             ShapEImg2ImgPipeline,
             ShapEPipeline,
-            StableAudioPipeline,
-            StableAudioProjectionModel,
             StableCascadeCombinedPipeline,
             StableCascadeDecoderPipeline,
             StableCascadePriorPipeline,

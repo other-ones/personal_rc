@@ -222,8 +222,7 @@ class IPAdapterMixin:
 
             # create feature extractor if it has not been registered to the pipeline yet
             if hasattr(self, "feature_extractor") and getattr(self, "feature_extractor", None) is None:
-                clip_image_size = self.image_encoder.config.image_size
-                feature_extractor = CLIPImageProcessor(size=clip_image_size, crop_size=clip_image_size)
+                feature_extractor = CLIPImageProcessor()
                 self.register_modules(feature_extractor=feature_extractor)
 
         # load ip-adapter into unet
@@ -320,13 +319,7 @@ class IPAdapterMixin:
 
         # remove hidden encoder
         self.unet.encoder_hid_proj = None
-        self.unet.config.encoder_hid_dim_type = None
-
-        # Kolors: restore `encoder_hid_proj` with `text_encoder_hid_proj`
-        if hasattr(self.unet, "text_encoder_hid_proj") and self.unet.text_encoder_hid_proj is not None:
-            self.unet.encoder_hid_proj = self.unet.text_encoder_hid_proj
-            self.unet.text_encoder_hid_proj = None
-            self.unet.config.encoder_hid_dim_type = "text_proj"
+        self.config.encoder_hid_dim_type = None
 
         # restore original Unet attention processors layers
         attn_procs = {}

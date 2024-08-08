@@ -1,124 +1,87 @@
-# coding=utf-8
-# Copyright 2024 HuggingFace Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-import logging
-import os
+from collections import OrderedDict
+import argparse
 import sys
-import tempfile
+sys.path.insert(0,'./packages')
+import torch
+import torch.nn.functional as F
+from diffusers import DiffusionPipeline
+from diffusers.models.attention_processor import (
+    CustomDiffusionAttnProcessor,
+    CustomDiffusionAttnProcessor2_0,
+    CustomDiffusionXFormersAttnProcessor,
+)
+from diffusers.loaders import AttnProcsLayers
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--resume_path')
+    parser.add_argument('--modifier_token')
+    parser.add_argument('--pretrained_model_name_or_path')
+    args=parser.parse_args()
+weight_dtype = torch.float32
+pipe = DiffusionPipeline.from_pretrained(
+    args.pretrained_model_name_or_path, torch_dtype=weight_dtype
+).to("cuda")
 
-
-sys.path.append("..")
-from test_examples_utils import ExamplesTestsAccelerate, run_command  # noqa: E402
-
-
-logging.basicConfig(level=logging.DEBUG)
-
-logger = logging.getLogger()
-stream_handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(stream_handler)
-
-
-class CustomDiffusion(ExamplesTestsAccelerate):
-    def test_custom_diffusion(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            test_args = f"""
-                examples/custom_diffusion/train_custom_diffusion.py
-                --pretrained_model_name_or_path hf-internal-testing/tiny-stable-diffusion-pipe
-                --instance_data_dir docs/source/en/imgs
-                --instance_prompt <new1>
-                --resolution 64
-                --train_batch_size 1
-                --gradient_accumulation_steps 1
-                --max_train_steps 2
-                --learning_rate 1.0e-05
-                --scale_lr
-                --lr_scheduler constant
-                --lr_warmup_steps 0
-                --modifier_token <new1>
-                --no_safe_serialization
-                --output_dir {tmpdir}
-                """.split()
-
-            run_command(self._launch_args + test_args)
-            # save_pretrained smoke test
-            self.assertTrue(os.path.isfile(os.path.join(tmpdir, "pytorch_custom_diffusion_weights.bin")))
-            self.assertTrue(os.path.isfile(os.path.join(tmpdir, "<new1>.bin")))
-
-    def test_custom_diffusion_checkpointing_checkpoints_total_limit(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            test_args = f"""
-            examples/custom_diffusion/train_custom_diffusion.py
-            --pretrained_model_name_or_path=hf-internal-testing/tiny-stable-diffusion-pipe
-            --instance_data_dir=docs/source/en/imgs
-            --output_dir={tmpdir}
-            --instance_prompt=<new1>
-            --resolution=64
-            --train_batch_size=1
-            --modifier_token=<new1>
-            --dataloader_num_workers=0
-            --max_train_steps=6
-            --checkpoints_total_limit=2
-            --checkpointing_steps=2
-            --no_safe_serialization
-            """.split()
-
-            run_command(self._launch_args + test_args)
-
-            self.assertEqual({x for x in os.listdir(tmpdir) if "checkpoint" in x}, {"checkpoint-4", "checkpoint-6"})
-
-    def test_custom_diffusion_checkpointing_checkpoints_total_limit_removes_multiple_checkpoints(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            test_args = f"""
-            examples/custom_diffusion/train_custom_diffusion.py
-            --pretrained_model_name_or_path=hf-internal-testing/tiny-stable-diffusion-pipe
-            --instance_data_dir=docs/source/en/imgs
-            --output_dir={tmpdir}
-            --instance_prompt=<new1>
-            --resolution=64
-            --train_batch_size=1
-            --modifier_token=<new1>
-            --dataloader_num_workers=0
-            --max_train_steps=4
-            --checkpointing_steps=2
-            --no_safe_serialization
-            """.split()
-
-            run_command(self._launch_args + test_args)
-
-            self.assertEqual(
-                {x for x in os.listdir(tmpdir) if "checkpoint" in x},
-                {"checkpoint-2", "checkpoint-4"},
-            )
-
-            resume_run_args = f"""
-            examples/custom_diffusion/train_custom_diffusion.py
-            --pretrained_model_name_or_path=hf-internal-testing/tiny-stable-diffusion-pipe
-            --instance_data_dir=docs/source/en/imgs
-            --output_dir={tmpdir}
-            --instance_prompt=<new1>
-            --resolution=64
-            --train_batch_size=1
-            --modifier_token=<new1>
-            --dataloader_num_workers=0
-            --max_train_steps=8
-            --checkpointing_steps=2
-            --resume_from_checkpoint=checkpoint-4
-            --checkpoints_total_limit=2
-            --no_safe_serialization
-            """.split()
-
-            run_command(self._launch_args + resume_run_args)
-
-            self.assertEqual({x for x in os.listdir(tmpdir) if "checkpoint" in x}, {"checkpoint-6", "checkpoint-8"})
+# Only train key, value projection layers if freeze_model = 'crossattn_kv' else train all params in the cross attention layer
+train_kv = True
+args.freeze_model='crossattn_kv'
+attention_class = (
+        CustomDiffusionAttnProcessor2_0 if hasattr(F, "scaled_dot_product_attention") else CustomDiffusionAttnProcessor
+    )
+train_q_out = False if args.freeze_model == "crossattn_kv" else True
+custom_diffusion_attn_procs = {}
+st = pipe.unet.state_dict()
+for name, _ in pipe.unet.attn_processors.items():
+    cross_attention_dim = None if name.endswith("attn1.processor") else pipe.unet.config.cross_attention_dim
+    if name.startswith("mid_block"):
+        hidden_size = pipe.unet.config.block_out_channels[-1]
+    elif name.startswith("up_blocks"):
+        block_id = int(name[len("up_blocks.")])
+        hidden_size = list(reversed(pipe.unet.config.block_out_channels))[block_id]
+    elif name.startswith("down_blocks"):
+        block_id = int(name[len("down_blocks.")])
+        hidden_size = pipe.unet.config.block_out_channels[block_id]
+    layer_name = name.split(".processor")[0]
+    weights = {
+        "to_k_custom_diffusion.weight": st[layer_name + ".to_k.weight"],
+        "to_v_custom_diffusion.weight": st[layer_name + ".to_v.weight"],
+    }
+    if train_q_out:
+        weights["to_q_custom_diffusion.weight"] = st[layer_name + ".to_q.weight"]
+        weights["to_out_custom_diffusion.0.weight"] = st[layer_name + ".to_out.0.weight"]
+        weights["to_out_custom_diffusion.0.bias"] = st[layer_name + ".to_out.0.bias"]
+    if cross_attention_dim is not None:
+        custom_diffusion_attn_procs[name] = attention_class(
+            train_kv=train_kv,
+            train_q_out=train_q_out,
+            hidden_size=hidden_size,
+            cross_attention_dim=cross_attention_dim,
+        ).to(pipe.unet.device)
+        custom_diffusion_attn_procs[name].load_state_dict(weights)
+    else:
+        custom_diffusion_attn_procs[name] = attention_class(
+            train_kv=False,
+            train_q_out=False,
+            hidden_size=hidden_size,
+            cross_attention_dim=cross_attention_dim,
+        )
+del st
+pipe.unet.set_attn_processor(custom_diffusion_attn_procs)
+custom_diffusion_layers = AttnProcsLayers(pipe.unet.attn_processors)
+defined_state_dict=pipe.unet.state_dict()
+saved_state_dict = torch.load(args.resume_path+'/unet.pt', map_location=torch.device('cpu'))
+new_state_dict={}
+for key in defined_state_dict:
+    if key in saved_state_dict:
+        new_state_dict[key]=saved_state_dict[key]    
+    else:
+        new_state_dict[key]=defined_state_dict[key]    
+pipe.unet.load_state_dict(new_state_dict,strict=True)
+pipe.load_textual_inversion(args.resume_path,token="<new1>", weight_name="<new1>.bin")
+image = pipe(
+    "<new1> cat sitting in a bucket",
+    num_inference_steps=100,
+    guidance_scale=6.0,
+    eta=1.0,
+).images[0]
+image.save("cat.png")

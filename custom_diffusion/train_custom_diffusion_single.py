@@ -1,6 +1,4 @@
-from datasets_pkgs.dataset_custom_diffusion import CustomDiffusionDataset
-from configs import parse_args
-# ADDED
+import cv2
 import sys
 sys.path.insert(0, './packages')
 #!/usr/bin/env python
@@ -173,19 +171,500 @@ class PromptDataset(Dataset):
         return example
 
 
-def save_new_embed(text_encoder, placeholder_token_id1, accelerator, args, output_dir, safe_serialization=True):
+class CustomDiffusionDataset(Dataset):
+    """
+    A dataset to prepare the instance and class images with the prompts for fine-tuning the model.
+    It pre-processes the images and the tokenizes prompts.
+    """
+
+    def __init__(
+        self,
+        concepts_list,
+        tokenizer,
+        size=512,
+        mask_size=64,
+        center_crop=False,
+        with_prior_preservation=False,
+        num_class_images=200,
+        hflip=False,
+        aug=True,
+    ):
+        self.size = size
+        self.mask_size = mask_size
+        self.center_crop = center_crop
+        self.tokenizer = tokenizer
+        self.interpolation = Image.BILINEAR
+        self.aug = aug
+
+        self.instance_images_path = []
+        self.class_images_path = []
+        self.with_prior_preservation = with_prior_preservation
+        for concept in concepts_list:
+            inst_img_path = [
+                (x, concept["instance_prompt"]) for x in Path(concept["instance_data_dir"]).iterdir() if x.is_file()
+            ]
+            self.instance_images_path.extend(inst_img_path)
+
+            if with_prior_preservation:
+                class_data_root = Path(concept["class_data_dir"])
+                if os.path.isdir(class_data_root):
+                    class_images_path = list(class_data_root.iterdir())
+                    class_prompt = [concept["class_prompt"] for _ in range(len(class_images_path))]
+                else:
+                    with open(class_data_root, "r") as f:
+                        class_images_path = f.read().splitlines()
+                    with open(concept["class_prompt"], "r") as f:
+                        class_prompt = f.read().splitlines()
+
+                class_img_path = list(zip(class_images_path, class_prompt))
+                self.class_images_path.extend(class_img_path[:num_class_images])
+
+        random.shuffle(self.instance_images_path)
+        self.num_instance_images = len(self.instance_images_path)
+        self.num_class_images = len(self.class_images_path)
+        self._length = max(self.num_class_images, self.num_instance_images)
+        self.flip = transforms.RandomHorizontalFlip(0.5 * hflip)
+
+        self.image_transforms = transforms.Compose(
+            [
+                self.flip,
+                transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.CenterCrop(size) if center_crop else transforms.RandomCrop(size),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ]
+        )
+
+    def __len__(self):
+        return self._length
+
+    def preprocess(self, image, scale, resample):
+        outer, inner = self.size, scale
+        factor = self.size // self.mask_size
+        if scale > self.size:
+            outer, inner = scale, self.size
+        top, left = np.random.randint(0, outer - inner + 1), np.random.randint(0, outer - inner + 1)
+        image = image.resize((scale, scale), resample=resample)
+        image = np.array(image).astype(np.uint8)
+        image = (image / 127.5 - 1.0).astype(np.float32)
+        instance_image = np.zeros((self.size, self.size, 3), dtype=np.float32)
+        mask = np.zeros((self.size // factor, self.size // factor))
+        if scale > self.size:
+            instance_image = image[top : top + inner, left : left + inner, :]
+            mask = np.ones((self.size // factor, self.size // factor))
+        else:
+            instance_image[top : top + inner, left : left + inner, :] = image
+            mask[
+                top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
+            ] = 1.0
+            # print(mask.shape,'mask.shape')
+            # print(outer,'outer')
+            # print(inner,'inner')
+            # cv2.imwrite('mask.jpg',(mask*255).astype(np.uint8))
+            # exit()
+        return instance_image, mask
+
+    def __getitem__(self, index):
+        example = {}
+        instance_image, instance_prompt = self.instance_images_path[index % self.num_instance_images]
+        instance_image = Image.open(instance_image)
+        if not instance_image.mode == "RGB":
+            instance_image = instance_image.convert("RGB")
+        instance_image = self.flip(instance_image)
+
+        # apply resize augmentation and create a valid image region mask
+        random_scale = self.size
+        if self.aug:
+            random_scale = (
+                np.random.randint(self.size // 3, self.size + 1)
+                if np.random.uniform() < 0.66
+                else np.random.randint(int(1.2 * self.size), int(1.4 * self.size))
+            )
+        instance_image, mask = self.preprocess(instance_image, random_scale, self.interpolation)
+
+        if random_scale < 0.6 * self.size:
+            instance_prompt = np.random.choice(["a far away ", "very small "]) + instance_prompt
+        elif random_scale > self.size:
+            instance_prompt = np.random.choice(["zoomed in ", "close up "]) + instance_prompt
+
+        example["instance_images"] = torch.from_numpy(instance_image).permute(2, 0, 1)
+        example["mask"] = torch.from_numpy(mask)
+        example["instance_prompt_ids"] = self.tokenizer(
+            instance_prompt,
+            truncation=True,
+            padding="max_length",
+            max_length=self.tokenizer.model_max_length,
+            return_tensors="pt",
+        ).input_ids
+
+        if self.with_prior_preservation:
+            class_image, class_prompt = self.class_images_path[index % self.num_class_images]
+            class_image = Image.open(class_image)
+            if not class_image.mode == "RGB":
+                class_image = class_image.convert("RGB")
+            example["class_images"] = self.image_transforms(class_image)
+            example["class_mask"] = torch.ones_like(example["mask"])
+            example["class_prompt_ids"] = self.tokenizer(
+                class_prompt,
+                truncation=True,
+                padding="max_length",
+                max_length=self.tokenizer.model_max_length,
+                return_tensors="pt",
+            ).input_ids
+
+        return example
+
+
+def save_new_embed(text_encoder, modifier_token_id, accelerator, args, output_dir, safe_serialization=True):
     """Saves the new token embeddings from the text encoder."""
     logger.info("Saving embeddings")
     learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight
-    for x, y in zip(placeholder_token_id1, args.placeholder_token1):
+    for x, y in zip(modifier_token_id, args.modifier_token):
         learned_embeds_dict = {}
         learned_embeds_dict[y] = learned_embeds[x]
+        print(torch.sum(learned_embeds[x].abs()),'learned_embeds[x]')
         filename = f"{output_dir}/{y}.bin"
-
         if safe_serialization:
             safetensors.torch.save_file(learned_embeds_dict, filename, metadata={"format": "pt"})
         else:
             torch.save(learned_embeds_dict, filename)
+
+
+def parse_args(input_args=None):
+    parser = argparse.ArgumentParser(description="Custom Diffusion training script.")
+    parser.add_argument(
+        "--pretrained_model_name_or_path",
+        type=str,
+        default=None,
+        required=True,
+        help="Path to pretrained model or model identifier from huggingface.co/models.",
+    )
+    parser.add_argument(
+        "--revision",
+        type=str,
+        default=None,
+        required=False,
+        help="Revision of pretrained model identifier from huggingface.co/models.",
+    )
+    parser.add_argument(
+        "--variant",
+        type=str,
+        default=None,
+        help="Variant of the model files of the pretrained model identifier from huggingface.co/models, 'e.g.' fp16",
+    )
+    parser.add_argument(
+        "--tokenizer_name",
+        type=str,
+        default=None,
+        help="Pretrained tokenizer name or path if not the same as model_name",
+    )
+    parser.add_argument(
+        "--instance_data_dir",
+        type=str,
+        default=None,
+        help="A folder containing the training data of instance images.",
+    )
+    parser.add_argument(
+        "--class_data_dir",
+        type=str,
+        default=None,
+        help="A folder containing the training data of class images.",
+    )
+    parser.add_argument(
+        "--instance_prompt",
+        type=str,
+        default=None,
+        help="The prompt with identifier specifying the instance",
+    )
+    parser.add_argument(
+        "--class_prompt",
+        type=str,
+        default=None,
+        help="The prompt to specify images in the same class as provided instance images.",
+    )
+    parser.add_argument(
+        "--validation_prompt",
+        type=str,
+        default=None,
+        help="A prompt that is used during validation to verify that the model is learning.",
+    )
+    parser.add_argument(
+        "--num_validation_images",
+        type=int,
+        default=2,
+        help="Number of images that should be generated during validation with `validation_prompt`.",
+    )
+    parser.add_argument(
+        "--validation_steps",
+        type=int,
+        default=50,
+        help=(
+            "Run dreambooth validation every X epochs. Dreambooth validation consists of running the prompt"
+            " `args.validation_prompt` multiple times: `args.num_validation_images`."
+        ),
+    )
+    parser.add_argument(
+        "--with_prior_preservation",
+        default=False,
+        action="store_true",
+        help="Flag to add prior preservation loss.",
+    )
+    parser.add_argument(
+        "--real_prior",
+        default=False,
+        action="store_true",
+        help="real images as prior.",
+    )
+    parser.add_argument("--prior_loss_weight", type=float, default=1.0, help="The weight of prior preservation loss.")
+    parser.add_argument(
+        "--num_class_images",
+        type=int,
+        default=200,
+        help=(
+            "Minimal class images for prior preservation loss. If there are not enough images already present in"
+            " class_data_dir, additional images will be sampled with class_prompt."
+        ),
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="custom-diffusion-model",
+        help="The output directory where the model predictions and checkpoints will be written.",
+    )
+    parser.add_argument("--seed", type=int, default=42, help="A seed for reproducible training.")
+    parser.add_argument(
+        "--resolution",
+        type=int,
+        default=512,
+        help=(
+            "The resolution for input images, all the images in the train/validation dataset will be resized to this"
+            " resolution"
+        ),
+    )
+    parser.add_argument(
+        "--center_crop",
+        default=False,
+        action="store_true",
+        help=(
+            "Whether to center crop the input images to the resolution. If not set, the images will be randomly"
+            " cropped. The images will be resized to the resolution first before cropping."
+        ),
+    )
+    parser.add_argument(
+        "--train_batch_size", type=int, default=4, help="Batch size (per device) for the training dataloader."
+    )
+    parser.add_argument(
+        "--sample_batch_size", type=int, default=4, help="Batch size (per device) for sampling images."
+    )
+    parser.add_argument("--num_train_epochs", type=int, default=1)
+    parser.add_argument(
+        "--max_train_steps",
+        type=int,
+        default=None,
+        help="Total number of training steps to perform.  If provided, overrides num_train_epochs.",
+    )
+    parser.add_argument(
+        "--checkpointing_steps",
+        type=int,
+        default=250,
+        help=(
+            "Save a checkpoint of the training state every X updates. These checkpoints can be used both as final"
+            " checkpoints in case they are better than the last checkpoint, and are also suitable for resuming"
+            " training using `--resume_from_checkpoint`."
+        ),
+    )
+    parser.add_argument(
+        "--checkpoints_total_limit",
+        type=int,
+        default=1,
+        help=("Max number of checkpoints to store."),
+    )
+    parser.add_argument(
+        "--resume_from_checkpoint",
+        type=str,
+        default=None,
+        help=(
+            "Whether training should be resumed from a previous checkpoint. Use a path saved by"
+            ' `--checkpointing_steps`, or `"latest"` to automatically select the last available checkpoint.'
+        ),
+    )
+    parser.add_argument(
+        "--gradient_accumulation_steps",
+        type=int,
+        default=1,
+        help="Number of updates steps to accumulate before performing a backward/update pass.",
+    )
+    parser.add_argument(
+        "--gradient_checkpointing",
+        action="store_true",
+        help="Whether or not to use gradient checkpointing to save memory at the expense of slower backward pass.",
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        default=1e-5,
+        help="Initial learning rate (after the potential warmup period) to use.",
+    )
+    parser.add_argument(
+        "--scale_lr",
+        action="store_true",
+        default=False,
+        help="Scale the learning rate by the number of GPUs, gradient accumulation steps, and batch size.",
+    )
+    parser.add_argument(
+        "--dataloader_num_workers",
+        type=int,
+        default=2,
+        help=(
+            "Number of subprocesses to use for data loading. 0 means that the data will be loaded in the main process."
+        ),
+    )
+    parser.add_argument(
+        "--freeze_model",
+        type=str,
+        default="crossattn_kv",
+        choices=["crossattn_kv", "crossattn"],
+        help="crossattn to enable fine-tuning of all params in the cross attention",
+    )
+    parser.add_argument(
+        "--lr_scheduler",
+        type=str,
+        default="constant",
+        help=(
+            'The scheduler type to use. Choose between ["linear", "cosine", "cosine_with_restarts", "polynomial",'
+            ' "constant", "constant_with_warmup"]'
+        ),
+    )
+    parser.add_argument(
+        "--lr_warmup_steps", type=int, default=500, help="Number of steps for the warmup in the lr scheduler."
+    )
+    parser.add_argument(
+        "--use_8bit_adam", action="store_true", help="Whether or not to use 8-bit Adam from bitsandbytes."
+    )
+    parser.add_argument("--adam_beta1", type=float, default=0.9, help="The beta1 parameter for the Adam optimizer.")
+    parser.add_argument("--adam_beta2", type=float, default=0.999, help="The beta2 parameter for the Adam optimizer.")
+    parser.add_argument("--adam_weight_decay", type=float, default=1e-2, help="Weight decay to use.")
+    parser.add_argument("--adam_epsilon", type=float, default=1e-08, help="Epsilon value for the Adam optimizer")
+    parser.add_argument("--max_grad_norm", default=1.0, type=float, help="Max gradient norm.")
+    parser.add_argument("--push_to_hub", action="store_true", help="Whether or not to push the model to the Hub.")
+    parser.add_argument("--hub_token", type=str, default=None, help="The token to use to push to the Model Hub.")
+    parser.add_argument(
+        "--hub_model_id",
+        type=str,
+        default=None,
+        help="The name of the repository to keep in sync with the local `output_dir`.",
+    )
+    parser.add_argument(
+        "--logging_dir",
+        type=str,
+        default="logs",
+        help=(
+            "[TensorBoard](https://www.tensorflow.org/tensorboard) log directory. Will default to"
+            " *output_dir/runs/**CURRENT_DATETIME_HOSTNAME***."
+        ),
+    )
+    parser.add_argument(
+        "--allow_tf32",
+        action="store_true",
+        help=(
+            "Whether or not to allow TF32 on Ampere GPUs. Can be used to speed up training. For more information, see"
+            " https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices"
+        ),
+    )
+    parser.add_argument(
+        "--report_to",
+        type=str,
+        default="tensorboard",
+        help=(
+            'The integration to report the results and logs to. Supported platforms are `"tensorboard"`'
+            ' (default), `"wandb"` and `"comet_ml"`. Use `"all"` to report to all integrations.'
+        ),
+    )
+    parser.add_argument(
+        "--mixed_precision",
+        type=str,
+        default=None,
+        choices=["no", "fp16", "bf16"],
+        help=(
+            "Whether to use mixed precision. Choose between fp16 and bf16 (bfloat16). Bf16 requires PyTorch >="
+            " 1.10.and an Nvidia Ampere GPU.  Default to the value of accelerate config of the current system or the"
+            " flag passed with the `accelerate.launch` command. Use this argument to override the accelerate config."
+        ),
+    )
+    parser.add_argument(
+        "--prior_generation_precision",
+        type=str,
+        default=None,
+        choices=["no", "fp32", "fp16", "bf16"],
+        help=(
+            "Choose prior generation precision between fp32, fp16 and bf16 (bfloat16). Bf16 requires PyTorch >="
+            " 1.10.and an Nvidia Ampere GPU.  Default to  fp16 if a GPU is available else fp32."
+        ),
+    )
+    parser.add_argument(
+        "--concepts_list",
+        type=str,
+        default=None,
+        help="Path to json containing multiple concepts, will overwrite parameters like instance_prompt, class_prompt, etc.",
+    )
+    parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
+    parser.add_argument(
+        "--enable_xformers_memory_efficient_attention", action="store_true", help="Whether or not to use xformers."
+    )
+    parser.add_argument(
+        "--set_grads_to_none",
+        action="store_true",
+        help=(
+            "Save more memory by using setting grads to None instead of zero. Be aware, that this changes certain"
+            " behaviors, so disable this argument if it causes any problems. More info:"
+            " https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html"
+        ),
+    )
+    parser.add_argument(
+        "--modifier_token",
+        type=str,
+        default=None,
+        help="A token to use as a modifier for the concept.",
+    )
+    parser.add_argument(
+        "--initializer_token", type=str, default="ktn+pll+ucd", help="A token to use as initializer word."
+    )
+    parser.add_argument("--hflip", action="store_true", help="Apply horizontal flip data augmentation.")
+    parser.add_argument(
+        "--noaug",
+        action="store_true",
+        help="Dont apply augmentation during data augmentation when this flag is enabled.",
+    )
+    parser.add_argument(
+        "--no_safe_serialization",
+        action="store_true",
+        help="If specified save the checkpoint not in `safetensors` format, but in original PyTorch format instead.",
+    )
+
+    if input_args is not None:
+        args = parser.parse_args(input_args)
+    else:
+        args = parser.parse_args()
+
+    env_local_rank = int(os.environ.get("LOCAL_RANK", -1))
+    if env_local_rank != -1 and env_local_rank != args.local_rank:
+        args.local_rank = env_local_rank
+
+    if args.with_prior_preservation:
+        if args.concepts_list is None:
+            if args.class_data_dir is None:
+                raise ValueError("You must specify a data directory for class images.")
+            if args.class_prompt is None:
+                raise ValueError("You must specify prompt for class images.")
+    else:
+        # logger is not available yet
+        if args.class_data_dir is not None:
+            warnings.warn("You need not use --class_data_dir without --with_prior_preservation.")
+        if args.class_prompt is not None:
+            warnings.warn("You need not use --class_prompt without --with_prior_preservation.")
+
+    return args
+
 
 def main(args):
     if args.report_to == "wandb" and args.hub_token is not None:
@@ -193,14 +672,38 @@ def main(args):
             "You cannot use both --report_to=wandb and --hub_token due to a security risk of exposing your token."
             " Please use `huggingface-cli login` to authenticate with the Hub."
         )
+
     logging_dir = Path(args.output_dir, args.logging_dir)
+
     accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
+
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
         log_with=args.report_to,
         project_config=accelerator_project_config,
     )
+    if accelerator.is_main_process:
+        sample_dir=os.path.join(args.output_dir,'samples')
+        ckpt_dir=os.path.join(args.output_dir,'checkpoints')
+        code_dir=os.path.join(args.output_dir,'src')
+        os.makedirs(sample_dir,exist_ok=True)
+        os.makedirs(ckpt_dir,exist_ok=True)
+        os.makedirs(code_dir,exist_ok=True)
+        os.system('cp *.py {} -R'.format(code_dir))
+        os.system('cp packages {} -R'.format(code_dir))
+        os.system('cp datasets_pkgs {} -R'.format(code_dir))
+        # 1. command
+        command_path=os.path.join(code_dir,'command.txt')
+        command_file=open(command_path,'w')
+        command_file.write('cwd\t{}\n'.format(os.getcwd()))
+        idx=0
+        while idx<len(sys.argv):
+            item=sys.argv[idx]
+            print(item,'item')
+            command_file.write('{}\n'.format(item))
+            idx+=1
+        command_file.close()
 
     # Disable AMP for MPS.
     if torch.backends.mps.is_available():
@@ -274,6 +777,7 @@ def main(args):
                 accelerator.wait_for_everyone()
             else: # HERE
                 cur_class_images = len(list(class_images_dir.iterdir()))
+
                 if cur_class_images < args.num_class_images:
                     torch_dtype = torch.float16 if accelerator.device.type == "cuda" else torch.float32
                     if args.prior_generation_precision == "fp32":
@@ -293,6 +797,7 @@ def main(args):
 
                     num_new_images = args.num_class_images - cur_class_images
                     logger.info(f"Number of class images to sample: {num_new_images}.")
+
                     sample_dataset = PromptDataset(concept["class_prompt"], num_new_images)
                     sample_dataloader = torch.utils.data.DataLoader(sample_dataset, batch_size=args.sample_batch_size)
 
@@ -322,7 +827,7 @@ def main(args):
         if args.output_dir is not None:
             os.makedirs(args.output_dir, exist_ok=True)
 
-        if args.push_to_hub: # NO 
+        if args.push_to_hub:
             repo_id = create_repo(
                 repo_id=args.hub_model_id or Path(args.output_dir).name, exist_ok=True, token=args.hub_token
             ).repo_id
@@ -344,31 +849,37 @@ def main(args):
 
     # import correct text encoder class
     text_encoder_cls = import_model_class_from_model_name_or_path(args.pretrained_model_name_or_path, args.revision)
+
     # Load scheduler and models
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
-    text_encoder = text_encoder_cls.from_pretrained(args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision, variant=args.variant)
-    vae = AutoencoderKL.from_pretrained(args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant)
-    unet = UNet2DConditionModel.from_pretrained(args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant)
+    text_encoder = text_encoder_cls.from_pretrained(
+        args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision, variant=args.variant
+    )
+    vae = AutoencoderKL.from_pretrained(
+        args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
+    )
+    unet = UNet2DConditionModel.from_pretrained(
+        args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+    )
 
-    
     # Adding a modifier token which is optimized ####
     # Code taken from https://github.com/huggingface/diffusers/blob/main/examples/textual_inversion/textual_inversion.py
-    placeholder_token_id1 = []
+    modifier_token_id = []
     initializer_token_id = []
-    if args.placeholder_token1 is not None:
-        args.placeholder_token1 = args.placeholder_token1.split("+")
-        args.prior_concept1 = args.prior_concept1.split("+")
-        if len(args.placeholder_token1) > len(args.prior_concept1):
+    if args.modifier_token is not None:
+        args.modifier_token = args.modifier_token.split("+")
+        args.initializer_token = args.initializer_token.split("+")
+        if len(args.modifier_token) > len(args.initializer_token):
             raise ValueError("You must specify + separated initializer token for each modifier token.")
-        for placeholder_token1, initializer_token in zip(
-            args.placeholder_token1, args.prior_concept1[: len(args.placeholder_token1)]
+        for modifier_token, initializer_token in zip(
+            args.modifier_token, args.initializer_token[: len(args.modifier_token)]
         ):
             # Add the placeholder token in tokenizer
-            num_added_tokens = tokenizer.add_tokens(placeholder_token1)
+            num_added_tokens = tokenizer.add_tokens(modifier_token)
             if num_added_tokens == 0:
                 raise ValueError(
-                    f"The tokenizer already contains the token {placeholder_token1}. Please pass a different"
-                    " `placeholder_token1` that is not already in the tokenizer."
+                    f"The tokenizer already contains the token {modifier_token}. Please pass a different"
+                    " `modifier_token` that is not already in the tokenizer."
                 )
 
             # Convert the initializer_token, placeholder_token to ids
@@ -379,14 +890,14 @@ def main(args):
                 raise ValueError("The initializer token must be a single token.")
 
             initializer_token_id.append(token_ids[0])
-            placeholder_token_id1.append(tokenizer.convert_tokens_to_ids(placeholder_token1))
+            modifier_token_id.append(tokenizer.convert_tokens_to_ids(modifier_token))
 
         # Resize the token embeddings as we are adding new special tokens to the tokenizer
         text_encoder.resize_token_embeddings(len(tokenizer))
 
         # Initialise the newly added placeholder token with the embeddings of the initializer token
         token_embeds = text_encoder.get_input_embeddings().weight.data
-        for x, y in zip(placeholder_token_id1, initializer_token_id):
+        for x, y in zip(modifier_token_id, initializer_token_id):
             token_embeds[x] = token_embeds[y]
 
         # Freeze all parameters except for the token embeddings in text encoder
@@ -394,13 +905,13 @@ def main(args):
             text_encoder.text_model.encoder.parameters(),
             text_encoder.text_model.final_layer_norm.parameters(),
             text_encoder.text_model.embeddings.position_embedding.parameters(),
-        ) # input_tokens are excluded
+        )
         freeze_params(params_to_freeze)
     ########################################################
     ########################################################
 
     vae.requires_grad_(False)
-    if args.placeholder_token1 is None:
+    if args.modifier_token is None:
         text_encoder.requires_grad_(False)
     unet.requires_grad_(False)
     # For mixed precision training we cast the text_encoder and vae weights to half-precision
@@ -412,7 +923,7 @@ def main(args):
         weight_dtype = torch.bfloat16
 
     # Move unet, vae and text_encoder to device and cast to weight_dtype
-    if accelerator.mixed_precision != "fp16" and args.placeholder_token1 is not None:
+    if accelerator.mixed_precision != "fp16" and args.modifier_token is not None:
         text_encoder.to(accelerator.device, dtype=weight_dtype)
     unet.to(accelerator.device, dtype=weight_dtype)
     vae.to(accelerator.device, dtype=weight_dtype)
@@ -451,9 +962,7 @@ def main(args):
     train_q_out = False if args.freeze_model == "crossattn_kv" else True
     custom_diffusion_attn_procs = {}
     st = unet.state_dict()
-    # CHECK HERE
     for name, _ in unet.attn_processors.items():
-        print(name,'attn_processors_name')
         cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
         if name.startswith("mid_block"):
             hidden_size = unet.config.block_out_channels[-1]
@@ -488,15 +997,21 @@ def main(args):
                 cross_attention_dim=cross_attention_dim,
             )
     del st
-    print(type(attn_processors),'attn_processors')
-    exit()
     unet.set_attn_processor(custom_diffusion_attn_procs)
     custom_diffusion_layers = AttnProcsLayers(unet.attn_processors)
-
+    tmp_state_dict=custom_diffusion_layers.state_dict()
+    if accelerator.is_main_process:
+        for key in tmp_state_dict:
+            # layer_name = f"Layer {i}"
+            print(key,'layer_name')
+            assert 'custom_diffusion' in key
+    del tmp_state_dict
+    exit()
     accelerator.register_for_checkpointing(custom_diffusion_layers)
+
     if args.gradient_checkpointing:
         unet.enable_gradient_checkpointing()
-        if args.placeholder_token1 is not None:
+        if args.modifier_token is not None:
             text_encoder.gradient_checkpointing_enable()
     # Enable TF32 for faster training on Ampere GPUs,
     # cf https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices
@@ -525,8 +1040,9 @@ def main(args):
 
     # Optimizer creation
     optimizer = optimizer_class(
-        itertools.chain(text_encoder.get_input_embeddings().parameters(), custom_diffusion_layers.parameters())
-        if args.placeholder_token1 is not None
+        itertools.chain(text_encoder.get_input_embeddings().parameters(), 
+        custom_diffusion_layers.parameters())
+        if args.modifier_token is not None
         else custom_diffusion_layers.parameters(),
         lr=args.learning_rate,
         betas=(args.adam_beta1, args.adam_beta2),
@@ -574,7 +1090,7 @@ def main(args):
     )
 
     # Prepare everything with our `accelerator`.
-    if args.placeholder_token1 is not None:
+    if args.modifier_token is not None:
         custom_diffusion_layers, text_encoder, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
             custom_diffusion_layers, text_encoder, optimizer, train_dataloader, lr_scheduler
         )
@@ -614,6 +1130,7 @@ def main(args):
             dirs = [d for d in dirs if d.startswith("checkpoint")]
             dirs = sorted(dirs, key=lambda x: int(x.split("-")[1]))
             path = dirs[-1] if len(dirs) > 0 else None
+
         if path is None:
             accelerator.print(
                 f"Checkpoint '{args.resume_from_checkpoint}' does not exist. Starting a new training run."
@@ -624,6 +1141,7 @@ def main(args):
             accelerator.print(f"Resuming from checkpoint {path}")
             accelerator.load_state(os.path.join(args.output_dir, path))
             global_step = int(path.split("-")[1])
+
             initial_global_step = global_step
             first_epoch = global_step // num_update_steps_per_epoch
     else:
@@ -639,31 +1157,26 @@ def main(args):
 
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
-        if args.placeholder_token1 is not None:
+        if args.modifier_token is not None:
             text_encoder.train()
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(unet), accelerator.accumulate(text_encoder):
                 # Convert images to latent space
                 latents = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample()
                 latents = latents * vae.config.scaling_factor
-
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents)
                 bsz = latents.shape[0]
                 # Sample a random timestep for each image
                 timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (bsz,), device=latents.device)
                 timesteps = timesteps.long()
-
                 # Add noise to the latents according to the noise magnitude at each timestep
                 # (this is the forward diffusion process)
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
-
                 # Get the text embedding for conditioning
                 encoder_hidden_states = text_encoder(batch["input_ids"])[0]
-
                 # Predict the noise residual
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
-
                 # Get the target for loss depending on the prediction type
                 if noise_scheduler.config.prediction_type == "epsilon":
                     target = noise
@@ -677,11 +1190,13 @@ def main(args):
                     model_pred, model_pred_prior = torch.chunk(model_pred, 2, dim=0)
                     target, target_prior = torch.chunk(target, 2, dim=0)
                     mask = torch.chunk(batch["mask"], 2, dim=0)[0]
+                    # print(mask.max().item(),mask.min().item(),'mask')
                     # Compute instance loss
                     loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
                     loss = ((loss * mask).sum([1, 2, 3]) / mask.sum([1, 2, 3])).mean()
                     # Compute prior loss
                     prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
+
                     # Add the prior loss to the instance loss.
                     loss = loss + args.prior_loss_weight * prior_loss
                 else:
@@ -689,18 +1204,19 @@ def main(args):
                     loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
                     loss = ((loss * mask).sum([1, 2, 3]) / mask.sum([1, 2, 3])).mean()
                 accelerator.backward(loss)
+
                 # Zero out the gradients for all token embeddings except the newly added
                 # embeddings for the concept, as we only want to optimize the concept embeddings
-                if args.placeholder_token1 is not None:
+                if args.modifier_token is not None:
                     if accelerator.num_processes > 1:
                         grads_text_encoder = text_encoder.module.get_input_embeddings().weight.grad
                     else:
                         grads_text_encoder = text_encoder.get_input_embeddings().weight.grad
                     # Get the index for tokens that we want to zero the grads for
-                    index_grads_to_zero = torch.arange(len(tokenizer)) != placeholder_token_id1[0]
-                    for i in range(1, len(placeholder_token_id1)):
+                    index_grads_to_zero = torch.arange(len(tokenizer)) != modifier_token_id[0]
+                    for i in range(1, len(modifier_token_id)):
                         index_grads_to_zero = index_grads_to_zero & (
-                            torch.arange(len(tokenizer)) != placeholder_token_id1[i]
+                            torch.arange(len(tokenizer)) != modifier_token_id[i]
                         )
                     grads_text_encoder.data[index_grads_to_zero, :] = grads_text_encoder.data[
                         index_grads_to_zero, :
@@ -708,7 +1224,7 @@ def main(args):
                 if accelerator.sync_gradients:
                     params_to_clip = (
                         itertools.chain(text_encoder.parameters(), custom_diffusion_layers.parameters())
-                        if args.placeholder_token1 is not None
+                        if args.modifier_token is not None
                         else custom_diffusion_layers.parameters()
                     )
                     accelerator.clip_grad_norm_(params_to_clip, args.max_grad_norm)
@@ -718,13 +1234,11 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
-                progress_bar.update(1)
-                global_step += 1
                 if global_step % args.checkpointing_steps == 0:
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit is not None:
-                            checkpoints = os.listdir(args.output_dir)
+                            checkpoints = os.listdir(ckpt_dir)
                             checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
                             checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
 
@@ -732,36 +1246,44 @@ def main(args):
                             if len(checkpoints) >= args.checkpoints_total_limit:
                                 num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
                                 removing_checkpoints = checkpoints[0:num_to_remove]
-
                                 logger.info(
                                     f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
                                 )
                                 logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
 
                                 for removing_checkpoint in removing_checkpoints:
-                                    removing_checkpoint = os.path.join(args.output_dir, removing_checkpoint)
+                                    removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
                                     shutil.rmtree(removing_checkpoint)
 
-                        save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-                        accelerator.save_state(save_path)
-                        logger.info(f"Saved state to {save_path}")
-
-            logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
-            progress_bar.set_postfix(**logs)
-            accelerator.log(logs, step=global_step)
-
-            if global_step >= args.max_train_steps:
-                break
+                        save_path = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
+                        unet = unet.to(torch.float32)
+                        unet.save_attn_procs(save_path, safe_serialization=not args.no_safe_serialization)
+                        save_new_embed(
+                            text_encoder,
+                            modifier_token_id,
+                            accelerator,
+                            args,
+                            save_path,
+                            safe_serialization=not args.no_safe_serialization,
+                        )
+                        save_path_unet = os.path.join(ckpt_dir, f"checkpoint-{global_step}/unet.pt")
+                        cur_state_dict=unet.state_dict()
+                        save_state_dict={}
+                        for key in cur_state_dict:
+                            if 'custom_diffusion' in key:
+                                save_state_dict[key]=cur_state_dict[key]
+                        torch.save(save_state_dict,save_path_unet)
+                        # save_path_acc = os.path.join(ckpt_dir+'_acc', f"checkpoint-{global_step}")
+                        # accelerator.save_state(save_path_acc)
+            
 
             if accelerator.is_main_process:
                 images = []
-
                 if args.validation_prompt is not None and global_step % args.validation_steps == 0:
                     logger.info(
                         f"Running validation... \n Generating {args.num_validation_images} images with prompt:"
                         f" {args.validation_prompt}."
                     )
-
                     # create pipeline
                     pipeline = DiffusionPipeline.from_pretrained(
                         args.pretrained_model_name_or_path,
@@ -784,7 +1306,9 @@ def main(args):
                         ]
                         for _ in range(args.num_validation_images)
                     ]
-
+                    stacked_img = np.concatenate([np.asarray(img) for img in images],axis=1)
+                    stacked_img=Image.fromarray(stacked_img)
+                    stacked_img.save(os.path.join(sample_dir,'sample_{:05d}.jpg'.format(global_step)))
                     for tracker in accelerator.trackers:
                         if tracker.name == "tensorboard":
                             np_images = np.stack([np.asarray(img) for img in images])
@@ -801,63 +1325,21 @@ def main(args):
 
                     del pipeline
                     torch.cuda.empty_cache()
-
+            if accelerator.sync_gradients:
+                #
+                progress_bar.update(1)
+                global_step += 1
+            logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
+            progress_bar.set_postfix(**logs)
+            accelerator.log(logs, step=global_step)
+            if global_step >= args.max_train_steps:
+                break
+            #
     # Save the custom diffusion layers
     accelerator.wait_for_everyone()
     if accelerator.is_main_process:
-        unet = unet.to(torch.float32)
-        unet.save_attn_procs(args.output_dir, safe_serialization=not args.no_safe_serialization)
-        save_new_embed(
-            text_encoder,
-            placeholder_token_id1,
-            accelerator,
-            args,
-            args.output_dir,
-            safe_serialization=not args.no_safe_serialization,
-        )
 
-        # Final inference
-        # Load previous pipeline
-        pipeline = DiffusionPipeline.from_pretrained(
-            args.pretrained_model_name_or_path, revision=args.revision, variant=args.variant, torch_dtype=weight_dtype
-        )
-        pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
-        pipeline = pipeline.to(accelerator.device)
-
-        # load attention processors
-        weight_name = (
-            "pytorch_custom_diffusion_weights.safetensors"
-            if not args.no_safe_serialization
-            else "pytorch_custom_diffusion_weights.bin"
-        )
-        pipeline.unet.load_attn_procs(args.output_dir, weight_name=weight_name)
-        for token in args.placeholder_token1:
-            token_weight_name = f"{token}.safetensors" if not args.no_safe_serialization else f"{token}.bin"
-            pipeline.load_textual_inversion(args.output_dir, weight_name=token_weight_name)
-
-        # run inference
-        if args.validation_prompt and args.num_validation_images > 0:
-            generator = torch.Generator(device=accelerator.device).manual_seed(args.seed) if args.seed else None
-            images = [
-                pipeline(args.validation_prompt, num_inference_steps=25, generator=generator, eta=1.0).images[0]
-                for _ in range(args.num_validation_images)
-            ]
-
-            for tracker in accelerator.trackers:
-                if tracker.name == "tensorboard":
-                    np_images = np.stack([np.asarray(img) for img in images])
-                    tracker.writer.add_images("test", np_images, epoch, dataformats="NHWC")
-                if tracker.name == "wandb":
-                    tracker.log(
-                        {
-                            "test": [
-                                wandb.Image(image, caption=f"{i}: {args.validation_prompt}")
-                                for i, image in enumerate(images)
-                            ]
-                        }
-                    )
-
-        if args.push_to_hub: #FALSE
+        if args.push_to_hub:
             save_model_card(
                 repo_id,
                 images=images,

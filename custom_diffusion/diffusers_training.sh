@@ -1,7 +1,9 @@
+
 # export MODEL_NAME="CompVis/stable-diffusion-v1-4";
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export INSTANCE_DIR="/data/twkim/diffusion/personalization/collected/images/pet_cat1";
-accelerate launch diffusers_training.py \
+export CUDA_VISIBLE_DEVICES=0,1;
+accelerate launch --main_process_port=9982 diffusers_training.py \
     --pretrained_model_name_or_path=$MODEL_NAME  \
     --instance_data_dir=$INSTANCE_DIR  \
     --class_data_dir=./priors/samples_cat/ \
@@ -16,4 +18,5 @@ accelerate launch diffusers_training.py \
     --max_train_steps=250 \
     --num_class_images=200 \
     --scale_lr --hflip  \
-    --modifier_token "<new1>" 
+    --modifier_token "<new1>" \
+    --enable_xformers_memory_efficient_attention 
