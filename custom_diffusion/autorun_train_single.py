@@ -56,9 +56,10 @@ mlm_priors=[0]
 # for idx,concept in enumerate(list(info_map.keys())):
 with_ti_list=[0]
 noaug=1
+idx=0
 for with_ti in with_ti_list:
     for lambda_mlm in lambda_mlms:
-        for idx,concept in enumerate(list(info_map.keys())):
+        for concept in list(info_map.keys()):
             lambda_mlm_str=float_to_str(lambda_mlm)
             lambda_mlm_str=lambda_mlm_str.replace('.','')
             prior,category=info_map[concept]
@@ -94,6 +95,7 @@ for with_ti in with_ti_list:
                         print(device_idx,'not available')
                     idx+=1
                 if len(idle_devices)>=2:
+                    idx+=1
                     break
                 print(run_name,'sleep')
                 time.sleep(delay)
