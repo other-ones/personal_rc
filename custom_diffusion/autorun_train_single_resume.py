@@ -7,26 +7,27 @@ hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     'dog6': ('dog','pet'),
-    # 'pet_cat1':('cat','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'pet_dog1':('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'barn': ('barn','building'),
-    # 'teddybear':('teddybear','nonliving'),
-    # 'cat1': ('cat','pet'),
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
+    'pet_cat1':('cat','pet'),
+    'vase':('vase','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'pet_dog1':('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'barn': ('barn','building'),
+    'teddybear':('teddybear','nonliving'),
+    'cat1': ('cat','pet'),
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
     # 'flower1':('flower','flower'),
 }
 lambda_mlms=[
-            0.001,
-            0, 
-            0.01,
             0.1,
+            1.0,
+            0.01,
+            0.001,
+            # 0, 
             # 1
             ]
 masked_loss=0
@@ -57,8 +58,10 @@ mlm_priors=[0]
 with_ti_list=[0]
 noaug=0
 idx=0
-train_te=1
-for with_ti in with_ti_list:
+train_te=0
+lr_list=[5e-4]
+num_devices=1
+for lr in lr_list:
     for lambda_mlm in lambda_mlms:
         for concept in list(info_map.keys()):
             lambda_mlm_str=float_to_str(lambda_mlm)
@@ -69,19 +72,24 @@ for with_ti in with_ti_list:
                 run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
             else:
                 run_name+="_nomlm_{}".format(concept)
-            if with_ti:
-                run_name+='_with_ti'
             if train_te:
                 run_name+='_train_te'
-            
-            if noaug:
-                log_dir='logs/train/single_noaug'
-                os.makedirs(log_dir,exist_ok=True)   
-                output_dir=os.path.join('saved_models/custom_diffusion/single_noaug',concept)
-            else:
-                log_dir='logs/train/single'
-                os.makedirs(log_dir,exist_ok=True)   
-                output_dir=os.path.join('saved_models/custom_diffusion/single',concept)
+            # if lr==1e-4:
+            #     run_name+='_lr1e4'
+            # elif lr==1e-5:
+            #     run_name+='_lr1e5'
+            # else:
+            #     assert False
+            run_name+='_batch1_lr5e4'
+            run_name+='_resume'
+            # if noaug:
+            #     log_dir='logs/train/single_noaug'
+            #     os.makedirs(log_dir,exist_ok=True)   
+            #     output_dir=os.path.join('saved_models/custom_diffusion/single_noaug',concept)
+            # else:
+            log_dir='logs/train/single_resume'
+            os.makedirs(log_dir,exist_ok=True)   
+            output_dir=os.path.join('saved_models/custom_diffusion/single_resume',concept)
             exp_path=os.path.join(output_dir,run_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -96,13 +104,19 @@ for with_ti in with_ti_list:
                     else:
                         print(device_idx,'not available')
                     idx+=1
-                if len(idle_devices)>=2:
+                if len(idle_devices)>=num_devices:
                     idx+=1
                     break
                 print(run_name,'sleep')
                 time.sleep(delay)
             log_path=os.path.join(log_dir,run_name+'.out')
-            running_devices=','.join(idle_devices[:2])
+            print(log_path,'log_path')
+            running_devices=','.join(idle_devices[:num_devices])
+            resume_path=os.path.join("saved_models/custom_diffusion/single/{}/custom_nomlm_{}/checkpoints/checkpoint-250/".format(concept,concept,concept))
+            # print(resume_path,'resume')
+            # assert os.path.exists(resume_path)
+            if not os.path.exists(resume_path):
+                continue
             print(run_name,running_devices)
             command='export CUDA_VISIBLE_DEVICES={};'.format(running_devices)
             command+='accelerate launch --main_process_port {} train_custom_diffusion_single.py \\\n'.format(ports[idx],idx)
@@ -111,13 +125,14 @@ for with_ti in with_ti_list:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--train_batch_size=2 \\\n'
+            command+='--resume_path=\"{}\" \\\n'.format(resume_path)
+            command+='--train_batch_size=1 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
-            command+='--max_train_steps=251 \\\n'
+            command+='--max_train_steps=3001 \\\n'
             command+='--validation_steps=100 \\\n'
-            command+='--checkpoints_total_limit=1 \\\n'
-            command+='--checkpointing_steps=250 \\\n'
-            command+='--learning_rate=1e-5 \\\n'
+            # command+='--checkpoints_total_limit=1 \\\n'
+            command+='--checkpointing_steps=500 \\\n'
+            command+='--learning_rate={} \\\n'.format(lr)
             command+='--lr_scheduler="constant" \\\n'
             command+='--lr_warmup_steps=0 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
@@ -137,13 +152,9 @@ for with_ti in with_ti_list:
             command+='--masked_loss={} \\\n'.format(masked_loss)
             command+='--normalize_target1=0 \\\n'
             command+='--run_name="{}" \\\n'.format(run_name)
-            command+='--with_prior_preservation=1 \\\n'
+            command+='--with_prior_preservation=0 \\\n'
             command+='--class_prompt1="a picture of a {}" \\\n'.format(prior)
             command+='--class_data_dir1="priors/samples_{}" \\\n'.format(prior)
-            if with_ti:
-                learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm0_prior_mlm0001_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,concept)
-                command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-
             # command+='--report_to="wandb" \\\n'
             # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
             command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)

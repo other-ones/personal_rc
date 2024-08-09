@@ -221,7 +221,9 @@ class CLIPTextEmbeddings(nn.Module):
         seq_length = input_ids.shape[-1] if input_ids is not None else inputs_embeds.shape[-2]
 
         if position_ids is None:
+            # print('none')
             position_ids = self.position_ids[:, :seq_length]
+            # print(position_ids,'position_ids')
 
         if inputs_embeds is None:
             inputs_embeds = self.token_embedding(input_ids)
@@ -921,7 +923,7 @@ class CLIPTextTransformer(nn.Module):
         input_shape = input_ids.size()
         input_ids = input_ids.view(-1, input_shape[-1])
 
-        hidden_states = self.embeddings(input_ids=input_ids, position_ids=position_ids)
+        hidden_states = self.embeddings(input_ids=input_ids, position_ids=position_ids) # HERE
 
         bsz, seq_len = input_shape
 

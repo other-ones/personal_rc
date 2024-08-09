@@ -1306,23 +1306,7 @@ def main(args):
 
         pipeline.scheduler = pipeline.scheduler.from_config(pipeline.scheduler.config, **scheduler_args)
 
-        # pipeline.save_pretrained(args.output_dir)
-        # if args.push_to_hub:
-        #     save_model_card(
-        #         repo_id,
-        #         images=images,
-        #         base_model=args.pretrained_model_name_or_path,
-        #         train_text_encoder=args.train_text_encoder,
-        #         prompt=args.instance_prompt,
-        #         repo_folder=args.output_dir,
-        #         pipeline=pipeline,
-        #     )
-        #     upload_folder(
-        #         repo_id=repo_id,
-        #         folder_path=args.output_dir,
-        #         commit_message="End of training",
-        #         ignore_patterns=["step_*", "epoch_*"],
-        #     )
+    
 
     accelerator.end_training()
 

@@ -1,3 +1,4 @@
+
 from utils import render_caption
 import importlib
 import sys
@@ -54,7 +55,7 @@ from diffusers.utils import check_min_version, is_wandb_available
 from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_card
 from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
-
+torch.autograd.set_detect_anomaly(True)
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 check_min_version("0.30.0.dev0")
 
@@ -439,29 +440,51 @@ def main(args):
     mask_embeds=torch.load(args.mask_embed_path)[args.mask_tokens].to(accelerator.device)
     mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
     mask_embeds=mask_embeds.detach()
-
-    if args.initialize_token:
-        initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
-        initializer_token_id = initializer_token_ids[0]
-        prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
-        for token_id in placeholder_token_id1:
-            token_embeds[token_id] = token_embeds[initializer_token_id].clone()
+    with torch.no_grad():
+        for token_id in mask_token_ids:
+            token_embeds[token_id] = mask_embeds.clone()
+        if args.initialize_token:
+            initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
+            initializer_token_id = initializer_token_ids[0]
+            prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
+            for token_id in placeholder_token_id1:
+                token_embeds[token_id] = token_embeds[initializer_token_id].clone()
     # Add learned concept
-    if args.learned_embed_path1:
-        learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
-        print('load ti embeddings')
-        learned_embed1=learned_embed1[args.placeholder_token1]
+    if args.resume_path is not None and args.resume_path!='None':
+        learned_embed_path1=os.path.join(args.resume_path,'{}.bin'.format(args.placeholder_token1))
+        learned_embed1=torch.load(learned_embed_path1)#[args.placeholder_token]
+        learned_embed1=learned_embed1[args.placeholder_token1].to('cpu')
+        print(token_embeds[placeholder_token_id1].shape,'token_embeds[placeholder_token_id1].shape')
+        print(learned_embed1.shape,'learned_embed1.shape')
         with torch.no_grad():
             token_embeds[placeholder_token_id1] = learned_embed1.clone()
+        print('load ti embeddings')
         del learned_embed1
 
     # Freeze all parameters except for the token embeddings in text encoder
     params_to_freeze = itertools.chain(
-        text_encoder.text_model.encoder.parameters(),
-        text_encoder.text_model.final_layer_norm.parameters(),
-        text_encoder.text_model.embeddings.position_embedding.parameters(),
-    )
+            text_encoder.text_model.encoder.parameters(),
+            text_encoder.text_model.final_layer_norm.parameters(),
+            text_encoder.text_model.embeddings.position_embedding.parameters(),
+        )
     freeze_params(params_to_freeze)
+    # if not args.train_text_encoder:
+        
+    # else:
+    #     # params_to_freeze = itertools.chain(
+    #     #     # text_encoder.text_model.encoder.parameters(),
+    #     #     # text_encoder.text_model.final_layer_norm.parameters(),
+    #     #     text_encoder.text_model.embeddings.position_embedding.parameters(),
+    #     # )
+    #     # freeze_params(params_to_freeze)
+    #     text_encoder.requires_grad_(True)
+    if args.placeholder_token1 is None:
+        text_encoder.requires_grad_(False)
+    # for key, val in text_encoder.named_parameters():
+    #     if val.requires_grad:
+    #         print(key)
+    # exit()
+
     ########################################################
     ########################################################
     from contextnet import ContextNet
@@ -478,8 +501,7 @@ def main(args):
         model = model._orig_mod if is_compiled_module(model) else model
         return model
     vae.requires_grad_(False)
-    if args.placeholder_token1 is None:
-        text_encoder.requires_grad_(False)
+    
     unet.requires_grad_(False)
     # For mixed precision training we cast the text_encoder and vae weights to half-precision
     # as these models are only used for inference, keeping weights in full precision is not required.
@@ -492,6 +514,8 @@ def main(args):
     # Move unet, vae and text_encoder to device and cast to weight_dtype
     if accelerator.mixed_precision != "fp16" and args.placeholder_token1 is not None:
         text_encoder.to(accelerator.device, dtype=weight_dtype)
+    # if not args.train_text_encoder and text_encoder is not None:
+    #     text_encoder.to(accelerator.device, dtype=weight_dtype)
     unet.to(accelerator.device, dtype=weight_dtype)
     vae.to(accelerator.device, dtype=weight_dtype)
 
@@ -604,18 +628,39 @@ def main(args):
     else:
         optimizer_class = torch.optim.AdamW
 
+    if args.resume_path is not None:
+        params_to_optimize = [
+            {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
+        ]
+    else:
+        if args.train_text_encoder:
+            params_to_optimize = [
+                {"params": text_encoder.parameters(), "lr": args.learning_rate},
+                {"params": custom_diffusion_layers.parameters(), "lr": args.learning_rate},
+            ]
+        else:
+            params_to_optimize = [
+                {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
+                {"params": custom_diffusion_layers.parameters(), "lr": args.learning_rate},
+            ]
     # Optimizer creation
+    # optimizer = optimizer_class(
+    #     itertools.chain(text_encoder.get_input_embeddings().parameters(), 
+    #     custom_diffusion_layers.parameters())
+    #     if args.placeholder_token1 is not None
+    #     else custom_diffusion_layers.parameters(),
+    #     lr=args.learning_rate,
+    #     betas=(args.adam_beta1, args.adam_beta2),
+    #     weight_decay=args.adam_weight_decay,
+    #     eps=args.adam_epsilon,
+    # )
     optimizer = optimizer_class(
-        itertools.chain(text_encoder.get_input_embeddings().parameters(), 
-        custom_diffusion_layers.parameters())
-        if args.placeholder_token1 is not None
-        else custom_diffusion_layers.parameters(),
+        params_to_optimize,
         lr=args.learning_rate,
         betas=(args.adam_beta1, args.adam_beta2),
         weight_decay=args.adam_weight_decay,
         eps=args.adam_epsilon,
     )
-
     # Dataset and DataLoaders creation:
     train_dataset = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -701,7 +746,26 @@ def main(args):
         custom_diffusion_layers, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader = accelerator.prepare(
             custom_diffusion_layers, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader
         )
-
+    # Potentially load in the weights and states from a previous save
+    if args.resume_path and args.resume_path!='None':
+        cd_layers_path=os.path.join(args.resume_path,'custom_diffusion.pt')
+        saved_state_dict = torch.load(cd_layers_path, map_location=torch.device('cpu'))
+        for key in saved_state_dict:
+            print(key,'saved')
+        print()
+        defined_state_dict=unet.state_dict()
+        new_state_dict={}
+        for key in defined_state_dict:
+            print(key,'defined')
+            if key in saved_state_dict:
+                new_state_dict[key]=saved_state_dict[key]
+            else:
+                new_state_dict[key]=defined_state_dict[key]
+        unet.load_state_dict(new_state_dict,strict=True)
+        print('unet parameters loaded')
+        del new_state_dict
+    # if not args.train_text_encoder and text_encoder is not None:
+    #     text_encoder.to(accelerator.device, dtype=weight_dtype)
     # ADDED
     if args.cls_net_path is not None:
         for defined_key in cls_net.state_dict():
@@ -743,32 +807,33 @@ def main(args):
     global_step = 0
     first_epoch = 0
 
-    # Potentially load in the weights and states from a previous save
-    if args.resume_from_checkpoint:
-        if args.resume_from_checkpoint != "latest":
-            path = os.path.basename(args.resume_from_checkpoint)
-        else:
-            # Get the most recent checkpoint
-            dirs = os.listdir(args.output_dir)
-            dirs = [d for d in dirs if d.startswith("checkpoint")]
-            dirs = sorted(dirs, key=lambda x: int(x.split("-")[1]))
-            path = dirs[-1] if len(dirs) > 0 else None
+    
+    # if args.resume_from_checkpoint:
+    #     if args.resume_from_checkpoint != "latest":
+    #         path = os.path.basename(args.resume_from_checkpoint)
+    #     else:
+    #         # Get the most recent checkpoint
+    #         dirs = os.listdir(args.output_dir)
+    #         dirs = [d for d in dirs if d.startswith("checkpoint")]
+    #         dirs = sorted(dirs, key=lambda x: int(x.split("-")[1]))
+    #         path = dirs[-1] if len(dirs) > 0 else None
 
-        if path is None:
-            accelerator.print(
-                f"Checkpoint '{args.resume_from_checkpoint}' does not exist. Starting a new training run."
-            )
-            args.resume_from_checkpoint = None
-            initial_global_step = 0
-        else:
-            accelerator.print(f"Resuming from checkpoint {path}")
-            accelerator.load_state(os.path.join(args.output_dir, path))
-            global_step = int(path.split("-")[1])
+    #     if path is None:
+    #         accelerator.print(
+    #             f"Checkpoint '{args.resume_from_checkpoint}' does not exist. Starting a new training run."
+    #         )
+    #         args.resume_from_checkpoint = None
+    #         initial_global_step = 0
+    #     else:
+    #         accelerator.print(f"Resuming from checkpoint {path}")
+    #         accelerator.load_state(os.path.join(args.output_dir, path))
+    #         global_step = int(path.split("-")[1])
 
-            initial_global_step = global_step
-            first_epoch = global_step // num_update_steps_per_epoch
-    else:
-        initial_global_step = 0
+    #         initial_global_step = global_step
+    #         first_epoch = global_step // num_update_steps_per_epoch
+    # else:
+    #     initial_global_step = 0
+    initial_global_step = 0
 
     progress_bar = tqdm(
         range(0, args.max_train_steps),
@@ -820,11 +885,13 @@ def main(args):
                     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
                 else:
                     target_emb=learned_embeds
-                encoder_hidden_states = text_encoder(
-                                                    input_ids,
-                                                    is_keyword_tokens1=is_keyword_tokens,
-                                                    inj_embeddings1=target_emb,
-                                                     )[0].to(dtype=weight_dtype)
+                # encoder_hidden_states = text_encoder(
+                #                                     input_ids,
+                #                                     is_keyword_tokens1=is_keyword_tokens,
+                #                                     inj_embeddings1=target_emb,
+                #                                      )[0].to(dtype=weight_dtype)
+                position_ids=torch.arange(tokenizer.model_max_length).to(accelerator.device)
+                encoder_hidden_states = text_encoder(input_ids,position_ids=position_ids)[0].to(dtype=weight_dtype)
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 if noise_scheduler.config.prediction_type == "epsilon":
                     target = noise
@@ -838,15 +905,9 @@ def main(args):
                     model_pred, model_pred_prior = torch.chunk(model_pred, 2, dim=0)
                     target, target_prior = torch.chunk(target, 2, dim=0)
                     masks = torch.chunk(batch["masks"], 2, dim=0)[0]
-                    # print(mask.max().item(),mask.min().item(),'mask')
-                    # Compute instance loss
                     loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
                     loss = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
-                    
-                    # Compute prior loss
                     prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
-
-                    # Add the prior loss to the instance loss.
                     loss = loss + args.prior_loss_weight * prior_loss
                 else:
                     masks = batch["masks"]
@@ -856,22 +917,23 @@ def main(args):
                 # 3. MLM Loss
                 loss_mlm=None
                 if args.lambda_mlm:
-                    clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                                            mask_embedding=mask_embeds.unsqueeze(0),
-                                                            mask_idxs=masked_idxs,
-                                                            is_keyword_tokens1=is_keyword_tokens_mlm,
-                                                            inj_embeddings1=target_emb,
-                                                            )[0].to(accelerator.device, dtype=weight_dtype)
+                    # clip_text_embedding_masked = text_encoder(input_ids_masked,
+                    #                                         mask_embedding=mask_embeds.unsqueeze(0),
+                    #                                         mask_idxs=masked_idxs,
+                    #                                         is_keyword_tokens1=is_keyword_tokens_mlm,
+                    #                                         inj_embeddings1=target_emb,
+                    #                                         )[0].to(accelerator.device, dtype=weight_dtype)
+                    clip_text_embedding_masked = text_encoder(input_ids_masked)[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
-                    masked_idxs_flat=masked_idxs.view(-1)
+                    # masked_idxs_flat=masked_idxs.view(-1)
                     loss_mlm = F.cross_entropy(
                         mlm_logits.view(-1,cls_output_dim),
                         mlm_labels.view(-1),
                         ignore_index=-100,
-                        reduction='none'
+                        reduction='mean'
                     )
-                    loss_mlm[masked_idxs_flat]*=args.mlm_weight
-                    loss_mlm=loss_mlm.mean()
+                    # loss_mlm[masked_idxs_flat]*=args.mlm_weight
+                    # loss_mlm=loss_mlm.mean()
                     loss+=(loss_mlm*args.lambda_mlm)
 
 
@@ -880,7 +942,33 @@ def main(args):
                 accelerator.backward(loss)
                 # Zero out the gradients for all token embeddings except the newly added
                 # embeddings for the concept, as we only want to optimize the concept embeddings
-                if args.placeholder_token1 is not None:
+                
+                
+                if accelerator.sync_gradients:
+                    params_to_clip = (
+                        # itertools.chain(text_encoder.parameters(), custom_diffusion_layers.parameters())
+                        # if args.placeholder_token1 is not None
+                        # else custom_diffusion_layers.parameters()
+                        itertools.chain(text_encoder.parameters(), custom_diffusion_layers.parameters())
+                    )
+                    accelerator.clip_grad_norm_(params_to_clip, args.max_grad_norm)
+
+                # if not args.train_text_encoder: 
+                #     # no train then do not update token embeddings
+                #     # except the placeholder
+                #     index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
+                #     index_no_updates[min(placeholder_token_id1) : max(placeholder_token_id1) + 1] = False #everything except placeholder
+                #     with torch.no_grad():
+                #         accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
+                #             index_no_updates
+                #         ] = orig_embeds_params[index_no_updates]
+                # if args.freeze_mask_embedding:
+                #     with torch.no_grad():
+                #         accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
+                #             mask_token_ids
+                #         ] = mask_embeds
+                if not args.train_text_encoder:
+                    # only optimize the concept embedding -> other token's grad=0
                     if accelerator.num_processes > 1:
                         grads_text_encoder = text_encoder.module.get_input_embeddings().weight.grad
                     else:
@@ -891,20 +979,11 @@ def main(args):
                         index_grads_to_zero = index_grads_to_zero & (
                             torch.arange(len(tokenizer)) != placeholder_token_id1[i]
                         )
-                    # print(index_grads_to_zero,'index_grads_to_zero')
-                    # print(torch.sum(index_grads_to_zero),'index_grads_to_zero.sum')
-                    # print(len(tokenizer),'len(tokenizer)')
-                    # exit()
                     grads_text_encoder.data[index_grads_to_zero, :] = grads_text_encoder.data[
                         index_grads_to_zero, :
                     ].fill_(0)
-                if accelerator.sync_gradients:
-                    params_to_clip = (
-                        itertools.chain(text_encoder.parameters(), custom_diffusion_layers.parameters())
-                        if args.placeholder_token1 is not None
-                        else custom_diffusion_layers.parameters()
-                    )
-                    accelerator.clip_grad_norm_(params_to_clip, args.max_grad_norm)
+
+                
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad(set_to_none=args.set_grads_to_none)
@@ -914,7 +993,7 @@ def main(args):
                 if global_step % args.checkpointing_steps == 0:
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
-                        if args.checkpoints_total_limit is not None:
+                        if args.checkpoints_total_limit >0:
                             checkpoints = os.listdir(ckpt_dir)
                             checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
                             checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
@@ -944,14 +1023,17 @@ def main(args):
                             save_path,
                             safe_serialization=False,
                         )
-                        save_path_unet = os.path.join(ckpt_dir, f"checkpoint-{global_step}/custom_diffusion.pt")
-                        cur_state_dict=unet.state_dict()
-                        save_state_dict={}
-                        for key in cur_state_dict:
-                            if 'custom_diffusion' in key:
-                                save_state_dict[key]=cur_state_dict[key]
-                        torch.save(save_state_dict,save_path_unet)
-            
+                        if args.resume_path is None:
+                            save_path_unet = os.path.join(ckpt_dir, f"checkpoint-{global_step}/custom_diffusion.pt")
+                            cur_state_dict=unet.state_dict()
+                            save_state_dict={}
+                            for key in cur_state_dict:
+                                if 'custom_diffusion' in key:
+                                    save_state_dict[key]=cur_state_dict[key]
+                            torch.save(save_state_dict,save_path_unet)
+                            if args.train_text_encoder:
+                                save_path_text_encoder = os.path.join(ckpt_dir, f"checkpoint-{global_step}/text_encoder.pt")
+                                torch.save(text_encoder.state_dict(),save_path_text_encoder)
 
             if accelerator.is_main_process:
                 images = []

@@ -1,32 +1,34 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export OUTPUT_DIR="saved_models/custom_diffusion/single/pet_cat1";
-export INSTANCE_DIR="/data/twkim/diffusion/personalization/collected/images/pet_cat1";
-export CUDA_VISIBLE_DEVICES=0,1;
+export OUTPUT_DIR="saved_models/custom_diffusion/single/dog6";
+export INSTANCE_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
+export CUDA_VISIBLE_DEVICES=6,7;
 accelerate launch --main_process_port=9980 train_custom_diffusion_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --train_data_dir1=$INSTANCE_DIR \
   --output_dir=$OUTPUT_DIR \
   --resolution=512  \
   --train_batch_size=2  \
-  --learning_rate=1e-5  \
+  --learning_rate=1e-4  \
   --lr_warmup_steps=0 \
   --max_train_steps=251 \
   --scale_lr  \
   --with_prior_preservation=1 \
   --prior_loss_weight=1.0 \
   --num_class_images=200 \
-  --placeholder_token1="<pet_cat1>" \
+  --placeholder_token1="<dog6>" \
   --mask_tokens="[MASK]" \
   --cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \
   --mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \
-  --class_data_dir1=./priors/samples_cat/ \
+  --class_data_dir1=./priors/samples_dog/ \
   --lambda_mlm=0 \
-  --class_prompt1="a picture of a cat" \
-  --prior_concept1="cat" \
+  --class_prompt1="a picture of a dog" \
+  --prior_concept1="dog" \
   --prompt_type="pet" \
   --run_name="tmp" \
   --mlm_target="masked" \
-  --validation_steps=50 
+  --validation_steps=50 \
+  --resume_path="saved_models/custom_diffusion/single/dog6/custom_nomlm_dog6/checkpoints/checkpoint-250" \
+  --train_text_encoder=0
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";

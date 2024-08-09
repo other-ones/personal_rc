@@ -7,7 +7,8 @@ hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
-    'dog6': ('dog','pet'),
+    # 'dog6': ('dog','pet'),
+    'wooden_pot':('pot','nonliving'),
     # 'vase':('vase','nonliving'),
     # 'pet_cat1':('cat','pet'),
     # 'pet_dog1':('dog','pet'),
@@ -59,7 +60,7 @@ def get_gpu_memory():
 
 
 
-target_step=500
+target_step=250
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -117,7 +118,7 @@ for dir in dirs:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=16 \\\n'
+            command+='--eval_batch_size=14 \\\n'
             command+='--num_images_per_prompt=15 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed=1234 \\\n'

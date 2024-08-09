@@ -10,6 +10,7 @@ accelerate launch --main_process_port 2731  generate_single.py \
   --seed=1234 \
   --mask_tokens="[MASK]" \
   --resume_path='saved_models/custom_diffusion/single/dog6/custom_nomlm_dog6/checkpoints/checkpoint-250' \
+  --learned_embed_path1='saved_models/custom_diffusion/single_resume/dog6/custom_mlm01_dog6_resume_lr1e5/checkpoints/checkpoint-500' \
   --prior_concept1='dog' \
   --include_prior_concept=1 \
   --prompt_type='pet' \

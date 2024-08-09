@@ -115,9 +115,12 @@ def main(args):
     
     if args.seed is not None:
         set_seed(args.seed)
-
-    exp_name=args.resume_path.split('/')[-3]
-    step=args.resume_path.split('-')[-1]
+    if args.learned_embed_path1 is not None:
+        exp_name=args.learned_embed_path1.split('/')[-3]
+        step=args.learned_embed_path1.split('-')[-1]
+    else:
+        exp_name=args.resume_path.split('/')[-3]
+        step=args.resume_path.split('-')[-1]
     exp_name+='_s{}'.format(step)
     exp_dir=os.path.join(args.output_dir,exp_name)
     sample_dir = os.path.join(exp_dir,'generated')
@@ -300,18 +303,22 @@ def main(args):
             safety_checker=None,
             requires_safety_checker=False,
         )
-    pipeline.load_textual_inversion(args.resume_path,token=args.placeholder_token1, weight_name="{}.bin".format(args.placeholder_token1))
+    if args.learned_embed_path1 is not None:
+        pipeline.load_textual_inversion(args.learned_embed_path1,token=args.placeholder_token1, weight_name="{}.bin".format(args.placeholder_token1))
+        print('learned_embed_path loaded')
+    else:
+        pipeline.load_textual_inversion(args.resume_path,token=args.placeholder_token1, weight_name="{}.bin".format(args.placeholder_token1))
     if args.resume_path and args.resume_path!='None':
         cd_layers_path=os.path.join(args.resume_path,'custom_diffusion.pt')
         saved_state_dict = torch.load(cd_layers_path, map_location=torch.device('cpu'))
-        for key in saved_state_dict:
-            print(key,'saved')
+        # for key in saved_state_dict:
+        #     print(key,'saved')
         print()
         print()
         defined_state_dict=pipeline.unet.state_dict()
         new_state_dict={}
         for key in defined_state_dict:
-            print(key,'defined')
+            # print(key,'defined')
             if key in saved_state_dict:
                 new_state_dict[key]=saved_state_dict[key]
             else:
