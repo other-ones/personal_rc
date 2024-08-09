@@ -59,7 +59,7 @@ def get_gpu_memory():
 
 
 
-target_step=250
+target_step=1000
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -68,7 +68,7 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
-dirs=['single']
+dirs=['single_lr1e6']
 for dir in dirs:
     dir_path=os.path.join('saved_models/custom_diffusion',dir)
     log_dir='logs/generate/{}'.format(dir)
@@ -88,8 +88,8 @@ for dir in dirs:
             if not os.path.exists(resume_path):
                 print(resume_path,'does not exist')
                 continue
-            if not(('_mlm01_' in exp) or ('_mlm001_' in exp)):
-                continue
+            # if not(('_mlm01_' in exp) or ('_mlm001_' in exp)):
+            #     continue
             exp_name=resume_path.split('/')[-3]
             exp_name+='_s{}'.format(target_step)
             output_dir=os.path.join('results/{}/{}'.format(dir,concept))

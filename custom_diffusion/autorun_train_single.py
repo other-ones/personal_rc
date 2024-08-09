@@ -27,7 +27,7 @@ lambda_mlms=[
             0.001,
             0.01,
             0.1,
-            1
+            # 1
             ]
 masked_loss=0
 if '03' in hostname:
@@ -46,9 +46,8 @@ def get_gpu_memory():
 
 
 
-log_dir='logs/train/single_lr1e6'
-os.makedirs(log_dir,exist_ok=True)   
-ports=np.arange(1111,3333)
+
+ports=np.arange(1111,9999)
 np.random.shuffle(ports)
 fixtes=[0]
 pps=[1]
@@ -56,6 +55,7 @@ mlm_priors=[0]
 
 # for idx,concept in enumerate(list(info_map.keys())):
 with_ti_list=[0]
+noaug=1
 for with_ti in with_ti_list:
     for lambda_mlm in lambda_mlms:
         for idx,concept in enumerate(list(info_map.keys())):
@@ -69,7 +69,16 @@ for with_ti in with_ti_list:
                 run_name+="_nomlm_{}".format(concept)
             if with_ti:
                 run_name+='_with_ti'
-            output_dir=os.path.join('saved_models/custom_diffusion/single_lr1e6',concept)
+            
+            
+            if noaug:
+                log_dir='logs/train/single_noaug'
+                os.makedirs(log_dir,exist_ok=True)   
+                output_dir=os.path.join('saved_models/custom_diffusion/single_noaug',concept)
+            else:
+                log_dir='logs/train/single'
+                os.makedirs(log_dir,exist_ok=True)   
+                output_dir=os.path.join('saved_models/custom_diffusion/single',concept)
             exp_path=os.path.join(output_dir,run_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -117,6 +126,7 @@ for with_ti in with_ti_list:
             command+='--mlm_batch_size=50 \\\n'
             command+='--prompt_type="{}" \\\n'.format(category)
             command+='--scale_lr \\\n'
+            command+='--noaug={} \\\n'.format(noaug)
             command+='--silent=0 \\\n'
             command+='--simple_caption=1 \\\n'
             command+='--masked_loss={} \\\n'.format(masked_loss)
