@@ -59,7 +59,7 @@ def get_gpu_memory():
 
 
 
-target_step=1000
+target_step=500
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -68,7 +68,7 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
-dirs=['single_lr1e6']
+dirs=['single']
 for dir in dirs:
     dir_path=os.path.join('saved_models/custom_diffusion',dir)
     log_dir='logs/generate/{}'.format(dir)
