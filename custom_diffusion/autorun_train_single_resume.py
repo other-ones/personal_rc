@@ -75,14 +75,15 @@ for lr in lr_list:
                 run_name+="_nomlm_{}".format(concept)
             if train_te:
                 run_name+='_train_te'
-            # if lr==1e-4:
-            #     run_name+='_lr1e4'
-            # elif lr==1e-5:
-            #     run_name+='_lr1e5'
+            if lr==1e-4:
+                run_name+='_lr1e4'
+            elif lr==1e-5:
+                run_name+='_lr1e5'
+            run_name+='_resume'
             # else:
             #     assert False
-            run_name+='_batch1_lr1e5'
-            run_name+='_resume'
+            # run_name+=''
+            # custom_mlm01_dog6_resume_lr1e5
             # if noaug:
             #     log_dir='logs/train/single_noaug'
             #     os.makedirs(log_dir,exist_ok=True)   
@@ -117,6 +118,7 @@ for lr in lr_list:
             # print(resume_path,'resume')
             # assert os.path.exists(resume_path)
             if not os.path.exists(resume_path):
+                print('resume path does not exists')
                 continue
             print(run_name,running_devices)
             command='export CUDA_VISIBLE_DEVICES={};'.format(running_devices)
@@ -127,7 +129,7 @@ for lr in lr_list:
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
             command+='--resume_path=\"{}\" \\\n'.format(resume_path)
-            command+='--train_batch_size=1 \\\n'
+            command+='--train_batch_size=2 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'
             command+='--max_train_steps=3001 \\\n'
             command+='--validation_steps=100 \\\n'
