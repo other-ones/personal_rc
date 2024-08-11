@@ -7,22 +7,22 @@ hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
-    # 'dog6': ('dog','pet'),
-    # 'vase':('vase','nonliving'),
+    'dog6': ('dog','pet'),
+    'vase':('vase','nonliving'),
     'pet_cat1':('cat','pet'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'pet_dog1':('dog','pet'),
-    # 'dog3': ('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'cat1': ('cat','pet'),
-    # 'barn': ('barn','building'),
-    # 'chair1': ('chair','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'pet_dog1':('dog','pet'),
+    'dog3': ('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'cat1': ('cat','pet'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','nonliving'),
 
     # qlab01
     # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'teddybear':('bear','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'rc_car':('toy','nonliving'),
+    'teddybear':('bear','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
 }
 info_map_01={
     # qlab03
@@ -70,8 +70,8 @@ device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
 dirs=['single_resume']
-for target_step in [500,1000,1500]:
-    for target_lr in ['1e4','1e5']:
+for target_step in [500,1000,1500,2500,3000]:
+    for target_lr in ['1e5']:
         for dir in dirs:
             dir_path=os.path.join('saved_models/custom_diffusion',dir)
             log_dir='logs/generate/{}'.format(dir)
@@ -86,11 +86,14 @@ for target_step in [500,1000,1500]:
                 for exp_idx,exp in enumerate(exps):
                     if not (target_lr in exp):
                         continue
-                    if not (('_mlm1_' in exp) or ('_mlm05_' in exp)):
+                    if not (('_mlm01_' in exp)):
                         continue
                     prior,category=info_map[concept]
                     learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
                     resume_path=os.path.join("saved_models/custom_diffusion/single/{}/custom_nomlm_{}/checkpoints/checkpoint-250".format(concept,concept,concept))
+                    if not os.path.exists(resume_path):
+                        print(resume_path,'resume path not exist')
+                        continue
                     if not os.path.exists(learned_embed_path1):
                         print(learned_embed_path1,'does not exist')
                         continue
@@ -121,7 +124,7 @@ for target_step in [500,1000,1500]:
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--prior_concept1="{}" \\\n'.format(prior)
                     command+='--resolution=512 \\\n'
-                    command+='--eval_batch_size=16 \\\n'
+                    command+='--eval_batch_size=14 \\\n'
                     command+='--num_images_per_prompt=15 \\\n'
                     command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
                     command+='--output_dir="{}" \\\n'.format(output_dir)

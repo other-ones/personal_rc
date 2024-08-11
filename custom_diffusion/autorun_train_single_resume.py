@@ -24,9 +24,10 @@ info_map={
 }
 lambda_mlms=[
             0.1,
-            1.0,
-            0.01,
-            0.001,
+            # 1.0,
+            # 0.01,
+            # 0.05,
+            # 0.001,
             # 0, 
             # 1
             ]
@@ -59,7 +60,7 @@ with_ti_list=[0]
 noaug=0
 idx=0
 train_te=0
-lr_list=[5e-4]
+lr_list=[1e-5]
 num_devices=1
 for lr in lr_list:
     for lambda_mlm in lambda_mlms:
@@ -80,7 +81,7 @@ for lr in lr_list:
             #     run_name+='_lr1e5'
             # else:
             #     assert False
-            run_name+='_batch1_lr5e4'
+            run_name+='_batch1_lr1e5'
             run_name+='_resume'
             # if noaug:
             #     log_dir='logs/train/single_noaug'
