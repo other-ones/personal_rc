@@ -61,7 +61,7 @@ noaug=0
 idx=0
 train_te=0
 lr_list=[1e-5]
-num_devices=1
+num_devices=2
 for lr in lr_list:
     for lambda_mlm in lambda_mlms:
         for concept in list(info_map.keys()):
@@ -89,9 +89,9 @@ for lr in lr_list:
             #     os.makedirs(log_dir,exist_ok=True)   
             #     output_dir=os.path.join('saved_models/custom_diffusion/single_noaug',concept)
             # else:
-            log_dir='logs/train/single_resume'
+            log_dir='logs/train/single_resume_mbatch'
             os.makedirs(log_dir,exist_ok=True)   
-            output_dir=os.path.join('saved_models/custom_diffusion/single_resume',concept)
+            output_dir=os.path.join('saved_models/custom_diffusion/single_resume_mbatch',concept)
             exp_path=os.path.join(output_dir,run_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
