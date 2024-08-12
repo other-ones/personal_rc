@@ -102,7 +102,7 @@ class TextualInversionDataset(Dataset):
         flip_p=0.5,
         center_crop=False,
         mlm_target='all',
-        mask_prob=0.15,
+        mask_prob=0.20,
         mask_token_ids=None,
         get_images=True,
         prompt_type=None,
@@ -370,9 +370,10 @@ class TextualInversionDataset(Dataset):
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
                 # 1) input ids and indices for mask token
-                if np.random.rand()<self.mask_prob and (self.placeholder_token != cap_word) and (cap_word != self.prior_concept): 
-                    masked_idxs.append(True)
-                    input_ids_masked.append(self.mask_token_ids)
+                if pos_tag in ['VERB', 'ADJ','ADP','ADV']:
+                    if np.random.rand()<self.mask_prob and (self.placeholder_token != cap_word) and (cap_word != self.prior_concept): 
+                        masked_idxs.append(True)
+                        input_ids_masked.append(self.mask_token_ids)
                 else:
                     masked_idxs.append(False)
                     input_ids_masked.append(tok_id)
