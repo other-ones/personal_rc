@@ -7,22 +7,22 @@ hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
-    # 'dog6': ('dog','pet'),
+    'dog6': ('dog','pet'),
     'wooden_pot':('pot','nonliving'),
-    # 'vase':('vase','nonliving'),
-    # 'pet_cat1':('cat','pet'),
-    # 'pet_dog1':('dog','pet'),
-    # 'dog3': ('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'cat1': ('cat','pet'),
-    # 'barn': ('barn','building'),
-    # 'chair1': ('chair','nonliving'),
+    'vase':('vase','nonliving'),
+    'pet_cat1':('cat','pet'),
+    'pet_dog1':('dog','pet'),
+    'dog3': ('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'cat1': ('cat','pet'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','nonliving'),
 
     # qlab01
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'teddybear':('bear','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'teddybear':('bear','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
 }
 info_map_01={
     # qlab03
@@ -82,7 +82,8 @@ for dir in dirs:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
-            if 'with_ti' in exp or 'mstep' in exp:
+            # if 'with_ti' in exp or 'mstep' in exp:
+            if not 'nomlm' in exp:
                 continue
             prior,category=info_map[concept]
             resume_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
@@ -118,7 +119,7 @@ for dir in dirs:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=14 \\\n'
+            command+='--eval_batch_size=15 \\\n'
             command+='--num_images_per_prompt=15 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed=1234 \\\n'

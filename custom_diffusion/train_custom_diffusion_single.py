@@ -1143,7 +1143,7 @@ def main(args):
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break
-            #
+            #ft
     # Save the custom diffusion layers
     accelerator.wait_for_everyone()
     

@@ -69,8 +69,8 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
-dirs=['single_resume']
-for target_step in [500,1000,1500,2500,3000]:
+dirs=['single_resume_mbatch']
+for target_step in [500,1000,1500]:
     for target_lr in ['1e5']:
         for dir in dirs:
             dir_path=os.path.join('saved_models/custom_diffusion',dir)
@@ -86,7 +86,7 @@ for target_step in [500,1000,1500,2500,3000]:
                 for exp_idx,exp in enumerate(exps):
                     if not (target_lr in exp):
                         continue
-                    if not (('_mlm01_' in exp)):
+                    if not (('_mlm05_' in exp)):
                         continue
                     prior,category=info_map[concept]
                     learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
@@ -124,7 +124,7 @@ for target_step in [500,1000,1500,2500,3000]:
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--prior_concept1="{}" \\\n'.format(prior)
                     command+='--resolution=512 \\\n'
-                    command+='--eval_batch_size=14 \\\n'
+                    command+='--eval_batch_size=15 \\\n'
                     command+='--num_images_per_prompt=15 \\\n'
                     command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
                     command+='--output_dir="{}" \\\n'.format(output_dir)
