@@ -3,7 +3,7 @@ from utils import render_caption
 import importlib
 import sys
 sys.path.insert(0, './packages')
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+from datasets_pkgs.dataset_mlm_spacy import TextualInversionDataset
 from configs import parse_args
 import cv2
 from data_utils import cycle, create_wbd
@@ -86,9 +86,10 @@ def log_validation(
             "a picture of {} with the Great Wall of China in the background".format(placeholder),
             "a picture of {} in times square".format(placeholder),
             "{} on a boat in the sea".format(placeholder),
-            # "{} in a purple wizard outfit".format(placeholder),
+            "{} in a police outfit".format(placeholder),
+            "{} in a firefighter outfit".format(placeholder),
             "{} playing with a ball".format(placeholder),
-            # "{} wearing sunglasses".format(placeholder),
+            "{} wearing sunglasses".format(placeholder),
             ]
     # vase
     
@@ -681,7 +682,9 @@ def main(args):
         class_prompt=args.class_prompt1,
         simple_caption=args.simple_caption,
         mlm_prior=args.mlm_prior,
+        # mlm_prob=args.mlm_prob,
         aug=not(args.noaug),
+        check_tag=args.check_tag,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -699,6 +702,9 @@ def main(args):
         prompt_type=args.prompt_type,
         simple_caption=args.simple_caption,
         mlm_prior=args.mlm_prior,
+        mask_prob=args.mask_prob,
+        check_tag=args.check_tag,
+        bind_attributes=args.bind_attributes,
         # class_data_root=class_data_dir1 if args.with_prior_preservation else None,
         # class_num=args.num_class_images,
         # class_prompt=args.class_prompt1,
@@ -797,6 +803,7 @@ def main(args):
     total_batch_size = args.train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
     logger.info("***** Running training *****")
+    logger.info(f"  Num Processes = {accelerator.num_processes}")
     logger.info(f"  Num examples = {len(train_dataset)}")
     logger.info(f"  Num batches each epoch = {len(train_dataloader)}")
     logger.info(f"  Num Epochs = {args.num_train_epochs}")

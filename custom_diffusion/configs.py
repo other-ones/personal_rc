@@ -5,6 +5,9 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument("--bind_attributes",type=int,default=0)
+    parser.add_argument("--check_tag",type=int,default=0)
+    parser.add_argument("--mask_prob",type=float,default=0.15)
     parser.add_argument("--train_text_encoder",type=int)
     parser.add_argument('--noaug',type=int,default=0)
     parser.add_argument('--msteps',type=int,default=1)
@@ -146,7 +149,7 @@ def parse_args(input_args=None):
     )
     
     parser.add_argument(
-        "--train_batch_size", type=int, default=4, help="Batch size (per device) for the training dataloader."
+        "--train_batch_size", type=int, default=4, help="Batch size (p device) for the training dataloader."
     )
     parser.add_argument(
         "--sample_batch_size", type=int, default=4, help="Batch size (per device) for sampling images."

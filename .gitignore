@@ -5,7 +5,7 @@
 **/output
 **/*.jpg
 **/priors
-
+_evaluation/dinoscore/grounded_segment
 # dreambooth
 custom_diffusion*/__pycache__
 custom_diffusion*/packages/**/__pycacahe__

@@ -46,4 +46,6 @@ def render_caption(image, text, coords, font_path='../fonts/GoNotoCurrent.ttf'):
 
 def float_to_str(f):
     s = f"{f:.15f}"  # Start with a high precision
-    return s.rstrip('0').rstrip('.') if '.' in s else s
+    s=s.rstrip('0').rstrip('.') if '.' in s else s
+    s=s.replace('.','')
+    return s

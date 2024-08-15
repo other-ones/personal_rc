@@ -68,9 +68,10 @@ for stat_idx,stat in enumerate(stats):
         break
 device_idx=stat_idx
 idx=0
-# dirs=['multi','single']
-dirs=['single_resume_mbatch']
-for target_step in [500,1000,1500]:
+
+dirs=['single_resume_mlm01']
+mprob_str='05'
+for target_step in [500,1000,1500,2000]:
     for target_lr in ['1e5']:
         for dir in dirs:
             dir_path=os.path.join('saved_models/custom_diffusion',dir)
@@ -86,11 +87,22 @@ for target_step in [500,1000,1500]:
                 for exp_idx,exp in enumerate(exps):
                     if not (target_lr in exp):
                         continue
-                    if not (('_mlm05_' in exp)):
-                        continue
+                    # if not (('_mlm01_' in exp)):
+                    #     continue
+                    # if not (('mprob05' in exp) or ('mprob025' in exp)):
+                    # # if not (('mprob015' in exp)):
+                    #     continue
+                    if 'mprob05' in exp:
+                        mprob_str='mprob05'
+                    elif 'mprob025' in exp:
+                        mprob_str='mprob025'
+                    else:
+                        assert False
+
                     prior,category=info_map[concept]
                     learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
-                    resume_path=os.path.join("saved_models/custom_diffusion/single/{}/custom_nomlm_{}/checkpoints/checkpoint-250".format(concept,concept,concept))
+                    # custom_mlm01_dog6_mprob05
+                    resume_path=os.path.join("saved_models/custom_diffusion/single/{}/custom_mlm01_{}_{}/checkpoints/checkpoint-250".format(concept,concept,mprob_str,concept))
                     if not os.path.exists(resume_path):
                         print(resume_path,'resume path not exist')
                         continue

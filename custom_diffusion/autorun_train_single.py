@@ -6,8 +6,8 @@ import socket
 hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
+    'pet_cat1':('cat','pet'),
     'dog6': ('dog','pet'),
-    # 'pet_cat1':('cat','pet'),
     # 'vase':('vase','nonliving'),
     # 'wooden_pot':('pot','nonliving'),
     # 'pet_dog1':('dog','pet'),
@@ -23,10 +23,10 @@ info_map={
     # 'flower1':('flower','flower'),
 }
 lambda_mlms=[
-            0.001,
-            0, 
-            0.01,
+            # 0, 
             0.1,
+            0.01,
+            # 0.001,
             # 1
             ]
 masked_loss=0
@@ -57,12 +57,13 @@ mlm_priors=[0]
 with_ti_list=[0]
 noaug=0
 idx=0
-train_te=1
+train_te=0
+mask_prob=0.5
+mprob_str=float_to_str(mask_prob)
 for with_ti in with_ti_list:
     for lambda_mlm in lambda_mlms:
         for concept in list(info_map.keys()):
             lambda_mlm_str=float_to_str(lambda_mlm)
-            lambda_mlm_str=lambda_mlm_str.replace('.','')
             prior,category=info_map[concept]
             run_name='custom'
             if lambda_mlm:
@@ -73,15 +74,16 @@ for with_ti in with_ti_list:
                 run_name+='_with_ti'
             if train_te:
                 run_name+='_train_te'
-            
+            run_name+='_mprob{}'.format(mprob_str)
+            run_name+='_bind_attr'
             if noaug:
                 log_dir='logs/train/single_noaug'
                 os.makedirs(log_dir,exist_ok=True)   
                 output_dir=os.path.join('saved_models/custom_diffusion/single_noaug',concept)
             else:
-                log_dir='logs/train/single'
+                log_dir='logs/train/single_bind_attr'
                 os.makedirs(log_dir,exist_ok=True)   
-                output_dir=os.path.join('saved_models/custom_diffusion/single',concept)
+                output_dir=os.path.join('saved_models/custom_diffusion/single_bind_attr',concept)
             exp_path=os.path.join(output_dir,run_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -110,6 +112,8 @@ for with_ti in with_ti_list:
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
+            command+='--mask_prob=0.25 \\\n'
+            command+='--bind_attributes=1 \\\n'
             command+='--resolution=512 \\\n'
             command+='--train_batch_size=2 \\\n'
             command+='--gradient_accumulation_steps=1 \\\n'

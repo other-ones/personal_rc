@@ -31,7 +31,6 @@ if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser()
     parser.add_argument('--grounded',action='store_true')
-    
     dino_eval=DINOEvaluator(device='cuda:0')
     args=parser.parse_args()
     exps=open('explist_dino.sh').readlines()
@@ -51,7 +50,6 @@ if __name__=='__main__':
         if args.grounded:
             real_root='/data/twkim/diffusion/personalization/collected/masked/{}'.format(cur_concept)
             fake_root=os.path.join('../../results/single',cur_concept,exp,'masked')
-
         else:
             real_root='/data/twkim/diffusion/personalization/collected/images/{}'.format(cur_concept)
             fake_root=os.path.join('../../results/single',cur_concept,exp,'generated')

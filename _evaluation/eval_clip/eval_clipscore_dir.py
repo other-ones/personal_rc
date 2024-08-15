@@ -1,3 +1,4 @@
+import re
 # ------------------------------------------
 # TextDiffuser: Diffusion Models as Text Painters
 # Paper Link: https://arxiv.org/abs/2305.10855
@@ -48,7 +49,14 @@ def evaluate_results(pred_root,caption_path):
     return dataset_res
 
 
-
+def extract_mlm_step(name):
+    mlm_match = re.search(r'mlm(\d+)', name)
+    step_match = re.search(r's(\d+)', name)
+    if mlm_match and step_match:
+        mlm_number = int(mlm_match.group(1))
+        step_number = int(step_match.group(1))
+        return (mlm_number, step_number)
+    return (None, None)
 
 
 if __name__ == "__main__":
@@ -66,7 +74,9 @@ if __name__ == "__main__":
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         # exps=sorted(exps)[::-1]
-        exps=sorted(exps)[: ]
+        # exps=sorted(exps)[:]
+        # if not '_mlm' in exps[0]:
+        # exps = sorted(exps, key=extract_mlm_step)
         for exp in exps:
             if target_keyword is not None and (target_keyword not in exp):
                 continue

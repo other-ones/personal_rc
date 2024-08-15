@@ -28,7 +28,8 @@ accelerate launch --main_process_port=9980 train_custom_diffusion_single.py \
   --mlm_target="masked" \
   --validation_steps=50 \
   --resume_path="saved_models/custom_diffusion/single/dog6/custom_nomlm_dog6/checkpoints/checkpoint-250" \
-  --train_text_encoder=0
+  --train_text_encoder=0 \
+  --mask_prob=0
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";

@@ -161,8 +161,9 @@ attributes = [
 attributes=list(set(attributes))
 
 class CaptionGeneratorSunglasses(CaptionGenerator):
-    def __init__(self):
+    def __init__(self,bind_attributes=False):
         super().__init__()
+        self.bind_attributes=bind_attributes
         self.types=['human_interactions','object_relations','backgrounds','styles']
     def generate_caption(self):
         sampled_type=np.random.choice(self.types)

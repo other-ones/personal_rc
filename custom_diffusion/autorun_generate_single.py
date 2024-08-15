@@ -69,7 +69,7 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
-dirs=['single']
+dirs=['single_bind_attr']
 for dir in dirs:
     dir_path=os.path.join('saved_models/custom_diffusion',dir)
     log_dir='logs/generate/{}'.format(dir)
@@ -83,7 +83,7 @@ for dir in dirs:
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
             # if 'with_ti' in exp or 'mstep' in exp:
-            if not 'nomlm' in exp:
+            if not 'mprob' in exp:
                 continue
             prior,category=info_map[concept]
             resume_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))

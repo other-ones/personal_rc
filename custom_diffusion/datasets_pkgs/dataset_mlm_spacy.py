@@ -114,10 +114,14 @@ class TextualInversionDataset(Dataset):
         simple_caption=False,
         mlm_prior=0,
         aug=True,
-        mask_size=64
+        mask_size=64,
+        check_tag=False,
+        bind_attributes=False,
     ):  
+        self.bind_attributes = bind_attributes
         self.nlp = spacy.load("en_core_web_sm")
         self.mask_size = mask_size
+        self.check_tag = check_tag
         self.aug = aug
         self.mlm_prior=mlm_prior
         global prefixes
@@ -145,16 +149,16 @@ class TextualInversionDataset(Dataset):
         self.include_prior_concept=include_prior_concept
         if prompt_type=='nonliving':
             from .mlm_pkgs.caption_generator_nonliving import CaptionGeneratorNonLiving
-            self.prompt_generator=CaptionGeneratorNonLiving()
+            self.prompt_generator=CaptionGeneratorNonLiving(bind_attributes=self.bind_attributes)
         elif prompt_type=='pet':
             from .mlm_pkgs.caption_generator_pet import CaptionGeneratorPet
-            self.prompt_generator=CaptionGeneratorPet()
+            self.prompt_generator=CaptionGeneratorPet(bind_attributes=self.bind_attributes)
         elif prompt_type=='building':
             from .mlm_pkgs.caption_generator_building import CaptionGeneratorBuilding
-            self.prompt_generator=CaptionGeneratorBuilding()
+            self.prompt_generator=CaptionGeneratorBuilding(bind_attributes=self.bind_attributes)
         elif prompt_type=='sunglasses':
             from .mlm_pkgs.caption_generator_sunglasses import CaptionGeneratorSunglasses
-            self.prompt_generator=CaptionGeneratorSunglasses()
+            self.prompt_generator=CaptionGeneratorSunglasses(bind_attributes=self.bind_attributes)
         else:
             raise Exception('Not Implemented')
         
@@ -363,17 +367,31 @@ class TextualInversionDataset(Dataset):
         #         if np.random.rand()<self.mask_prob and (self.placeholder_token != cap_word) and (cap_word != self.prior_concept): 
         #             masked_idxs.append(True)
         #
+
         for word_idx in range(len(words_anchor)):
             cap_word=words_anchor[word_idx]
+            doc = self.nlp(cap_word)
+            if self.check_tag:
+                mlm_tag=False
+                for token in doc:
+                    pos_tag = token.pos_
+                    if (pos_tag in ['VERB', 'ADJ','ADV','PROPN','ADP']):
+                        mlm_tag=True
+                        break
+            else:
+                mlm_tag=True
             word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
             num_tokens=len(word_token_ids)
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
                 # 1) input ids and indices for mask token
-                if pos_tag in ['VERB', 'ADJ','ADP','ADV']:
+                if mlm_tag:
                     if np.random.rand()<self.mask_prob and (self.placeholder_token != cap_word) and (cap_word != self.prior_concept): 
                         masked_idxs.append(True)
                         input_ids_masked.append(self.mask_token_ids)
+                    else:
+                        masked_idxs.append(False)
+                        input_ids_masked.append(tok_id)
                 else:
                     masked_idxs.append(False)
                     input_ids_masked.append(tok_id)
@@ -425,7 +443,9 @@ class TextualInversionDataset(Dataset):
         non_special_idxs=torch.BoolTensor(non_special_idxs)
         example['masked_idxs']=masked_idxs
         example['non_special_idxs']=non_special_idxs
-
+        
+        
+        
         # 7) non_mask_input_ids
         # example["input_ids_pos"]= self.tokenizer(
         #     caption_pos,
