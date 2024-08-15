@@ -554,11 +554,13 @@ class CLIPEncoderLayer(nn.Module):
         attention_mask: torch.Tensor,
         causal_attention_mask: torch.Tensor,
         output_attentions: Optional[bool] = False,
+        # added
         is_keyword_tokens1=None,
         is_keyword_tokens2=None,
         is_prior1=None,
         is_prior2=None,
         attn_mod_params=None,
+        # added
 
     ) -> Tuple[torch.FloatTensor]:
         """
@@ -791,12 +793,14 @@ class CLIPEncoder(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        # added
         is_keyword_tokens1: Optional[bool] = None,
         is_keyword_tokens2: Optional[bool] = None,
         non_keyword_idxs: Optional[bool] = None,
         is_prior1: Optional[bool] = None,
         is_prior2: Optional[bool] = None,
         attn_mod_params=None,
+        # added
 
     ) -> Union[Tuple, BaseModelOutput]:
         r"""

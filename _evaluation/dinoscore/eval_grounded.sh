@@ -1,17 +1,24 @@
 
 
 # vase
-import CUDA_VISIBLE_DEVICES=4;
+export CUDA_VISIBLE_DEVICES=4;
 python eval.py \
---fake_root='../../results/single/vase/tiv2_no_mlm_vase_with_keyword_s3000/masked' \
---real_root="/data/twkim/diffusion/personalization/collected/masked/vase/"
+--fake_root='../../custom_diffusion/results/single_noaug/pet_dog1/custom_nomlm_pet_dog1_s250/masked' \
+--real_root="/data/twkim/diffusion/personalization/collected/masked/pet_dog1/"
+
+
+# vase
+export CUDA_VISIBLE_DEVICES=4;
+python eval.py \
+--fake_root='../../custom_diffusion/results/single_resume_bind_attr/pet_dog1/custom_mlm01_pet_dog1_lr1e5_resume_notag_mprob05_bind_attr_s1500/masked' \
+--real_root="/data/twkim/diffusion/personalization/collected/masked/pet_dog1/"
 ti_mlm0001_vase_freezemask_s3000
 ti_mlm00005_vase_freezemask_masked_s3000
 ti_mlm00005_vase_freezemask_s3000
 ti_mlm00025_vase_freezemask_s3000
 tiv2_no_mlm_vase_with_keyword_s3000
 
-
+/home/twkim/project/rich_context/
 # wooden_pot
 import CUDA_VISIBLE_DEVICES=4;
 python eval.py \
