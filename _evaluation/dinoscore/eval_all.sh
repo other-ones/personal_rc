@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=7;
 python eval_all.py \
 --method_root='./../../custom_diffusion' \
---keywords='single/-_resume_s' \
+--keywords='single' \
 --grounded=1
 
 

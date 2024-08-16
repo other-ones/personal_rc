@@ -85,7 +85,7 @@ for target_step in [500,250]:
             concept_path=os.path.join(dir_path,concept)
             exps=os.listdir(concept_path)
             for exp_idx,exp in enumerate(exps):
-                if 'resume' not in exp:
+                if not exp.endswith('_resume'):
                     continue
                 prior,category=info_map[concept]
                 learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
@@ -112,23 +112,19 @@ for target_step in [500,250]:
                         stat=stats[device_idx]   
                         if stat>2e4:
                             idle_devices.append(str(device_idx))
-                        else:
-                            print(device_idx,'not available')
                         idx+=1
                     if len(idle_devices)>=num_devices:
                         idx+=1
                         break
-                    # if stat>2e4:
-                    #     device_idx=stat_idx
-                    #     stat_idx+=1
-                    #     break
-                    print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
+                    print('sleep waiting for {}'.format(exp_name))
                     time.sleep(delay)
                     stat_idx+=1
                     stat_idx=(stat_idx%len(stats))
-                print(exp_name,device_idx)
                 log_path=os.path.join(log_dir,exp_name+'.out')
-                command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+                idle_devices=idle_devices[:num_devices]
+                running_device=','.join(idle_devices)
+                print(exp_name,running_device)
+                command='export CUDA_VISIBLE_DEVICES={};'.format(running_device)
                 command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
                 command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                 command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
