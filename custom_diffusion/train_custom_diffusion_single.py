@@ -108,7 +108,7 @@ def log_validation(
             '{} in snowy ice.'.format(placeholder),
             '{} at a beach with a view of the seashore.'.format(placeholder),
             'Photo of the {} with the sun rising in the sky.'.format(placeholder),
-            # 'cat sitting in front of {} in snowy ice.'.format(placeholder),
+            '{} barn at a beach with a view of the seashore.'.format(placeholder),
             # '{} digital painting 3d render geometric style.'.format(placeholder),
             'painting of {} in the style of van gogh.'.format(placeholder),
             'Top view of the {}. '.format(placeholder)
