@@ -71,7 +71,7 @@ idx=0
 
 dirs=['single']
 num_devices=1
-target_devices=[0,1,2,3,4,5,7]
+target_devices=[0,1,2,3,4,5,6,7]
 for target_step in [500,250]:
     for dir in dirs:
         dir_path=os.path.join('saved_models/custom_diffusion',dir)
