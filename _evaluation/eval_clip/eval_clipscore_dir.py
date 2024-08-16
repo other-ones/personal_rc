@@ -79,6 +79,7 @@ if __name__ == "__main__":
         # exps = sorted(exps, key=extract_mlm_step)
         for exp in exps:
             if target_keyword is not None and (target_keyword not in exp):
+                print('continue')
                 continue
             exp_path=os.path.join(concept_path,exp)
             pred_root=os.path.join(exp_path,'generated')

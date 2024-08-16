@@ -185,7 +185,6 @@ class UNet2DConditionLoadersMixin:
                     # try loading non-safetensors weights
                     pass
             if model_file is None:
-                print(model_file,'model_file')
                 model_file = _get_model_file(
                     pretrained_model_name_or_path_or_dict,
                     weights_name=weight_name or LORA_WEIGHT_NAME,
@@ -203,7 +202,6 @@ class UNet2DConditionLoadersMixin:
             state_dict = pretrained_model_name_or_path_or_dict
 
         is_custom_diffusion = any("custom_diffusion" in k for k in state_dict.keys())
-        print(is_custom_diffusion,'is_custom_diffusion')
         is_lora = all(("lora" in k or k.endswith(".alpha")) for k in state_dict.keys())
         is_model_cpu_offload = False
         is_sequential_cpu_offload = False
@@ -243,7 +241,6 @@ class UNet2DConditionLoadersMixin:
         # Unsafe code />
 
     def _process_custom_diffusion(self, state_dict):
-        print('_process_custom_diffusion')
         from ..models.attention_processor import CustomDiffusionAttnProcessor
 
         attn_processors = {}
@@ -259,16 +256,11 @@ class UNet2DConditionLoadersMixin:
                 custom_diffusion_grouped_dict[attn_processor_key][sub_key] = value
 
         for key, value_dict in custom_diffusion_grouped_dict.items():
-            
             if len(value_dict) == 0:
-                # print(key,'key1')
-                # print(value_dict,'value_dict1')
                 attn_processors[key] = CustomDiffusionAttnProcessor(
                     train_kv=False, train_q_out=False, hidden_size=None, cross_attention_dim=None
                 )
             else:
-                # print(key,'key2')
-                # print(value_dict,'value_dict2')
                 cross_attention_dim = value_dict["to_k_custom_diffusion.weight"].shape[1]
                 hidden_size = value_dict["to_k_custom_diffusion.weight"].shape[0]
                 train_q_out = True if "to_q_custom_diffusion.weight" in value_dict else False
@@ -278,7 +270,8 @@ class UNet2DConditionLoadersMixin:
                     hidden_size=hidden_size,
                     cross_attention_dim=cross_attention_dim,
                 )
-                attn_processors[key].load_state_dict(value_dict,strict=False)
+                attn_processors[key].load_state_dict(value_dict)
+
         return attn_processors
 
     def _process_lora(self, state_dict, unet_identifier_key, network_alphas, adapter_name, _pipeline):
@@ -457,8 +450,6 @@ class UNet2DConditionLoadersMixin:
             )
             for (_, x) in self.attn_processors.items()
         )
-        # print(is_custom_diffusion,'is_custom_diffusion')
-        # exit()
         if is_custom_diffusion:
             state_dict = self._get_custom_diffusion_state_dict()
             if save_function is None and safe_serialization:
@@ -475,6 +466,7 @@ class UNet2DConditionLoadersMixin:
                 raise ValueError("PEFT backend is required for saving LoRAs using the `save_attn_procs()` method.")
 
             from peft.utils import get_peft_model_state_dict
+
             state_dict = get_peft_model_state_dict(self)
 
         if save_function is None:

@@ -6,26 +6,26 @@ import socket
 hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
-    'pet_cat1':('cat','pet'),
-    'cat1': ('cat','pet'),
-    'pet_dog1':('dog','pet'),
-    'dog6': ('dog','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'barn': ('barn','building'),
+    # 'pet_cat1':('cat','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'dog6': ('dog','pet'),
+    'vase':('vase','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'barn': ('barn','building'),
+    'dog3': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'teddybear':('teddybear','nonliving'),
-    # 'dog3': ('dog','pet'),
     # 'chair1': ('chair','nonliving'),
     # 'cat_statue': ('toy','nonliving'),
     # 'rc_car':('toy','nonliving'),
     # 'flower1':('flower','flower'),
 }
-lambda_mlms=[
-            0.1,
-            0.25,
-            0.5,
+lambda_mlm_list=[
+            0.005,
+            # 0.25,
+            # 0.5,
             # 0.5,
             # 1.0,
             # 0.01,
@@ -62,15 +62,14 @@ mlm_priors=[0]
 with_ti_list=[0]
 noaug=0
 idx=0
-train_te=0
 lr_list=[1e-5]
 num_devices=2
-dir_name='single_resume_mlm01'
+dir_name='single'
 for mprob in [0.25,0.5]:
     mprob_str=float_to_str(mprob)
     mprob_str=mprob_str.replace('.','')
     for lr in lr_list:
-        for lambda_mlm in lambda_mlms:
+        for lambda_mlm in lambda_mlm_list:
             for concept in list(info_map.keys()):
                 lambda_mlm_str=float_to_str(lambda_mlm)
                 lambda_mlm_str=lambda_mlm_str.replace('.','')
@@ -80,24 +79,9 @@ for mprob in [0.25,0.5]:
                     run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                 else:
                     run_name+="_nomlm_{}".format(concept)
-                if train_te:
-                    run_name+='_train_te'
-                if lr==1e-4:
-                    run_name+='_lr1e4'
-                elif lr==1e-5:
-                    run_name+='_lr1e5'
+
+                run_name+='_mprob{}'.format(mprob_str)
                 run_name+='_resume'
-                run_name+='_notag_mprob{}'.format(mprob_str)
-                # run_name+='_bind_attr'
-                # else:
-                #     assert False
-                # run_name+=''
-                # custom_mlm01_dog6_resume_lr1e5
-                # if noaug:
-                #     log_dir='logs/train/single_noaug'
-                #     os.makedirs(log_dir,exist_ok=True)   
-                #     output_dir=os.path.join('saved_models/custom_diffusion/single_noaug',concept)
-                # else:
                 log_dir='logs/train/{}'.format(dir_name)
                 os.makedirs(log_dir,exist_ok=True)   
                 output_dir=os.path.join('saved_models/custom_diffusion/{}'.format(dir_name),concept)
@@ -123,9 +107,8 @@ for mprob in [0.25,0.5]:
                 log_path=os.path.join(log_dir,run_name+'.out')
                 print(log_path,'log_path')
                 running_devices=','.join(idle_devices[:num_devices])
-                resume_path=os.path.join("saved_models/custom_diffusion/single/{}/custom_mlm01_{}_mprob{}/checkpoints/checkpoint-250/".format(concept,concept,mprob_str,concept))
-                # print(resume_path,'resume')
-                # assert os.path.exists(resume_path)
+                # custom_mlm0001_vase_mprob025
+                resume_path=os.path.join("saved_models/custom_diffusion/single/{}/custom_mlm{}_{}_mprob{}/checkpoints/checkpoint-250/".format(concept,lambda_mlm_str,concept,mprob_str))
                 if not os.path.exists(resume_path):
                     print('{} resume path does not exists'.format(resume_path))
                     continue
@@ -141,16 +124,16 @@ for mprob in [0.25,0.5]:
                 command+='--resume_path=\"{}\" \\\n'.format(resume_path)
                 command+='--train_batch_size=2 \\\n'
                 command+='--gradient_accumulation_steps=1 \\\n'
-                command+='--max_train_steps=1501 \\\n'
+                command+='--max_train_steps=501 \\\n'
                 command+='--validation_steps=100 \\\n'
                 command+='--mask_prob={} \\\n'.format(mprob)
                 # command+='--checkpoints_total_limit=1 \\\n'
-                command+='--checkpointing_steps=500 \\\n'
+                command+='--checkpointing_steps=250 \\\n'
                 command+='--learning_rate={} \\\n'.format(lr)
                 command+='--lr_scheduler="constant" \\\n'
                 command+='--lr_warmup_steps=0 \\\n'
                 command+='--output_dir="{}" \\\n'.format(output_dir)
-                command+='--train_text_encoder={} \\\n'.format(train_te)
+                command+='--train_text_encoder=0 \\\n'
                 command+='--seed=7777 \\\n'
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)

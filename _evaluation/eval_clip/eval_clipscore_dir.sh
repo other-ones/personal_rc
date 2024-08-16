@@ -16,7 +16,7 @@ python eval_clipscore_dir.py  \
 
 
 
-export CUDA_VISIBLE_DEVICES=5;
+export CUDA_VISIBLE_DEVICES=6;
 python eval_clipscore_dir.py  \
 --dir_path='../../custom_diffusion/results/single' 
 

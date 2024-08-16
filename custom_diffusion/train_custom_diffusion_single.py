@@ -28,7 +28,7 @@ from accelerate import Accelerator
 from accelerate.logging import get_logger
 from accelerate.utils import ProjectConfiguration, set_seed
 from huggingface_hub import HfApi, create_repo
-from huggingface_hub.utils import insecure_hashlib
+# from huggingface_hub.utils import insecure_hashlib
 from packaging import version
 from PIL import Image
 from torch.utils.data import Dataset
