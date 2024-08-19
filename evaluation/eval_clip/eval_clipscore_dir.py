@@ -106,8 +106,8 @@ if __name__ == "__main__":
                 else:
                     print('{}\t{}'.format(model_name,dataset_res['clipscore']))
                 continue
-            else:
-                continue
+            # else:
+            #     continue
             caption_path=os.path.join(exp_path,'captions.json')
             if not os.path.exists(caption_path):
                 continue
