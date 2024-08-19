@@ -101,7 +101,7 @@ class TextualInversionDataset(Dataset):
         flip_p=0,
         center_crop=False,
         mlm_target='all',
-        mask_prob=0.15,
+        mask_prob=0.25,
         mask_token_ids=None,
         get_images=True,
         prompt_type=None,
@@ -111,9 +111,7 @@ class TextualInversionDataset(Dataset):
         class_data_root=None,
         class_prompt=None,
         simple_caption=False,
-        mlm_prior=0,
     ):  
-        self.mlm_prior=mlm_prior
         global prefixes
         if simple_caption:
             prefixes=prefixes[:1]
@@ -245,7 +243,7 @@ class TextualInversionDataset(Dataset):
                     word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
                     num_tokens=len(word_token_ids)
                     for tok_id in word_token_ids:
-                        if self.placeholder_token in cap_word:
+                        if self.placeholder_token == cap_word:
                             is_keyword_tokens_prior.append(True)
                         else:
                             is_keyword_tokens_prior.append(False)
@@ -279,7 +277,7 @@ class TextualInversionDataset(Dataset):
                 word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
                 for tok_id in word_token_ids:
-                    if self.placeholder_token in cap_word:
+                    if self.placeholder_token == cap_word:
                         is_keyword_tokens.append(True)
                     else:
                         is_keyword_tokens.append(False)
@@ -287,23 +285,17 @@ class TextualInversionDataset(Dataset):
             # 3) is_keyword_tokens - keyword indices for MLM
             for _ in range(len(is_keyword_tokens),self.tokenizer.model_max_length):
                 is_keyword_tokens.append(False)
+            is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
+            example["is_keyword_tokens"]=is_keyword_tokens
             assert len(is_keyword_tokens)==self.tokenizer.model_max_length
-            example["is_keyword_tokens"]=torch.BoolTensor(is_keyword_tokens)
+            assert torch.sum(is_keyword_tokens)==1
         # 3. MLM
         mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
         assert self.include_prior_concept
         
         
         placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
-        # if self.include_prior_concept:
-        #     placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
-        # else:
-        #     placeholder='{}'.format(self.placeholder_token)
-        if np.random.rand()<self.mlm_prior:
-            placeholder=placeholder.replace(self.placeholder_token+' ','')
         caption_pos=mlm_pos.replace('<new>','{}'.format(placeholder)) # caption without masked embedding
-        # print(caption_pos,'caption_pos')
-        # exit()
         caption_neg=mlm_neg.replace('<new>','{}'.format(placeholder)) #
 
         example["input_ids_pos"] = self.tokenizer(
@@ -339,14 +331,14 @@ class TextualInversionDataset(Dataset):
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
                 # 1) input ids and indices for mask token
-                if np.random.rand()<self.mask_prob and (self.placeholder_token not in cap_word) and (cap_word not in self.prior_concept): 
+                if np.random.rand()<self.mask_prob and (self.placeholder_token != cap_word) and (cap_word != self.prior_concept): 
                     masked_idxs.append(True)
                     input_ids_masked.append(self.mask_token_ids)
                 else:
                     masked_idxs.append(False)
                     input_ids_masked.append(tok_id)
                 # 2) keyword indices and labels for MLM
-                if self.placeholder_token in cap_word:
+                if self.placeholder_token == cap_word:
                     assert num_tokens==1
                     is_keyword_tokens_mlm.append(True)
                     mlm_labels.append(-100)
@@ -358,9 +350,11 @@ class TextualInversionDataset(Dataset):
         # 3) is_keyword_tokens_mlm - keyword indices for MLM
         for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
             is_keyword_tokens_mlm.append(False)
+        is_keyword_tokens_mlm=torch.BoolTensor(is_keyword_tokens_mlm)
+        example["is_keyword_tokens_mlm"]=is_keyword_tokens_mlm
         assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
-        example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
-
+        assert torch.sum(is_keyword_tokens_mlm)==1
+        
         # 4) input_ids or MLM
         input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
         input_ids_masked.append(self.tokenizer.eos_token_id)

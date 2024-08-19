@@ -830,7 +830,7 @@ def main(args):
         class_num=args.num_class_images,
         class_prompt=args.class_prompt1,
         simple_caption=args.simple_caption,
-        mlm_prior=args.mlm_prior,
+        mask_prob=args.mask_prob,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -847,7 +847,6 @@ def main(args):
         get_images=False,
         prompt_type=args.prompt_type,
         simple_caption=args.simple_caption,
-        mlm_prior=args.mlm_prior,
         # class_data_root=class_data_dir1 if args.with_prior_preservation else None,
         # class_num=args.num_class_images,
         # class_prompt=args.class_prompt1,
