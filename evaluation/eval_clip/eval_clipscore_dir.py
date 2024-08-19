@@ -23,7 +23,7 @@ def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
     keys=list(json_data.keys())
     for key in keys:
         file=key.split('.')[0]
-        if int(file)>num_samples:
+        if num_samples is not None and int(file)>num_samples:
             continue
         caption=json_data[file]
         caption=caption.strip()
@@ -114,7 +114,7 @@ if __name__ == "__main__":
             fsize=os.stat(caption_path).st_size
             if fsize==0:
                 continue
-            dataset_res=evaluate_results(pred_root, caption_path)
+            dataset_res=evaluate_results(pred_root, caption_path,num_samples=None)
             with open(result_path, 'w') as fw:
                 json.dump(dataset_res, fw)
 
