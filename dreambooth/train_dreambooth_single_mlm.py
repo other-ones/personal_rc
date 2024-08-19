@@ -759,7 +759,10 @@ def main(args):
         weight_decay=args.adam_weight_decay,
         eps=args.adam_epsilon,
     )
-
+    for key, val in text_encoder.named_parameters():
+        if val.requires_grad:
+            print(key,'text_encoder')
+    exit()
     if args.pre_compute_text_embeddings:
 
         def compute_text_embeddings(prompt):
