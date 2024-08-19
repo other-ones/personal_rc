@@ -25,6 +25,7 @@ info_map={
 lambda_mlm_list=[
             0, 
             0.001,
+            0.002,
             ]
 masked_loss=0
 
