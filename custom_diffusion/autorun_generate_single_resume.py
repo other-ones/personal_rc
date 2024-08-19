@@ -70,14 +70,13 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 port_idx=0
 
-seed=7777
-dirs=['single_seed{}'.format(seed)]
-num_devices=1
-target_devices=[0,1,2,3,4,5,6,7]
-for target_step in [500,1500,1000,100]:
-    for dir in dirs:
-        dir_path=os.path.join('saved_models/custom_diffusion',dir)
-        log_dir='logs/generate/{}'.format(dir)
+for seed in [8881,2940]:
+    dir_name='single_seed{}'.format(seed)
+    num_devices=1
+    target_devices=[0,1,2,3,4,5,6,7]
+    for target_step in [1000,500]:
+        dir_path=os.path.join('saved_models/custom_diffusion',dir_name)
+        log_dir='logs/generate/{}'.format(dir_name)
         os.makedirs(log_dir,exist_ok=True)    
         concepts=os.listdir(dir_path)
         concepts=sorted(concepts)
@@ -102,7 +101,7 @@ for target_step in [500,1500,1000,100]:
                     continue
                 exp_name=exp
                 exp_name+='_s{}'.format(target_step)
-                output_dir=os.path.join('results/{}/{}'.format(dir,concept))
+                output_dir=os.path.join('results/{}/{}'.format(dir_name,concept))
                 exp_path=os.path.join(output_dir,exp_name)
                 if os.path.exists(exp_path):
                     print(exp_path,'exists')
@@ -123,7 +122,7 @@ for target_step in [500,1500,1000,100]:
                 log_path=os.path.join(log_dir,exp_name+'.out')
                 idle_devices=idle_devices[:num_devices]
                 running_device=','.join(idle_devices)
-                print(exp_name,running_device)
+                print(exp_path,running_device)
                 command='export CUDA_VISIBLE_DEVICES={};'.format(running_device)
                 command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[port_idx])
                 command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'

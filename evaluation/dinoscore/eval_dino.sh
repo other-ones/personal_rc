@@ -1,5 +1,5 @@
-export CUDA_VISIBLE_DEVICES=2;
-python eval_all.py \
+export CUDA_VISIBLE_DEVICES=1;
+python eval_dino.py \
 --method_root='./../../custom_diffusion' \
 --keywords='single_seed7777' \
 --grounded=0

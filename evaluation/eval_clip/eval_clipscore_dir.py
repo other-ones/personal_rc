@@ -30,8 +30,8 @@ def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
         image_list.append(os.path.join(pred_root,file+'.jpg'))
         image_ids.append(file)
         text_list.append(caption)
-    print(len(image_list),'len(image_list)')
-    print(len(text_list),'len(text_list)')
+    # print(len(image_list),'len(image_list)')
+    # print(len(text_list),'len(text_list)')
     clip_scores = []
     scores = []
     score = cal_clipscore(image_ids=image_ids, image_paths=image_list, text_list=text_list, device=device)
@@ -67,13 +67,13 @@ def extract_mlm_step(name):
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--dir_path',type=str)
-    parser.add_argument('--target_keyword',type=str)
+    parser.add_argument('--keyword',type=str)
     parser.add_argument('--num_samples',type=int)
 
     # /home/twkim/project/textual_inversion/results/single_normalized/tmp
     args=parser.parse_args()
     dir_path=args.dir_path
-    target_keyword=args.target_keyword
+    keyword=args.keyword
     num_samples=args.num_samples
     concepts=os.listdir(dir_path)
     for concept in concepts:
@@ -86,8 +86,9 @@ if __name__ == "__main__":
         # exps = sorted(exps, key=extract_mlm_step)
         exps=sorted(exps)[::-1]
         for exp in exps:
-            if target_keyword is not None and (target_keyword not in exp):
-                continue
+            if 'nomlm_{}_s250'.format(concept) not in exp:
+                if keyword is not None and (keyword not in exp):
+                    continue
             exp_path=os.path.join(concept_path,exp)
             pred_root=os.path.join(exp_path,'generated')
             result_path=os.path.join(exp_path, 'clip.json')
@@ -117,5 +118,4 @@ if __name__ == "__main__":
             dataset_res=evaluate_results(pred_root, caption_path,num_samples=None)
             with open(result_path, 'w') as fw:
                 json.dump(dataset_res, fw)
-
         print()
