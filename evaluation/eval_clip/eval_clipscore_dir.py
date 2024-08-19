@@ -100,6 +100,7 @@ if __name__ == "__main__":
                     for fname in score_list:
                         if int(fname)>num_samples:
                             continue
+                        print(score_list[fname],'score_list[fname]')
                         scores.append(score_list[fname])
                     print('{}\t{}\tnum_samples:{}'.format(model_name,np.mean(scores),num_samples))
                 else:
