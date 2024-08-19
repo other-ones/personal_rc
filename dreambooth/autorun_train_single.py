@@ -40,15 +40,18 @@ stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4:
         break
-log_dir='logs_mlmlimited/single'
-os.makedirs(log_dir,exist_ok=True)   
+
 ports=np.arange(1111,2222)
 fixte_list=[0]
 pps=[1]
 mask_prob_list=[0.25]
+seed=2940
+dir_name='single_seed{}'.format(seed)
+log_dir='logs/train/{}'.format(dir_name)
+os.makedirs(log_dir,exist_ok=True)   
 # for idx,concept in enumerate(list(info_map.keys())):
 for mask_prob in mask_prob_list:
-    mask_prob_str=float_to_str(lambda_mlm)
+    mask_prob_str=float_to_str(mask_prob)
     mask_prob_str=mask_prob_str.replace('.','')
     for lambda_mlm in lambda_mlm_list:
         device_idx=stat_idx
@@ -59,15 +62,16 @@ for mask_prob in mask_prob_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     prior,category=info_map[concept]
-                    run_name='dreambooth_'
+                    run_name='dreambooth'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                     else:
                         run_name+="_nomlm_{}".format(concept)
                     if fixte:
                         run_name+='_fixte'
-                    run_name+='mprob{}'.format(mask_prob_str)
-                    output_dir=os.path.join('saved_models/dreambooth_models/single',concept)
+                    if lambda_mlm:
+                        run_name+='_mprob{}'.format(mask_prob_str)
+                    output_dir=os.path.join('saved_models/dreambooth_models/{}'.format(dir_name),concept)
                     exp_path=os.path.join(output_dir,run_name)
                     if os.path.exists(exp_path):
                         print(exp_path,'exists')
@@ -99,11 +103,11 @@ for mask_prob in mask_prob_list:
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
                     command+='--output_dir="{}" \\\n'.format(output_dir)
-                    command+='--seed=7777 \\\n'
+                    command+='--seed={} \\\n'.format(seed)
                     command+='--mask_tokens="[MASK]" \\\n'
                     command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                    command+='--cls_net_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
-                    command+='--mask_embed_path="saved_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
+                    command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
+                    command+='--mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                     command+='--mlm_target=masked \\\n'
                     command+='--mlm_batch_size=20 \\\n'
                     command+='--mask_prob={} \\\n'.format(mask_prob)
@@ -115,8 +119,8 @@ for mask_prob in mask_prob_list:
                     command+='--run_name="{}" \\\n'.format(run_name)
                     command+='--with_prior_preservation={} \\\n'.format(pp)
                     command+='--class_prompt1="a picture of a {}" \\\n'.format(prior)
-                    command+='--class_data_dir1="priors/{}" \\\n'.format(prior)
-                    if not fixte:
+                    command+='--class_data_dir1="priors/samples_{}" \\\n'.format(prior)
+                    if fixte==0: # do not fix text_encoder
                         command+='--train_text_encoder \\\n'
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="DreamBooth MLM SINGLE" \\\n'

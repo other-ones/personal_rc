@@ -15,18 +15,23 @@ from clipscore import cal_clipscore
 # from fid_score import calculate_fid_given_paths
 
 
-def eval_clipscore(pred_root, caption_path, device="cuda:0"):
+def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
     image_list=[]
     image_ids=[]
     text_list=[]
     json_data=json.load(open(caption_path))
-    for file in json_data:
+    keys=list(json_data.keys())
+    for key in keys:
+        file=key.split('.')[0]
+        if int(file)>num_samples:
+            continue
         caption=json_data[file]
         caption=caption.strip()
         image_list.append(os.path.join(pred_root,file+'.jpg'))
         image_ids.append(file)
         text_list.append(caption)
-
+    print(len(image_list),'len(image_list)')
+    print(len(text_list),'len(text_list)')
     clip_scores = []
     scores = []
     score = cal_clipscore(image_ids=image_ids, image_paths=image_list, text_list=text_list, device=device)
@@ -38,10 +43,10 @@ def eval_clipscore(pred_root, caption_path, device="cuda:0"):
     return np.mean(clip_scores), scores
 
 
-def evaluate_results(pred_root,caption_path):
+def evaluate_results(pred_root,caption_path,num_samples):
     dataset_res = {}
     dataset_res['clipscore'], dataset_res['scores'] =\
-            eval_clipscore(pred_root, caption_path, device="cuda:0")
+            eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=num_samples)
 
     # method_res[method] = dataset_res
     # with open(os.path.join(pred_root, 'eval.json'), 'w') as fw:
@@ -63,11 +68,13 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--dir_path',type=str)
     parser.add_argument('--target_keyword',type=str)
+    parser.add_argument('--num_samples',type=int)
 
     # /home/twkim/project/textual_inversion/results/single_normalized/tmp
     args=parser.parse_args()
     dir_path=args.dir_path
     target_keyword=args.target_keyword
+    num_samples=args.num_samples
     concepts=os.listdir(dir_path)
     for concept in concepts:
         print(concept)
@@ -95,8 +102,7 @@ if __name__ == "__main__":
             fsize=os.stat(caption_path).st_size
             if fsize==0:
                 continue
-            num_samples=len(os.listdir(pred_root))
-            dataset_res=evaluate_results(pred_root, caption_path)
+            dataset_res=evaluate_results(pred_root, caption_path,num_samples)
             with open(result_path, 'w') as fw:
                 json.dump(dataset_res, fw)
 

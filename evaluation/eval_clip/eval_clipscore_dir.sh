@@ -18,7 +18,8 @@ python eval_clipscore_dir.py  \
 
 export CUDA_VISIBLE_DEVICES=1;
 python eval_clipscore_dir.py  \
---dir_path='../../custom_diffusion/results/single_seed7777' 
+--dir_path='../../custom_diffusion/results/single_seed7777' \
+--num_samples=100
 
 --target_keyword='vase' 
 # results/disenbooth/single/dog6/disenbooth_nopp_nomlm_dog6_lr1e4_alr1e4

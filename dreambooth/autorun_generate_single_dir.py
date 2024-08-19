@@ -42,7 +42,8 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
-dirs=['single']
+seed=2940
+dirs=['single_seed{}'.format(seed)]
 for dir in dirs:
     dir_path=os.path.join('saved_models/dreambooth_models',dir)
     log_dir='logs/generate/{}'.format(dir)
@@ -90,7 +91,7 @@ for dir in dirs:
             command+='--eval_batch_size=18 \\\n'
             command+='--num_images_per_prompt=15 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
-            command+='--seed=1234 \\\n'
+            command+='--seed={} \\\n'.format(seed)
             command+='--mask_tokens="[MASK]" \\\n'
             command+='--resume_unet_path="{}" \\\n'.format(resume_unet_path)
             command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
