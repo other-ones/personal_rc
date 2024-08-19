@@ -5,8 +5,8 @@
 **/output
 **/*.jpg
 **/priors
-_evaluation/dinoscore/grounded_segment
-# dreambooth
+evaluation/dinoscore/grounded_segment
+# custom_diffusion
 custom_diffusion*/__pycache__
 custom_diffusion*/packages/**/__pycacahe__
 custom_diffusion*/dog
@@ -15,6 +15,7 @@ custom_diffusion*/saved_models
 custom_diffusion*/disenbooth_models
 custom_diffusion*/logs*
 custom_diffusion*/results*
+custom_diffusion/results/*
 custom_diffusion*/priors
 custom_diffusion*/*.jpg
 custom_diffusion*/*.png

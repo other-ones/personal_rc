@@ -1,9 +1,8 @@
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=2;
 python eval_all.py \
 --method_root='./../../custom_diffusion' \
---keywords='single' \
---grounded=1
-
+--keywords='single_seed7777' \
+--grounded=0
 
 export CUDA_VISIBLE_DEVICES=7;
 python eval_all.py \

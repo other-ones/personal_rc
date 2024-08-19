@@ -84,12 +84,15 @@ if __name__=='__main__':
         dir_path=os.path.join(result_root,dir)
         concepts=os.listdir(dir_path)
         for concept in concepts:
-            print(concept)
             concept_path=os.path.join(dir_path,concept)
             exps=os.listdir(concept_path)
-            real_root=os.path.join('/data/twkim/diffusion/personalization/collected/images/',concept)
+            if args.grounded:
+                real_root=os.path.join('/data/twkim/diffusion/personalization/collected/masked/',concept)
+            else:
+                real_root=os.path.join('/data/twkim/diffusion/personalization/collected/images/',concept)
             # exps = sorted(exps, key=extract_mlm_step)
             concept_results=[]
+            exps=sorted(exps)[::-1]
             for exp in exps:
                 exp_path=os.path.join(concept_path,exp)
                 if keywords is not None:
@@ -102,7 +105,14 @@ if __name__=='__main__':
                     valid=True
                 if not valid:
                     continue
-                log_path=os.path.join(exp_path,'result.txt')
+                caption_path=os.path.join(exp_path,'captions.json')
+                if not os.path.exists(caption_path):
+                    continue
+                fsize=os.stat(caption_path).st_size
+                if fsize==0:
+                    print(exp_path,'here')
+                    continue
+                # log_path=os.path.join(exp_path,'result.txt')
                 if args.grounded:
                     score_name='masked_dino'
                     fake_root=os.path.join(exp_path,'masked')
@@ -116,8 +126,8 @@ if __name__=='__main__':
                     concept_results.append(result_line)
                     # print('{}\t{}'.format(exp_path,read_data[score_name]))
                     continue
-                if not (os.path.exists(log_path)):
-                    continue
+                # if not (os.path.exists(log_path)):
+                #     continue
                 if not os.path.exists(fake_root):
                     continue
                 src_images=[Image.open(os.path.join(real_root,item)).convert('RGB').resize((512,512)) for item in os.listdir(real_root)]
@@ -131,6 +141,7 @@ if __name__=='__main__':
                 print('running..')
                 score=dino_eval.img_to_img_similarity(src_images=src_images,generated_images=generated_images)
                 result_line='{}\t{}'.format(exp,score)
+                print(result_line)
                 concept_results.append(result_line)
                 dst_file=open(os.path.join(exp_path,'{}.json'.format(score_name)),'w')
                 dst_data={score_name:float(score)}

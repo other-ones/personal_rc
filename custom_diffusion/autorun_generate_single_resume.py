@@ -62,17 +62,19 @@ def get_gpu_memory():
 
 target_step=250
 ports=np.arange(5000,6000)
+np.random.shuffle(ports)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4:
         break
 device_idx=stat_idx
-idx=0
+port_idx=0
 
-dirs=['single']
+seed=7777
+dirs=['single_seed{}'.format(seed)]
 num_devices=1
 target_devices=[0,1,2,3,4,5,6,7]
-for target_step in [500,250]:
+for target_step in [500,1500,1000,100]:
     for dir in dirs:
         dir_path=os.path.join('saved_models/custom_diffusion',dir)
         log_dir='logs/generate/{}'.format(dir)
@@ -85,25 +87,25 @@ for target_step in [500,250]:
             concept_path=os.path.join(dir_path,concept)
             exps=os.listdir(concept_path)
             for exp_idx,exp in enumerate(exps):
-                if not exp.endswith('_resume'):
+                if not '_resume' in exp:
                     continue
                 prior,category=info_map[concept]
                 learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}'.format(target_step))
-                # custom_mlm01_dog6_mprob05
-                resume_exp=exp.split('_resume')[0]
-                resume_path=os.path.join("saved_models/custom_diffusion/single/{}/{}/checkpoints/checkpoint-250".format(concept,resume_exp))
-                if not os.path.exists(resume_path):
-                    print(resume_path,'resume path not exist')
-                    continue
                 if not os.path.exists(learned_embed_path1):
                     print(learned_embed_path1,'does not exist')
+                    continue
+                resume_exp=exp.split('_lr')[0]
+                resume_step=exp.split('_resume')[-1]
+                resume_path=os.path.join("saved_models/custom_diffusion/single_seed{}/{}/{}/checkpoints/checkpoint-{}".format(seed,concept,resume_exp,resume_step))
+                if not os.path.exists(resume_path):
+                    print(resume_path,'resume path not exist')
                     continue
                 exp_name=exp
                 exp_name+='_s{}'.format(target_step)
                 output_dir=os.path.join('results/{}/{}'.format(dir,concept))
                 exp_path=os.path.join(output_dir,exp_name)
                 if os.path.exists(exp_path):
-                    print(exp_name,'exists')
+                    print(exp_path,'exists')
                     continue
                 while True:
                     idle_devices=[]
@@ -112,9 +114,7 @@ for target_step in [500,250]:
                         stat=stats[device_idx]   
                         if stat>2e4:
                             idle_devices.append(str(device_idx))
-                        idx+=1
                     if len(idle_devices)>=num_devices:
-                        idx+=1
                         break
                     print('sleep waiting for {}'.format(exp_name))
                     time.sleep(delay)
@@ -125,7 +125,7 @@ for target_step in [500,250]:
                 running_device=','.join(idle_devices)
                 print(exp_name,running_device)
                 command='export CUDA_VISIBLE_DEVICES={};'.format(running_device)
-                command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
+                command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[port_idx])
                 command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                 command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                 command+='--placeholder_token1="<{}>" \\\n'.format(concept)
@@ -135,14 +135,14 @@ for target_step in [500,250]:
                 command+='--num_images_per_prompt=15 \\\n'
                 command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
                 command+='--output_dir="{}" \\\n'.format(output_dir)
-                command+='--seed=1234 \\\n'
+                command+='--seed={} \\\n'.format(seed)
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--resume_path="{}" \\\n'.format(resume_path)
                 command+='--prompt_type="{}" \\\n'.format(category)
                 command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                 os.system(command)
                 print('STARTED')
-                idx+=1
+                port_idx+=1
                 time.sleep(delay)
 
     

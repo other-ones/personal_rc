@@ -1,5 +1,5 @@
 import os
-root='results/single'
+root='../../custom_diffusion/results/single_seed2940'
 concepts=os.listdir(root)
 for concept in concepts:
     concept_path=os.path.join(root,concept)
