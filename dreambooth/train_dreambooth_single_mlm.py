@@ -762,7 +762,6 @@ def main(args):
     for key, val in text_encoder.named_parameters():
         if val.requires_grad:
             print(key,'text_encoder')
-    exit()
     if args.pre_compute_text_embeddings:
 
         def compute_text_embeddings(prompt):
