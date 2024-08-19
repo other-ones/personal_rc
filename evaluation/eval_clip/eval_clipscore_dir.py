@@ -94,7 +94,18 @@ if __name__ == "__main__":
             model_name=pred_root.split('/')[-2]
             if os.path.exists(result_path):
                 dataset_res=json.load(open(result_path))
-                print('{}\t{}'.format(model_name,dataset_res['clipscore']))
+                if num_samples:
+                    score_list=dataset_res['scores'][0]
+                    scores=[]
+                    for fname in score_list:
+                        if int(fname)>num_samples:
+                            continue
+                        scores.append(score_list[fname])
+                    print('{}\t{}\tnum_samples:{}'.format(model_name,np.mean(scores),num_samples))
+                else:
+                    print('{}\t{}'.format(model_name,dataset_res['clipscore']))
+                continue
+            else:
                 continue
             caption_path=os.path.join(exp_path,'captions.json')
             if not os.path.exists(caption_path):
@@ -102,7 +113,7 @@ if __name__ == "__main__":
             fsize=os.stat(caption_path).st_size
             if fsize==0:
                 continue
-            dataset_res=evaluate_results(pred_root, caption_path,num_samples)
+            dataset_res=evaluate_results(pred_root, caption_path)
             with open(result_path, 'w') as fw:
                 json.dump(dataset_res, fw)
 
