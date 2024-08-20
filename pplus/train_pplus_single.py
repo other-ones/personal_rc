@@ -236,9 +236,11 @@ def main():
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
-        
+        # copy clip
         os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
-        os.system('cp clip_src/* {}/clip_src -R'.format(codepath))
+        shutil.copy('clip_src/modeling_clip.py {}/clip_src/modeling_clip.py'.format(codepath))
+        shutil.copy('clip_src/modeling_outputs.py {}/clip_src/modeling_outputs.py'.format(codepath))
+        # copy clip
         sample_dir=os.path.join(exp_dir,'samples')
         ckpt_dir=os.path.join(exp_dir,'checkpoints')
         os.makedirs(ckpt_dir,exist_ok=True)
