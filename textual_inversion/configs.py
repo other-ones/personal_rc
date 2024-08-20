@@ -38,6 +38,7 @@ def parse_args():
     parser.add_argument('--lambda_contrastive',type=float,default=0)
     parser.add_argument('--lambda_sim',type=float)
     parser.add_argument('--margin',type=float,default=0.1)
+    parser.add_argument('--mask_prob',type=float,default=0.25)
 
 
     parser.add_argument('--learned_embed_path1',type=str)

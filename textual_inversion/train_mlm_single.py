@@ -124,6 +124,18 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
             'digital painting of a turtle wearing {}'.format(placeholder),
             '{} digital 3d render'.format(placeholder),
         ]
+    elif args.prompt_type in ['flower']:
+        validation_prompts=[
+            "Photo of {}".format(placeholder),
+            "{} growing in the desert".format(placeholder),
+            "{} at a beach with a view of the seashore".format(placeholder),
+            "a bouquet of {}".format(placeholder),
+            "{} in a violet vase on a table".format(placeholder),
+            "a vase filled with {} on a table".format(placeholder),
+            "{} and a chocolate cake on the table".format(placeholder),
+            "a sky blue color {}".format(placeholder),
+            "Dried up {}".format(placeholder),
+        ]
     else:
         assert False
     # print(validation_prompts[0],'validation_prompts')
@@ -355,6 +367,7 @@ def main():
         mlm_target=args.mlm_target,
         get_images=True,
         prompt_type=args.prompt_type,
+        mask_prob=args.mask_prob,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -371,6 +384,7 @@ def main():
         mlm_target=args.mlm_target,
         get_images=False,
         prompt_type=args.prompt_type,
+        mask_prob=args.mask_prob,
     )
     
     def collate_fn(examples):

@@ -181,6 +181,12 @@ def log_validation(
             # 'digital painting of a turtle wearing {}'.format(placeholder),
             '{} digital 3d render'.format(placeholder),
         ]
+    elif args.prompt_type in ['flower']:
+        validation_prompts=[
+            "{} growing in the desert".format(placeholder),
+            "a bouquet of {}".format(placeholder),
+            "Dried up {}".format(placeholder),
+        ]
     else:
         assert False
     logger.info(

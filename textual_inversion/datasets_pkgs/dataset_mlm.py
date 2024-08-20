@@ -104,7 +104,7 @@ class TextualInversionDataset(Dataset):
         center_crop=False,
         exclude_suffix=True,
         mlm_target='all',
-        mask_prob=0.15,
+        mask_prob=0.25,
         mask_token_ids=None,
         get_images=True,
         prompt_type=None,
