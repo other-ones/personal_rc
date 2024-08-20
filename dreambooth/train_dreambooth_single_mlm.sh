@@ -1,6 +1,6 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6"
-export CUDA_VISIBLE_DEVICES=1;
+export CUDA_VISIBLE_DEVICES=0;
 accelerate launch --main_process_port 4235  train_dreambooth_single_mlm.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \

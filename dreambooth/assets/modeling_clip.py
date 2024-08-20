@@ -1,4 +1,3 @@
-from torchmetrics.functional import pairwise_cosine_similarity
 # coding=utf-8
 # Copyright 2021 The OpenAI Team Authors and The HuggingFace Team. All rights reserved.
 #
@@ -13,7 +12,8 @@ from torchmetrics.functional import pairwise_cosine_similarity
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""PyTorch CLIP model."""
+""" PyTorch CLIP model."""
+
 
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple, Union
@@ -21,15 +21,12 @@ from typing import Any, Optional, Tuple, Union
 import torch
 import torch.utils.checkpoint
 from torch import nn
-from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 from ...activations import ACT2FN
-from ...modeling_attn_mask_utils import _create_4d_causal_attention_mask, _prepare_4d_attention_mask
-from ...modeling_outputs import BaseModelOutput, BaseModelOutputWithPooling, ImageClassifierOutput
+from ...modeling_outputs import BaseModelOutput, BaseModelOutputWithPooling
 from ...modeling_utils import PreTrainedModel
 from ...utils import (
     ModelOutput,
-    add_code_sample_docstrings,
     add_start_docstrings,
     add_start_docstrings_to_model_forward,
     logging,
@@ -40,13 +37,27 @@ from .configuration_clip import CLIPConfig, CLIPTextConfig, CLIPVisionConfig
 
 logger = logging.get_logger(__name__)
 
-# General docstring
-_CONFIG_FOR_DOC = "CLIPConfig"
 _CHECKPOINT_FOR_DOC = "openai/clip-vit-base-patch32"
 
-# Image classification docstring
-_IMAGE_CLASS_CHECKPOINT = "openai/clip-vit-base-patch32"
-_IMAGE_CLASS_EXPECTED_OUTPUT = "LABEL_0"
+CLIP_PRETRAINED_MODEL_ARCHIVE_LIST = [
+    "openai/clip-vit-base-patch32",
+    # See all CLIP models at https://huggingface.co/models?filter=clip
+]
+
+
+# Copied from transformers.models.bart.modeling_bart._expand_mask
+def _expand_mask(mask: torch.Tensor, dtype: torch.dtype, tgt_len: Optional[int] = None):
+    """
+    Expands attention_mask from `[bsz, seq_len]` to `[bsz, 1, tgt_seq_len, src_seq_len]`.
+    """
+    bsz, src_len = mask.size()
+    tgt_len = tgt_len if tgt_len is not None else src_len
+
+    expanded_mask = mask[:, None, None, :].expand(bsz, 1, tgt_len, src_len).to(dtype)
+
+    inverted_mask = 1.0 - expanded_mask
+
+    return inverted_mask.masked_fill(inverted_mask.to(torch.bool), torch.finfo(dtype).min)
 
 
 # contrastive loss function, adapted from
@@ -86,8 +97,8 @@ class CLIPVisionModelOutput(ModelOutput):
 
     image_embeds: Optional[torch.FloatTensor] = None
     last_hidden_state: torch.FloatTensor = None
-    hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
-    attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
+    hidden_states: Optional[Tuple[torch.FloatTensor]] = None
+    attentions: Optional[Tuple[torch.FloatTensor]] = None
 
 
 @dataclass
@@ -115,8 +126,8 @@ class CLIPTextModelOutput(ModelOutput):
 
     text_embeds: Optional[torch.FloatTensor] = None
     last_hidden_state: torch.FloatTensor = None
-    hidden_states: Optional[Tuple[torch.FloatTensor, ...]] = None
-    attentions: Optional[Tuple[torch.FloatTensor, ...]] = None
+    hidden_states: Optional[Tuple[torch.FloatTensor]] = None
+    attentions: Optional[Tuple[torch.FloatTensor]] = None
 
 
 @dataclass
@@ -209,6 +220,12 @@ class CLIPTextEmbeddings(nn.Module):
         input_ids: Optional[torch.LongTensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
         inputs_embeds: Optional[torch.FloatTensor] = None,
+        is_keyword_tokens1=None,
+        is_keyword_tokens2=None,
+        inj_embeddings1=None,
+        inj_embeddings2=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> torch.Tensor:
         seq_length = input_ids.shape[-1] if input_ids is not None else inputs_embeds.shape[-2]
 
@@ -217,6 +234,19 @@ class CLIPTextEmbeddings(nn.Module):
 
         if inputs_embeds is None:
             inputs_embeds = self.token_embedding(input_ids)
+
+        # HERE
+        if inputs_embeds is None:
+            inputs_embeds = self.token_embedding(input_ids)
+        if mask_idxs is not None and mask_embedding is not None:
+            # print('here mask')
+            inputs_embeds[mask_idxs]=mask_embedding
+        if is_keyword_tokens1 is not None and inj_embeddings1 is not None:
+            # print('here keyword')
+            inputs_embeds[is_keyword_tokens1]=inj_embeddings1
+        if is_keyword_tokens2 is not None and inj_embeddings2 is not None:
+            inputs_embeds[is_keyword_tokens2]=inj_embeddings2
+
 
         position_embeddings = self.position_embedding(position_ids)
         embeddings = inputs_embeds + position_embeddings
@@ -255,223 +285,29 @@ class CLIPAttention(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         causal_attention_mask: Optional[torch.Tensor] = None,
         output_attentions: Optional[bool] = False,
-        is_keyword_tokens1=None,
-        is_keyword_tokens2=None,
-        is_prior1=None,
-        is_prior2=None,
-        attn_mod_params=None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-        # hidden_states: 400, 77, 768
-        # is_keyword_tokens1: 400, 77
-        # is_keyword_tokens2: 400, 77
-
         """Input shape: Batch x Time x Channel"""
+
         bsz, tgt_len, embed_dim = hidden_states.size()
 
-        if is_keyword_tokens1 is not None:
-            # is_keyword_tokens1=is_keyword_tokens1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            # is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            # is_keyword_tokens2=is_keyword_tokens2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            # is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-
-
-            is_keyword_tokens1=is_keyword_tokens1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            # is_keyword_tokens1=is_keyword_tokens1.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
-            # is_keyword_tokens1=is_keyword_tokens1.view(bsz*self.num_heads,tgt_len) # 400,77,12 -> 4800,77
-        if is_keyword_tokens2 is not None:
-            is_keyword_tokens2=is_keyword_tokens2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            # is_keyword_tokens2=is_keyword_tokens2.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,77,1-> 400,77,12
-            # is_keyword_tokens2=is_keyword_tokens2.view(bsz*self.num_heads,tgt_len) # 400,77,12 -> 4800,77
-            
-            # Prior index
-        
-        if is_prior1 is not None:
-            is_prior1=is_prior1.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            is_prior1=is_prior1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            # is_prior1=is_prior1.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,1,77-> 400,12,77
-            # is_prior1=is_prior1.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-
-        if is_prior2 is not None:
-            is_prior2=is_prior2.unsqueeze(1).repeat(1,self.num_heads,1) # 400,1,77-> 400,12,77
-            is_prior2=is_prior2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            # is_prior2=is_prior2.unsqueeze(-1).repeat(1,1,self.num_heads) # 400,1,77-> 400,12,77
-            # is_prior2=is_prior2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
-            
         # get query proj
-        proj_shape = (bsz * self.num_heads, -1, self.head_dim)
         query_states = self.q_proj(hidden_states) * self.scale
-        query_states = self._shape(query_states, tgt_len, bsz).view(*proj_shape)
-
-
-
-
-
         key_states = self._shape(self.k_proj(hidden_states), -1, bsz)
-        key_states = key_states.view(*proj_shape)
-
         value_states = self._shape(self.v_proj(hidden_states), -1, bsz)
+
+        proj_shape = (bsz * self.num_heads, -1, self.head_dim)
+        query_states = self._shape(query_states, tgt_len, bsz).view(*proj_shape)
+        key_states = key_states.view(*proj_shape)
         value_states = value_states.view(*proj_shape)
 
         src_len = key_states.size(1)
         attn_weights = torch.bmm(query_states, key_states.transpose(1, 2))
 
-        attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-
-        if attn_mod_params is not None:
-            print(torch.sum(attn_weights),'before calibration')
-            calibrate_kpos1=attn_mod_params['calibrate_kpos1']
-            calibrate_kpos2=attn_mod_params['calibrate_kpos2']
-            calibrate_kneg1=attn_mod_params['calibrate_kneg1']
-            calibrate_kneg2=attn_mod_params['calibrate_kneg2']
-            calibrate_ppos1=attn_mod_params['calibrate_ppos1']
-            calibrate_ppos2=attn_mod_params['calibrate_ppos2']
-            calibrate_pneg1=attn_mod_params['calibrate_pneg1']
-            calibrate_pneg2=attn_mod_params['calibrate_pneg2']
-
-
-            if calibrate_kpos1 or calibrate_kneg1:
-                k1_scores=attn_weights[is_keyword_tokens1].view(bsz * self.num_heads, tgt_len) # 4800,77
-            if calibrate_kpos2 or calibrate_kneg2:
-                k2_scores=attn_weights[is_keyword_tokens2].view(bsz * self.num_heads, tgt_len) # 4800,77
-
-
-            if calibrate_ppos1 or calibrate_pneg1:
-                p1_scores=attn_weights[is_prior1].view(bsz * self.num_heads, tgt_len) # 4800,77
-            if calibrate_ppos2 or calibrate_pneg2:
-                p2_scores=attn_weights[is_prior2].view(bsz * self.num_heads, tgt_len) # 4800,77
-        
-            if calibrate_kneg1:
-                # k1 - neg
-                print('calibrate_kneg1')
-                k1_min_scores=torch.min(k1_scores,dim=-1,keepdim=True)[0] # 4800,1
-                k1_p2_scores=k1_scores[is_prior2].view(bsz * self.num_heads,1)# 4800,1
-                offsets_k1_p2=torch.abs(k1_p2_scores-k1_min_scores)
-                k1_p2_scores=k1_p2_scores.view(bsz * self.num_heads,1)-(offsets_k1_p2*calibrate_kneg)
-                k1_scores[is_prior2]=k1_p2_scores.view(bsz * self.num_heads)
-
-
-            if calibrate_kneg2:   
-                # k2 - neg
-                print('calibrate_kneg2')
-                k2_min_scores=torch.min(k2_scores,dim=-1,keepdim=True)[0] # 4800,1
-                k2_p1_scores=k2_scores[is_prior1].view(bsz * self.num_heads,1) # 4800,1
-                offsets_k2_p1=torch.abs(k2_p1_scores-k2_min_scores)
-                k2_p1_scores=k2_p1_scores.view(bsz * self.num_heads,1)-(offsets_k2_p1*calibrate_kneg)
-                k2_scores[is_prior1]=k2_p1_scores.view(bsz * self.num_heads)
-
-            if calibrate_pneg1:
-                # p1 - neg
-                print('calibrate_pneg1')
-                p1_min_scores=torch.min(p1_scores,dim=-1,keepdim=True)[0] # 4800,1
-                p1_k2_scores=p1_scores[is_keyword_tokens2].view(bsz * self.num_heads,1) # 4800,1
-                offsets_p1_k2=torch.abs(p1_k2_scores-p1_min_scores)
-                p1_k2_scores=p1_k2_scores.view(bsz * self.num_heads,1)-(offsets_p1_k2*calibrate_pneg1)
-                p1_scores[is_keyword_tokens2]=p1_k2_scores.view(bsz * self.num_heads)
-
-            if calibrate_pneg2:
-                # p2 - neg
-                print('calibrate_pneg2')
-                p2_k1_scores=p2_scores[is_keyword_tokens1].view(bsz * self.num_heads,1) # 4800,1
-                p2_min_scores=torch.min(p2_scores,dim=-1,keepdim=True)[0] # 4800,1
-                offsets_p2_k1=torch.abs(p2_k1_scores-p2_min_scores)
-                p2_k1_scores=p2_k1_scores.view(bsz * self.num_heads,1)-(offsets_p2_k1*calibrate_pneg2)
-                p2_scores[is_keyword_tokens1]=p2_k1_scores.view(bsz * self.num_heads)
-
-                # # p1 - neg
-                # p1_min_scores=torch.min(p1_scores,dim=-1,keepdim=True)[0] # 4800,1
-                # p1_p2_scores=p1_scores[is_prior2].view(bsz * self.num_heads,1) # 4800,1
-                # offsets_p1_p2=torch.abs(p1_p2_scores-p1_min_scores)
-                # # p2 - neg
-                # p2_p1_scores=p2_scores[is_prior1].view(bsz * self.num_heads,1) # 4800,1
-                # p2_min_scores=torch.min(p2_scores,dim=-1,keepdim=True)[0] # 4800,1
-                # offsets_p2_p1=torch.abs(p2_p1_scores-p2_min_scores)
-                # # # calibrate scores
-                # # p1/p2
-                # p1_p2_scores=p1_p2_scores.view(bsz * self.num_heads,1)-(offsets_p1_p2*calibrate_pneg)
-                # p1_scores[is_prior2]=p1_p2_scores.view(bsz * self.num_heads)
-                # p2_p1_scores=p2_p1_scores.view(bsz * self.num_heads,1)-(offsets_p2_p1*calibrate_pneg)
-                # p2_scores[is_prior1]=p2_p1_scores.view(bsz * self.num_heads)
-
-                
-            if calibrate_kpos1:
-                # k1 - pos
-                print('calibrate_kpos1')
-                k1_max_scores=torch.max(k1_scores,dim=-1,keepdim=True)[0] # 4800,1
-                k1_prior1_scores=k1_scores[is_prior1].view(bsz * self.num_heads,1)# 4800,1
-                offsets_k1_prior1=torch.abs(k1_max_scores-k1_prior1_scores)
-                k1_prior1_scores=k1_prior1_scores.view(bsz * self.num_heads,1)+(offsets_k1_prior1*calibrate_kpos1)
-                print(k1_prior1_scores,'k1_prior1_scores')
-                k1_scores[is_prior1]=k1_prior1_scores.view(bsz * self.num_heads)
-
-            if calibrate_kpos2:
-                # k2 - pos
-                print('calibrate_kpos2')
-                k2_max_scores=torch.max(k2_scores,dim=-1,keepdim=True)[0] # 4800,1
-                k2_prior2_scores=k2_scores[is_prior2].view(bsz * self.num_heads,1) # 4800,1
-                offsets_k2_prior2=torch.abs(k2_max_scores-k2_prior2_scores)
-                k2_prior2_scores=k2_prior2_scores.view(bsz * self.num_heads,1)+(offsets_k2_prior2*calibrate_kpos2)
-                k2_scores[is_prior2]=k2_prior2_scores.view(bsz * self.num_heads)
-
-            if calibrate_ppos1:
-                # p1 - pos
-                print('calibrate_ppos1')
-                p1_max_scores=torch.max(p1_scores,dim=-1,keepdim=True)[0] # 4800,1
-                p1_k1_scores=p1_scores[is_keyword_tokens1].view(bsz * self.num_heads,1) # 4800,1
-                offsets_p1_k1=torch.abs(p1_max_scores-p1_k1_scores)
-                p1_k1_scores=p1_k1_scores.view(bsz * self.num_heads,1)+(offsets_p1_k1*calibrate_ppos1)
-                p1_scores[is_keyword_tokens1]=p1_k1_scores.view(bsz * self.num_heads)
-
-            if calibrate_ppos2:
-                # p2 - pos
-                print('calibrate_ppos2')
-                p2_max_scores=torch.max(p2_scores,dim=-1,keepdim=True)[0] # 4800,1
-                p2_k2_scores=p2_scores[is_keyword_tokens2].view(bsz * self.num_heads,1) # 4800,1
-                offsets_p2_k2=torch.abs(p2_max_scores-p2_k2_scores)
-                p2_k2_scores=p2_k2_scores.view(bsz * self.num_heads,1)+(offsets_p2_k2*calibrate_ppos2)
-                p2_scores[is_keyword_tokens2]=p2_k2_scores.view(bsz * self.num_heads)
-
-
-        
-            if (calibrate_kpos1+calibrate_kneg1):
-                # # k1/k2
-                k1_scores=k1_scores.view(bsz * self.num_heads, tgt_len)
-                attn_weights[is_keyword_tokens1]=k1_scores
-                attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-                print(torch.sum(attn_weights),'after keyword1')
-
-            if (calibrate_kpos2+calibrate_kneg2):
-                k2_scores=k2_scores.view(bsz * self.num_heads, tgt_len)
-                attn_weights[is_keyword_tokens2]=k2_scores
-                attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-                # print(torch.sum(attn_weights),'after keyword2')
-
-            if (calibrate_ppos1+calibrate_pneg1):
-                # p1/p2
-                p1_scores=p1_scores.view(bsz * self.num_heads, tgt_len)
-                attn_weights[is_prior1]=p1_scores
-                attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-                # print(torch.sum(attn_weights),'after prior1')
-
-            if (calibrate_ppos2+calibrate_pneg2):
-                p2_scores=p2_scores.view(bsz * self.num_heads, tgt_len)
-                attn_weights[is_prior2]=p2_scores
-                attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-                # print(torch.sum(attn_weights),'after prior2')
-
-            
-
-        # HERE
-        # torch.Size([4800, 77, 64]) value_states.shape
-        # torch.Size([4800, 77, 64]) key_states.shape
-        # torch.Size([4800, 77, 64]) query_states.shape
-        # torch.Size([4800, 77, 77]) attn_weights.shape
-
-
         if attn_weights.size() != (bsz * self.num_heads, tgt_len, src_len):
-            raise ValueError(f"Attention weights should be of size {(bsz * self.num_heads, tgt_len, src_len)}, but is"
-                f" {attn_weights.size()}")
+            raise ValueError(
+                f"Attention weights should be of size {(bsz * self.num_heads, tgt_len, src_len)}, but is"
+                f" {attn_weights.size()}"
+            )
 
         # apply the causal_attention_mask first
         if causal_attention_mask is not None:
@@ -484,29 +320,27 @@ class CLIPAttention(nn.Module):
             attn_weights = attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
 
         if attention_mask is not None:
-            # print('HERE')
             if attention_mask.size() != (bsz, 1, tgt_len, src_len):
                 raise ValueError(
                     f"Attention mask should be of size {(bsz, 1, tgt_len, src_len)}, but is {attention_mask.size()}"
                 )
             attn_weights = attn_weights.view(bsz, self.num_heads, tgt_len, src_len) + attention_mask
             attn_weights = attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
-        
+
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
-        # print(attn_weights.shape,'attn_weights.shape')
+
         if output_attentions:
             # this operation is a bit akward, but it's required to
             # make sure that attn_weights keeps its gradient.
             # In order to do so, attn_weights have to reshaped
             # twice and have to be reused in the following
-            attn_weights_reshaped = attn_weights.view(bsz, self.num_heads, tgt_len, src_len) #4800,77,77 -> 400,12,77,77
+            attn_weights_reshaped = attn_weights.view(bsz, self.num_heads, tgt_len, src_len)
             attn_weights = attn_weights_reshaped.view(bsz * self.num_heads, tgt_len, src_len)
         else:
             attn_weights_reshaped = None
 
-
-        
         attn_probs = nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
+
         attn_output = torch.bmm(attn_probs, value_states)
 
         if attn_output.size() != (bsz * self.num_heads, tgt_len, self.head_dim):
@@ -554,14 +388,6 @@ class CLIPEncoderLayer(nn.Module):
         attention_mask: torch.Tensor,
         causal_attention_mask: torch.Tensor,
         output_attentions: Optional[bool] = False,
-        # added
-        is_keyword_tokens1=None,
-        is_keyword_tokens2=None,
-        is_prior1=None,
-        is_prior2=None,
-        attn_mod_params=None,
-        # added
-
     ) -> Tuple[torch.FloatTensor]:
         """
         Args:
@@ -581,12 +407,6 @@ class CLIPEncoderLayer(nn.Module):
             attention_mask=attention_mask,
             causal_attention_mask=causal_attention_mask,
             output_attentions=output_attentions,
-            is_keyword_tokens1=is_keyword_tokens1,
-            is_keyword_tokens2=is_keyword_tokens2,
-            is_prior1=is_prior1,
-            is_prior2=is_prior2,
-            attn_mod_params=attn_mod_params,
-
         )
         hidden_states = residual + hidden_states
 
@@ -634,7 +454,9 @@ class CLIPPreTrainedModel(PreTrainedModel):
             nn.init.normal_(module.out_proj.weight, std=out_proj_std)
         elif isinstance(module, CLIPMLP):
             factor = self.config.initializer_factor
-            in_proj_std = (module.config.hidden_size**-0.5) * ((2 * module.config.num_hidden_layers) ** -0.5) * factor
+            in_proj_std = (
+                (module.config.hidden_size**-0.5) * ((2 * module.config.num_hidden_layers) ** -0.5) * factor
+            )
             fc_std = (2 * module.config.hidden_size) ** -0.5 * factor
             nn.init.normal_(module.fc1.weight, std=fc_std)
             nn.init.normal_(module.fc2.weight, std=in_proj_std)
@@ -657,17 +479,16 @@ class CLIPPreTrainedModel(PreTrainedModel):
                 module.text_projection.weight,
                 std=self.config.hidden_size**-0.5 * self.config.initializer_factor,
             )
-        elif isinstance(module, CLIPForImageClassification):
-            nn.init.normal_(
-                module.classifier.weight,
-                std=self.config.vision_config.hidden_size**-0.5 * self.config.initializer_factor,
-            )
 
         if isinstance(module, nn.LayerNorm):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)
         if isinstance(module, nn.Linear) and module.bias is not None:
             module.bias.data.zero_()
+
+    def _set_gradient_checkpointing(self, module, value=False):
+        if isinstance(module, CLIPEncoder):
+            module.gradient_checkpointing = value
 
 
 CLIP_START_DOCSTRING = r"""
@@ -793,15 +614,12 @@ class CLIPEncoder(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-        # added
-        is_keyword_tokens1: Optional[bool] = None,
-        is_keyword_tokens2: Optional[bool] = None,
-        non_keyword_idxs: Optional[bool] = None,
-        is_prior1: Optional[bool] = None,
-        is_prior2: Optional[bool] = None,
-        attn_mod_params=None,
-        # added
-
+        is_keyword_tokens1=None,
+        is_keyword_tokens2=None,
+        inj_embeddings1=None,
+        inj_embeddings2=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> Union[Tuple, BaseModelOutput]:
         r"""
         Args:
@@ -832,26 +650,32 @@ class CLIPEncoder(nn.Module):
             return_dict (`bool`, *optional*):
                 Whether or not to return a [`~utils.ModelOutput`] instead of a plain tuple.
         """
-        
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
-        output_hidden_states = (output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states)
+        output_hidden_states = (
+            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
         encoder_states = () if output_hidden_states else None
         all_attentions = () if output_attentions else None
-        keywords_similarities= [] if (output_attentions)  else None
-        nonkey_similarities= [] if output_attentions else None
+
         hidden_states = inputs_embeds
         for idx, encoder_layer in enumerate(self.layers):
-            
             if output_hidden_states:
                 encoder_states = encoder_states + (hidden_states,)
             if self.gradient_checkpointing and self.training:
-                layer_outputs = self._gradient_checkpointing_func(
-                    encoder_layer.__call__,
+
+                def create_custom_forward(module):
+                    def custom_forward(*inputs):
+                        return module(*inputs, output_attentions)
+
+                    return custom_forward
+
+                layer_outputs = torch.utils.checkpoint.checkpoint(
+                    create_custom_forward(encoder_layer),
                     hidden_states,
                     attention_mask,
                     causal_attention_mask,
-                    output_attentions,
                 )
             else:
                 layer_outputs = encoder_layer(
@@ -859,36 +683,39 @@ class CLIPEncoder(nn.Module):
                     attention_mask,
                     causal_attention_mask,
                     output_attentions=output_attentions,
-                    is_keyword_tokens1=is_keyword_tokens1,
-                    is_keyword_tokens2=is_keyword_tokens2,
-                    is_prior1=is_prior1,
-                    is_prior2=is_prior2,
-                    attn_mod_params=attn_mod_params,
-
                 )
 
             hidden_states = layer_outputs[0]
 
             if output_attentions:
-                # torch.Size([400, 12, 77, 77]) layer_outputs[1].shape
                 all_attentions = all_attentions + (layer_outputs[1],)
-
-
-        # 12 len(all_attentions)
-        # 12 len(self.layers)
-        
 
         if output_hidden_states:
             encoder_states = encoder_states + (hidden_states,)
 
         if not return_dict:
             return tuple(v for v in [hidden_states, encoder_states, all_attentions] if v is not None)
-        
         return BaseModelOutput(
-            last_hidden_state=hidden_states, hidden_states=encoder_states, attentions=all_attentions,
-            keywords_similarities=keywords_similarities,
-            nonkey_similarities=nonkey_similarities,
+            last_hidden_state=hidden_states, hidden_states=encoder_states, attentions=all_attentions
         )
+
+
+# Copied from transformers.models.bart.modeling_bart._make_causal_mask
+def _make_causal_mask(
+    input_ids_shape: torch.Size, dtype: torch.dtype, device: torch.device, past_key_values_length: int = 0
+):
+    """
+    Make causal mask used for bi-directional self-attention.
+    """
+    bsz, tgt_len = input_ids_shape
+    mask = torch.full((tgt_len, tgt_len), torch.finfo(dtype).min, device=device)
+    mask_cond = torch.arange(mask.size(-1), device=device)
+    mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
+    mask = mask.to(dtype)
+
+    if past_key_values_length > 0:
+        mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)
+    return mask[None, None, :, :].expand(bsz, 1, tgt_len, tgt_len + past_key_values_length)
 
 
 class CLIPTextTransformer(nn.Module):
@@ -913,16 +740,12 @@ class CLIPTextTransformer(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-        mask_idxs=None,
-        mask_embedding=None,
         is_keyword_tokens1=None,
         is_keyword_tokens2=None,
         inj_embeddings1=None,
         inj_embeddings2=None,
-        non_keyword_idxs=None,
-        is_prior1=None,
-        is_prior2=None,
-        attn_mod_params=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> Union[Tuple, BaseModelOutputWithPooling]:
         r"""
         Returns:
@@ -940,22 +763,23 @@ class CLIPTextTransformer(nn.Module):
         input_shape = input_ids.size()
         input_ids = input_ids.view(-1, input_shape[-1])
 
-        hidden_states = self.embeddings(input_ids=input_ids, position_ids=position_ids)
-        if mask_idxs is not None and mask_embedding is not None:
-            hidden_states[mask_idxs]=mask_embedding
-        if is_keyword_tokens1 is not None and inj_embeddings1 is not None:
-            hidden_states[is_keyword_tokens1]=inj_embeddings1
-        if is_keyword_tokens2 is not None and inj_embeddings2 is not None:
-            hidden_states[is_keyword_tokens2]=inj_embeddings2
+        hidden_states = self.embeddings(input_ids=input_ids, 
+                                        is_keyword_tokens1=is_keyword_tokens1,
+                                        is_keyword_tokens2=is_keyword_tokens2,
+                                        inj_embeddings1=inj_embeddings1,
+                                        inj_embeddings2=inj_embeddings2,
+                                        mask_embedding=mask_embedding,
+                                        mask_idxs=mask_idxs,
+                                        position_ids=position_ids)
+
         # CLIP's text model uses causal mask, prepare it here.
         # https://github.com/openai/CLIP/blob/cfcffb90e69f37bf2ff1e988237a0fbe41f33c04/clip/model.py#L324
-        causal_attention_mask = _create_4d_causal_attention_mask(
-            input_shape, hidden_states.dtype, device=hidden_states.device
-        )
+        causal_attention_mask = _make_causal_mask(input_shape, hidden_states.dtype, device=hidden_states.device)
         # expand attention_mask
         if attention_mask is not None:
             # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
-            attention_mask = _prepare_4d_attention_mask(attention_mask, hidden_states.dtype)
+            attention_mask = _expand_mask(attention_mask, hidden_states.dtype)
+
         encoder_outputs = self.encoder(
             inputs_embeds=hidden_states,
             attention_mask=attention_mask,
@@ -965,10 +789,10 @@ class CLIPTextTransformer(nn.Module):
             return_dict=return_dict,
             is_keyword_tokens1=is_keyword_tokens1,
             is_keyword_tokens2=is_keyword_tokens2,
-            non_keyword_idxs=non_keyword_idxs,
-            is_prior1=is_prior1,
-            is_prior2=is_prior2,
-            attn_mod_params=attn_mod_params,
+            inj_embeddings1=inj_embeddings1,
+            inj_embeddings2=inj_embeddings2,
+            mask_embedding=mask_embedding,
+            mask_idxs=mask_idxs,
         )
 
         last_hidden_state = encoder_outputs[0]
@@ -990,7 +814,6 @@ class CLIPTextTransformer(nn.Module):
             pooled_output = last_hidden_state[
                 torch.arange(last_hidden_state.shape[0], device=last_hidden_state.device),
                 # We need to get the first position of `eos_token_id` value (`pad_token_ids` might equal to `eos_token_id`)
-                # Note: we assume each sequence (along batch dim.) contains an  `eos_token_id` (e.g. prepared by the tokenizer)
                 (input_ids.to(dtype=torch.int, device=last_hidden_state.device) == self.eos_token_id)
                 .int()
                 .argmax(dim=-1),
@@ -998,7 +821,7 @@ class CLIPTextTransformer(nn.Module):
 
         if not return_dict:
             return (last_hidden_state, pooled_output) + encoder_outputs[1:]
-          
+
         return BaseModelOutputWithPooling(
             last_hidden_state=last_hidden_state,
             pooler_output=pooled_output,
@@ -1038,16 +861,12 @@ class CLIPTextModel(CLIPPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-        mask_embedding=None,
-        mask_idxs=None,
         is_keyword_tokens1=None,
         is_keyword_tokens2=None,
         inj_embeddings1=None,
         inj_embeddings2=None,
-        non_keyword_idxs=False,
-        is_prior1=None,
-        is_prior2=None,
-        attn_mod_params=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> Union[Tuple, BaseModelOutputWithPooling]:
         r"""
         Returns:
@@ -1067,6 +886,7 @@ class CLIPTextModel(CLIPPreTrainedModel):
         >>> pooled_output = outputs.pooler_output  # pooled (EOS token) states
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
         return self.text_model(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -1074,17 +894,12 @@ class CLIPTextModel(CLIPPreTrainedModel):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
-            mask_embedding=mask_embedding,
-            mask_idxs=mask_idxs,
             is_keyword_tokens1=is_keyword_tokens1,
             is_keyword_tokens2=is_keyword_tokens2,
             inj_embeddings1=inj_embeddings1,
             inj_embeddings2=inj_embeddings2,
-            non_keyword_idxs=non_keyword_idxs,
-            is_prior1=is_prior1,
-            is_prior2=is_prior2,
-            attn_mod_params=attn_mod_params,
-
+            mask_embedding=mask_embedding,
+            mask_idxs=mask_idxs,
         )
 
 
@@ -1153,7 +968,6 @@ class CLIPVisionTransformer(nn.Module):
 class CLIPVisionModel(CLIPPreTrainedModel):
     config_class = CLIPVisionConfig
     main_input_name = "pixel_values"
-    _no_split_modules = ["CLIPEncoderLayer"]
 
     def __init__(self, config: CLIPVisionConfig):
         super().__init__(config)
@@ -1208,7 +1022,6 @@ class CLIPVisionModel(CLIPPreTrainedModel):
 @add_start_docstrings(CLIP_START_DOCSTRING)
 class CLIPModel(CLIPPreTrainedModel):
     config_class = CLIPConfig
-    _no_split_modules = ["CLIPTextEmbeddings", "CLIPEncoderLayer", "CLIPVisionEmbeddings"]
 
     def __init__(self, config: CLIPConfig):
         super().__init__(config)
@@ -1410,9 +1223,7 @@ class CLIPModel(CLIPPreTrainedModel):
 
         # cosine similarity as logits
         logit_scale = self.logit_scale.exp()
-        logits_per_text = torch.matmul(text_embeds, image_embeds.t().to(text_embeds.device)) * logit_scale.to(
-            text_embeds.device
-        )
+        logits_per_text = torch.matmul(text_embeds, image_embeds.t()) * logit_scale
         logits_per_image = logits_per_text.t()
 
         loss = None
@@ -1590,106 +1401,4 @@ class CLIPVisionModelWithProjection(CLIPPreTrainedModel):
             last_hidden_state=vision_outputs.last_hidden_state,
             hidden_states=vision_outputs.hidden_states,
             attentions=vision_outputs.attentions,
-        )
-
-
-@add_start_docstrings(
-    """
-    CLIP vision encoder with an image classification head on top (a linear layer on top of the pooled final hidden states of
-    the patch tokens) e.g. for ImageNet.
-    """,
-    CLIP_START_DOCSTRING,
-)
-class CLIPForImageClassification(CLIPPreTrainedModel):
-    main_input_name = "pixel_values"
-
-    def __init__(self, config: CLIPConfig) -> None:
-        super().__init__(config)
-
-        self.num_labels = config.num_labels
-        self.vision_model = CLIPVisionTransformer(config.vision_config)
-
-        # Classifier head
-        self.classifier = (
-            nn.Linear(config.vision_config.hidden_size, config.num_labels) if config.num_labels > 0 else nn.Identity()
-        )
-
-        # Initialize weights and apply final processing
-        self.post_init()
-
-    @add_start_docstrings_to_model_forward(CLIP_INPUTS_DOCSTRING)
-    @add_code_sample_docstrings(
-        checkpoint=_IMAGE_CLASS_CHECKPOINT,
-        output_type=ImageClassifierOutput,
-        config_class=_CONFIG_FOR_DOC,
-        expected_output=_IMAGE_CLASS_EXPECTED_OUTPUT,
-    )
-    def forward(
-        self,
-        pixel_values: Optional[torch.Tensor] = None,
-        labels: Optional[torch.Tensor] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
-    ) -> Union[tuple, ImageClassifierOutput]:
-        r"""
-        labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
-            Labels for computing the image classification/regression loss. Indices should be in `[0, ...,
-            config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
-            `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
-        """
-        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
-        output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
-        )
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
-        outputs = self.vision_model(
-            pixel_values,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
-        )
-
-        sequence_output = outputs[0]
-
-        # average pool the patch tokens
-        sequence_output = torch.mean(sequence_output[:, 1:, :], dim=1)
-        # apply classifier
-        logits = self.classifier(sequence_output)
-
-        loss = None
-        if labels is not None:
-            # move labels to correct device to enable model parallelism
-            labels = labels.to(logits.device)
-            if self.config.problem_type is None:
-                if self.num_labels == 1:
-                    self.config.problem_type = "regression"
-                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
-                    self.config.problem_type = "single_label_classification"
-                else:
-                    self.config.problem_type = "multi_label_classification"
-
-            if self.config.problem_type == "regression":
-                loss_fct = MSELoss()
-                if self.num_labels == 1:
-                    loss = loss_fct(logits.squeeze(), labels.squeeze())
-                else:
-                    loss = loss_fct(logits, labels)
-            elif self.config.problem_type == "single_label_classification":
-                loss_fct = CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-            elif self.config.problem_type == "multi_label_classification":
-                loss_fct = BCEWithLogitsLoss()
-                loss = loss_fct(logits, labels)
-
-        if not return_dict:
-            output = (logits,) + outputs[2:]
-            return ((loss,) + output) if loss is not None else output
-
-        return ImageClassifierOutput(
-            loss=loss,
-            logits=logits,
-            hidden_states=outputs.hidden_states,
-            attentions=outputs.attentions,
         )
