@@ -127,7 +127,7 @@ for seed in [8881,2940,7777,1234]:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=15 \\\n'
+            command+='--eval_batch_size=5 \\\n'
             command+='--num_images_per_prompt=15 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed={} \\\n'.format(seed)
