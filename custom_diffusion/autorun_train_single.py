@@ -8,9 +8,9 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # 'pet_cat1':('cat','pet'),
     # 'dog6': ('dog','pet'),
-    'vase':('vase','nonliving'),
-    'barn': ('barn','building'),
-    'wooden_pot':('pot','nonliving'),
+    # 'vase':('vase','nonliving'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
     'dog3': ('dog','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'backpack':('backpack','nonliving'),
@@ -48,6 +48,7 @@ pps=[1]
 mlm_priors=[0]
 
 # for idx,concept in enumerate(list(info_map.keys())):
+num_devices=1
 noaug=0
 idx=0
 train_te=0
@@ -59,9 +60,11 @@ lambda_mlm_list=[
             # 0.001,
             # 1
             ]
+
+
 mask_prob_list=[0.25]
-for seed in [8881,2940]:
-    dir_name='single_seed{}'.format(seed)
+for seed in [8881,2940,1234,7777]:
+    dir_name='sgpu_seed{}'.format(seed)
     for mask_prob in mask_prob_list:
         mprob_str=float_to_str(mask_prob)
         for lambda_mlm in lambda_mlm_list:
@@ -92,13 +95,13 @@ for seed in [8881,2940]:
                         else:
                             print(device_idx,'not available')
                         idx+=1
-                    if len(idle_devices)>=2:
+                    if len(idle_devices)>=num_devices:
                         idx+=1
                         break
                     print(run_name,'sleep')
                     time.sleep(delay)
                 log_path=os.path.join(log_dir,run_name+'.out')
-                running_devices=','.join(idle_devices[:2])
+                running_devices=','.join(idle_devices[:num_devices])
                 print(run_name,running_devices)
                 command='export CUDA_VISIBLE_DEVICES={};'.format(running_devices)
                 command+='accelerate launch --main_process_port {} train_custom_diffusion_single.py \\\n'.format(ports[idx],idx)
@@ -111,7 +114,7 @@ for seed in [8881,2940]:
                 command+='--resolution=512 \\\n'
                 command+='--train_batch_size=2 \\\n'
                 command+='--gradient_accumulation_steps=1 \\\n'
-                command+='--max_train_steps=251 \\\n'
+                command+='--max_train_steps=501 \\\n'
                 command+='--validation_steps=100 \\\n'
                 # command+='--checkpoints_total_limit=1 \\\n'
                 command+='--checkpointing_steps=50 \\\n'
