@@ -195,6 +195,10 @@ def main():
     # 8.525119902624288 avg_norm 2.9221171189419692e-06 min_norm 619.1633911132812 max_norm
     mask_embeds=token_embeds[mask_token_ids]
     mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*avg_norm
+    with torch.no_grad():
+        for token_id in mask_token_ids:
+            token_embeds[token_id] = mask_embeds.clone()
+    mask_embeds_copy=mask_embeds.detach().clone().to(accelerator.device)
 
     # For verification
     sample_text='a sign neuripsdfs {}'.format(args.mask_tokens*3)
@@ -431,6 +435,7 @@ def main():
 
             # clip-text
             bsz=len(input_ids)
+            mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
             mask_embeds_normlized=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
             clip_text_embedding_masked = text_encoder(input_ids_masked,
                                             mask_embedding=mask_embeds_normlized,
@@ -543,7 +548,7 @@ def main():
                 if (global_step) % (args.save_steps) == 0:
                     if accelerator.is_main_process:
                         
-                        # mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
+                        mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
                         if global_step>-1 and (not args.debug):
                             if args.checkpoints_total_limit >0:
                                 checkpoints = os.listdir(ckpt_dir)
@@ -577,9 +582,12 @@ def main():
 
                 logs = {"loss_mlm": loss_mlm.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 with torch.no_grad():
-                    # mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
-                    masked_embeds_norm=torch.norm(mask_embeds_normlized,p=1).detach()
+                    mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
+                    masked_embeds_norm=torch.norm(mask_embeds,p=1).detach()
                     logs['masked_norm']=masked_embeds_norm.item()
+                    # print(mask_embeds_copy.shape,'mask_embeds_copy.shape')
+                    # print(mask_embeds.shape,'mask_embeds.shape')
+                    logs['cos_sim']=cos_sim(mask_embeds_copy,mask_embeds).item()
                 if args.report_to=='wandb' and accelerator.is_main_process:
                     wandb.log(logs)
                 progress_bar.set_postfix(**logs)
