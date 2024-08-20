@@ -238,8 +238,10 @@ def main():
         os.system('cp packages {} -R'.format(codepath))
         # copy clip
         os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
-        shutil.copy('clip_src/modeling_clip.py {}/clip_src/modeling_clip.py'.format(codepath))
-        shutil.copy('clip_src/modeling_outputs.py {}/clip_src/modeling_outputs.py'.format(codepath))
+        target = os.readlink('clip_src/modeling_clip.py')
+        shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
+        target = os.readlink('clip_src/modeling_outputs.py')
+        shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
         # copy clip
         sample_dir=os.path.join(exp_dir,'samples')
         ckpt_dir=os.path.join(exp_dir,'checkpoints')
