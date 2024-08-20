@@ -21,9 +21,9 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v2.py \
   --run_name='sd1_contextnetv2_nonpadding_1e4' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
-  --whole_word_mask=0 \
-  --report_to="wandb" \
-  --project_name='ContextNetV2 Train' 
+  --whole_word_mask=0 
+  # --report_to="wandb" \
+  # --project_name='ContextNetV2 Train' 
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
