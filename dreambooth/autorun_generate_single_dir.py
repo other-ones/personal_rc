@@ -44,6 +44,7 @@ idx=0
 # dirs=['multi','single']
 seed=2940
 dirs=['single_seed{}'.format(seed)]
+num_images_per_prompt=8
 for dir in dirs:
     dir_path=os.path.join('saved_models/dreambooth_models',dir)
     log_dir='logs/generate/{}'.format(dir)
@@ -63,6 +64,7 @@ for dir in dirs:
                 print(resume_unet_path,'does not exist')
                 continue
             exp_name=resume_unet_path.split('/')[-4]
+            exp_name+='_s1000'
             output_dir=os.path.join('results/{}/{}'.format(dir,concept))
             exp_path=os.path.join(output_dir,exp_name)
             if os.path.exists(exp_path):
@@ -89,7 +91,7 @@ for dir in dirs:
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
             command+='--eval_batch_size=18 \\\n'
-            command+='--num_images_per_prompt=15 \\\n'
+            command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed={} \\\n'.format(seed)
             command+='--mask_tokens="[MASK]" \\\n'
