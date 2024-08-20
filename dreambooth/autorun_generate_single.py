@@ -16,12 +16,11 @@ info_map={
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
     'dog3': ('dog','pet'),
-    # 'flower1':('flower','flower'),
+    'flower1':('flower','flower'),
 
 }
-lambda_mlm=0.001
 
 
 import subprocess as sp
@@ -90,7 +89,7 @@ for dir in dirs:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=18 \\\n'
+            command+='--eval_batch_size=15 \\\n'
             command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed={} \\\n'.format(seed)

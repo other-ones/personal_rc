@@ -347,6 +347,52 @@ def main(args):
        'A surreal landscape, {}'.format(placeholder),
        'A close up shot of the {}'.format(placeholder),
        'Top view of the {}'.format(placeholder)]*args.num_images_per_prompt
+    elif args.prompt_type=='flower':
+        [
+            "Photo of {}".format(placeholder),
+            "{} growing in the desert".format(placeholder),
+            "{} at a beach with a view of the seashore".format(placeholder),
+            "{} on top of a mountain with sunrise in the background".format(placeholder),
+            "a bouquet of {}".format(placeholder),
+            "A garden of {}".format(placeholder),
+            "{} in a violet vase on a table".format(placeholder),
+            "a vase filled with {} on a table".format(placeholder),
+            "Bouquet of {} and roses".format(placeholder),
+            "{} and a chocolate cake on the table".format(placeholder),
+            "{} oil painting ghibli inspired".format(placeholder),
+            "{} painting by artist claude monet".format(placeholder),
+            "A digital illustration of {}".format(placeholder),
+            "Georgia O'Keeffe style {} painting".format(placeholder),
+            "a watercolor painting of {} and a teapot on the table".format(placeholder),
+            "{} with violet color petals".format(placeholder),
+            "a sky blue color {}".format(placeholder),
+            "a red color {}".format(placeholder),
+            "Dried up {}".format(placeholder),
+            "a dahlia in the style of {}".format(placeholder),
+            ]
+    elif args.prompt_type=='sunglasses':
+        [
+            "photo of a {}".format(placeholder),
+            "{} on top of a vintage car in the countryside".format(placeholder),
+            "A pair of {} rest on a bookshelf".format(placeholder),
+            "{} lying on a study table".format(placeholder),
+            "close shot of {} on the sandy beach with a view of the seashore".format(placeholder),
+            "A futuristic robot wearing {}".format(placeholder),
+            "A person wearing {}".format(placeholder),
+            "A chef wearing {} prepares a gourmet meal".format(placeholder),
+            "A scientist wearing {} examines a test tube".format(placeholder),
+            "A dog wearing {} on the porch".format(placeholder),
+            "A giraffe wearing {}".format(placeholder),
+            "{} painted in the style of andy warhol".format(placeholder),
+            "painting of {} by artist claude monet".format(placeholder),
+            "A digital illustration of {}".format(placeholder),
+            "a modern art piece of {}".format(placeholder),
+            "a watercolor painting of {}".format(placeholder),
+            "cool neon party cat in {}".format(placeholder),
+            "digital painting of a turtle wearing {}".format(placeholder),
+            "smart hedgehog in {}".format(placeholder),
+            "{} digital 3d render".format(placeholder),
+            ]
     else:
         assert False
     # batch_size=len(prompts)

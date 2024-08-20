@@ -11,15 +11,13 @@ info_map={
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
     'barn': ('barn','building'),
-
-
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
     'dog3': ('dog','pet'),
     'dog6': ('dog','pet'),
-    # 'flower1':('flower','flower'),
+    'flower1':('flower','flower'),
 
 }
 lambda_mlm=0.001
@@ -46,13 +44,13 @@ idx=0
 # dirs=['multi','single']
 seed=2940
 dir_name='single_seed{}'.format(seed)
-dir_path=os.path.join('saved_models',dir)
+dir_path=os.path.join('saved_models/ti_models',dir_name)
 log_dir='logs/generate/{}'.format(dir)
 os.makedirs(log_dir,exist_ok=True)    
 delay=30
 num_images_per_prompt=8
 concepts=os.listdir(dir_path)
-for concept in concepts:
+for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
     concept_path=os.path.join(dir_path,concept)
@@ -82,7 +80,7 @@ for concept in concepts:
                     break
             if found:
                 break
-            print(exp,'sleep',stat_idx,stat)
+            print(exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
             time.sleep(delay)
         print(exp_name,device_idx)
         log_path=os.path.join(log_dir,exp_name+'.out')
