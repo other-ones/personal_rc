@@ -7,3 +7,4 @@ git commit -m "update";
 git push origin main;
 cd "$current_dir"
 echo $current_dir
+# asdad

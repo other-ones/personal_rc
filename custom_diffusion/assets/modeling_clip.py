@@ -220,6 +220,12 @@ class CLIPTextEmbeddings(nn.Module):
         input_ids: Optional[torch.LongTensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
         inputs_embeds: Optional[torch.FloatTensor] = None,
+        is_keyword_tokens1=None,
+        is_keyword_tokens2=None,
+        inj_embeddings1=None,
+        inj_embeddings2=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> torch.Tensor:
         seq_length = input_ids.shape[-1] if input_ids is not None else inputs_embeds.shape[-2]
 
@@ -228,6 +234,19 @@ class CLIPTextEmbeddings(nn.Module):
 
         if inputs_embeds is None:
             inputs_embeds = self.token_embedding(input_ids)
+
+        # HERE
+        if inputs_embeds is None:
+            inputs_embeds = self.token_embedding(input_ids)
+        if mask_idxs is not None and mask_embedding is not None:
+            # print('here mask')
+            inputs_embeds[mask_idxs]=mask_embedding
+        if is_keyword_tokens1 is not None and inj_embeddings1 is not None:
+            # print('here keyword')
+            inputs_embeds[is_keyword_tokens1]=inj_embeddings1
+        if is_keyword_tokens2 is not None and inj_embeddings2 is not None:
+            inputs_embeds[is_keyword_tokens2]=inj_embeddings2
+
 
         position_embeddings = self.position_embedding(position_ids)
         embeddings = inputs_embeds + position_embeddings
@@ -595,6 +614,12 @@ class CLIPEncoder(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        is_keyword_tokens1=None,
+        is_keyword_tokens2=None,
+        inj_embeddings1=None,
+        inj_embeddings2=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> Union[Tuple, BaseModelOutput]:
         r"""
         Args:
@@ -715,6 +740,12 @@ class CLIPTextTransformer(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        is_keyword_tokens1=None,
+        is_keyword_tokens2=None,
+        inj_embeddings1=None,
+        inj_embeddings2=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> Union[Tuple, BaseModelOutputWithPooling]:
         r"""
         Returns:
@@ -732,7 +763,14 @@ class CLIPTextTransformer(nn.Module):
         input_shape = input_ids.size()
         input_ids = input_ids.view(-1, input_shape[-1])
 
-        hidden_states = self.embeddings(input_ids=input_ids, position_ids=position_ids)
+        hidden_states = self.embeddings(input_ids=input_ids, 
+                                        is_keyword_tokens1=is_keyword_tokens1,
+                                        is_keyword_tokens2=is_keyword_tokens2,
+                                        inj_embeddings1=inj_embeddings1,
+                                        inj_embeddings2=inj_embeddings2,
+                                        mask_embedding=mask_embedding,
+                                        mask_idxs=mask_idxs,
+                                        position_ids=position_ids)
 
         # CLIP's text model uses causal mask, prepare it here.
         # https://github.com/openai/CLIP/blob/cfcffb90e69f37bf2ff1e988237a0fbe41f33c04/clip/model.py#L324
@@ -749,6 +787,12 @@ class CLIPTextTransformer(nn.Module):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
+            is_keyword_tokens1=is_keyword_tokens1,
+            is_keyword_tokens2=is_keyword_tokens2,
+            inj_embeddings1=inj_embeddings1,
+            inj_embeddings2=inj_embeddings2,
+            mask_embedding=mask_embedding,
+            mask_idxs=mask_idxs,
         )
 
         last_hidden_state = encoder_outputs[0]
@@ -817,6 +861,12 @@ class CLIPTextModel(CLIPPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        is_keyword_tokens1=None,
+        is_keyword_tokens2=None,
+        inj_embeddings1=None,
+        inj_embeddings2=None,
+        mask_embedding=None,
+        mask_idxs=None,
     ) -> Union[Tuple, BaseModelOutputWithPooling]:
         r"""
         Returns:
@@ -844,6 +894,12 @@ class CLIPTextModel(CLIPPreTrainedModel):
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
+            is_keyword_tokens1=is_keyword_tokens1,
+            is_keyword_tokens2=is_keyword_tokens2,
+            inj_embeddings1=inj_embeddings1,
+            inj_embeddings2=inj_embeddings2,
+            mask_embedding=mask_embedding,
+            mask_idxs=mask_idxs,
         )
 
 
