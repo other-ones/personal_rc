@@ -82,7 +82,7 @@ for key in clip_score_dict:
         continue
     if 'resume' in key:
         step=int(key.split('_s')[-1])
-        if step<500:
+        if step>150:
             continue
     
     avg_clip_score=np.mean(clip_score_dict[key])

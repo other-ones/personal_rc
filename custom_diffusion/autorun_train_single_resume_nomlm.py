@@ -10,9 +10,9 @@ info_map={
     # 'cat1': ('cat','pet'),
     # 'pet_dog1':('dog','pet'),
     # 'dog6': ('dog','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'barn': ('barn','building'),
+    'vase':('vase','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'barn': ('barn','building'),
     'dog3': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
@@ -24,7 +24,7 @@ info_map={
 }
 lambda_mlm_list=[
             # 0.005,
-            0.002,
+            0.001,
             # 0.25,
             # 0.5,
             # 0.5,
@@ -67,7 +67,7 @@ lr_list=[2e-5]
 num_devices=2
 for seed in [8881,2940,7777,1234]:
     dir_name='single_seed{}'.format(seed)
-    for resume_step in [250]:
+    for resume_step in [150]:
         for mprob in [0.25]:
             mprob_str=float_to_str(mprob)
             mprob_str=mprob_str.replace('.','')
@@ -79,13 +79,14 @@ for seed in [8881,2940,7777,1234]:
                         lambda_mlm_str=lambda_mlm_str.replace('.','')
                         prior,category=info_map[concept]
                         run_name='custom'
-                        if lambda_mlm:
-                            run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-                            run_name+='_mprob{}'.format(mprob_str)
-                        else:
-                            run_name+="_nomlm_{}".format(concept)
+                        # if lambda_mlm:
+                        #     run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+                        #     run_name+='_mprob{}'.format(mprob_str)
+                        # else:
+                        run_name+="_nomlm_{}".format(concept)
                         run_name+='_lr{}'.format(lr_str)
                         run_name+='_resume{}'.format(resume_step)
+                        run_name+='_mlm{}'.format(lambda_mlm_str)
                         log_dir='logs/train/{}'.format(dir_name)
                         os.makedirs(log_dir,exist_ok=True)   
                         output_dir=os.path.join('saved_models/custom_diffusion/{}'.format(dir_name),concept)
@@ -109,16 +110,14 @@ for seed in [8881,2940,7777,1234]:
                             print(run_name,'sleep')
                             time.sleep(delay)
                         log_path=os.path.join(log_dir,run_name+'.out')
+                        print(log_path,'log_path')
                         running_devices=','.join(idle_devices[:num_devices])
                         # custom_mlm0001_vase_mprob025
-                        if lambda_mlm:
-                            resume_path=os.path.join("saved_models/custom_diffusion/{}/{}/custom_mlm{}_{}_mprob{}/checkpoints/checkpoint-{}/".format(dir_name,concept,lambda_mlm_str,concept,mprob_str,resume_step))
-                        else:
-                            resume_path=os.path.join("saved_models/custom_diffusion/{}/{}/custom_nomlm_{}/checkpoints/checkpoint-{}/".format(dir_name,concept,concept,resume_step))
+                        resume_path=os.path.join("saved_models/custom_diffusion/{}/{}/custom_nomlm_{}/checkpoints/checkpoint-{}/".format(dir_name,concept,concept,resume_step))
                         if not os.path.exists(resume_path):
                             print('{} resume path does not exists'.format(resume_path))
                             continue
-                        print(exp_path,running_devices)
+                        print(run_name,running_devices)
                         command='export CUDA_VISIBLE_DEVICES={};'.format(running_devices)
                         command+='accelerate launch --main_process_port {} train_custom_diffusion_single.py \\\n'.format(ports[idx])
                         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'

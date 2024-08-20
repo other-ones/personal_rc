@@ -60,8 +60,6 @@ lambda_mlm_list=[
             # 0.001,
             # 1
             ]
-
-
 mask_prob_list=[0.25]
 for seed in [8881,2940,1234,7777]:
     dir_name='sgpu_seed{}'.format(seed)

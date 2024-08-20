@@ -59,7 +59,7 @@ def get_gpu_memory():
     return memory_free_values
 
 
-target_step=250
+target_step=500
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -74,8 +74,8 @@ num_devices=1
 target_devices=[0,1,2,3,4,5,6,7]
 
 
-for seed in [8881,2940]:
-    dir_name='single_seed{}'.format(seed)
+for seed in [8881,2940,7777,1234]:
+    dir_name='sgpu_seed{}'.format(seed)
     dir_path=os.path.join('saved_models/custom_diffusion',dir_name)
     log_dir='logs/generate/{}'.format(dir_name)
     os.makedirs(log_dir,exist_ok=True)   
@@ -86,8 +86,8 @@ for seed in [8881,2940]:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
-            if 'nomlm' not in exp:
-                continue
+            # if 'nomlm' not in exp:
+            #     continue
             if 'resume' in exp:
                 continue
             prior,category=info_map[concept]

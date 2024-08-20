@@ -8,14 +8,14 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # qlab03
     # 'dog6': ('dog','pet'),
-    'vase':('vase','nonliving'),
+    # 'vase':('vase','nonliving'),
     # 'pet_cat1':('cat','pet'),
-    'wooden_pot':('pot','nonliving'),
+    # 'wooden_pot':('pot','nonliving'),
     # 'pet_dog1':('dog','pet'),
     'dog3': ('dog','pet'),
     # 'backpack':('backpack','nonliving'),
     # 'cat1': ('cat','pet'),
-    'barn': ('barn','building'),
+    # 'barn': ('barn','building'),
     # 'chair1': ('chair','nonliving'),
 
     # qlab01
@@ -74,7 +74,7 @@ for seed in [8881,2940]:
     dir_name='single_seed{}'.format(seed)
     num_devices=1
     target_devices=[0,1,2,3,4,5,6,7]
-    for target_step in [1000,500]:
+    for target_step in [500,1000,1500]:
         dir_path=os.path.join('saved_models/custom_diffusion',dir_name)
         log_dir='logs/generate/{}'.format(dir_name)
         os.makedirs(log_dir,exist_ok=True)    

@@ -974,6 +974,8 @@ def main(args):
                 #         accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
                 #             mask_token_ids
                 #         ] = mask_embeds
+
+                
                 if not args.train_text_encoder:
                     # only optimize the concept embedding -> other token's grad=0
                     if accelerator.num_processes > 1:
@@ -981,14 +983,11 @@ def main(args):
                     else:
                         grads_text_encoder = text_encoder.get_input_embeddings().weight.grad
                     # Get the index for tokens that we want to zero the grads for
+                    # zero grads except for the placeholder
                     index_grads_to_zero = torch.arange(len(tokenizer)) != placeholder_token_id1[0]
                     for i in range(1, len(placeholder_token_id1)):
-                        index_grads_to_zero = index_grads_to_zero & (
-                            torch.arange(len(tokenizer)) != placeholder_token_id1[i]
-                        )
-                    grads_text_encoder.data[index_grads_to_zero, :] = grads_text_encoder.data[
-                        index_grads_to_zero, :
-                    ].fill_(0)
+                        index_grads_to_zero = index_grads_to_zero & (torch.arange(len(tokenizer)) != placeholder_token_id1[i])
+                    grads_text_encoder.data[index_grads_to_zero, :] = grads_text_encoder.data[index_grads_to_zero, :].fill_(0)
 
                 
                 optimizer.step()

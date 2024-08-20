@@ -67,15 +67,17 @@ def extract_mlm_step(name):
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('--dir_path',type=str)
-    parser.add_argument('--keyword',type=str)
+    parser.add_argument('--keywords',type=str)
     parser.add_argument('--num_samples',type=int)
 
     # /home/twkim/project/textual_inversion/results/single_normalized/tmp
     args=parser.parse_args()
     dir_path=args.dir_path
-    keyword=args.keyword
+    keywords=args.keywords
     num_samples=args.num_samples
     concepts=os.listdir(dir_path)
+    if keywords is not None:
+        keywords=keywords.split('-')
     for concept in concepts:
         print(concept)
         concept_path=os.path.join(dir_path,concept)
@@ -86,9 +88,16 @@ if __name__ == "__main__":
         # exps = sorted(exps, key=extract_mlm_step)
         exps=sorted(exps)[::-1]
         for exp in exps:
-            if 'nomlm_{}_s250'.format(concept) not in exp:
-                if keyword is not None and (keyword not in exp):
+            if 'nomlm_{}_s250'.format(concept) not in exp and keywords is not None:
+                valid=True
+                for keyword in keywords:
+                    if keyword not in exp:
+                        valid=False
+                        break
+                if not valid:
                     continue
+                # if keyword is not None and (keyword not in exp):
+                #     continue
             exp_path=os.path.join(concept_path,exp)
             pred_root=os.path.join(exp_path,'generated')
             result_path=os.path.join(exp_path, 'clip.json')
