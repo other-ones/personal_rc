@@ -542,24 +542,29 @@ def main():
 
                 if (global_step) % (args.save_steps) == 0:
                     if accelerator.is_main_process:
-                        save_path_cls_net = (f"{ckpt_dir}/cls_net_{global_step}_ckpt.pt")
-                        save_path_mask_embeds = (f"{ckpt_dir}/mask_embeds_{global_step}_ckpt.pt")
-                        save_path_optimizer = (f"{ckpt_dir}/optimizer_{global_step}_ckpt.pt")
+                        
                         # mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
                         if global_step>-1 and (not args.debug):
-                            if args.checkpoints_total_limit is not None:
+                            if args.checkpoints_total_limit >0:
                                 checkpoints = os.listdir(ckpt_dir)
-                                print(checkpoints,'checkpoints')
-                                checkpoints = [d for d in checkpoints if d.endswith(".pt")]
-                                checkpoints = sorted(checkpoints, key=lambda x: int(x.split("_")[-2]))
+                                checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
+                                checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
+                                # before we save the new checkpoint, we need to have at _most_ `checkpoints_total_limit - 1` checkpoints
                                 if len(checkpoints) >= args.checkpoints_total_limit:
                                     num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
                                     removing_checkpoints = checkpoints[0:num_to_remove]
-                                    logger.info(f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints")
+                                    logger.info(
+                                        f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
+                                    )
                                     logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
                                     for removing_checkpoint in removing_checkpoints:
                                         removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
-                                        os.remove(removing_checkpoint)
+                                        shutil.rmtree(removing_checkpoint)
+                            save_path=os.path.join(ckpt_dir,f'checkpoint-{global_step}')
+                            os.makedirs(save_path,exist_ok=True)
+                            save_path_cls_net = (f"{save_path}/cls_net_{global_step}_ckpt.pt")
+                            save_path_mask_embeds = (f"{save_path}/mask_embeds_{global_step}_ckpt.pt")
+                            save_path_optimizer = (f"{save_path}/optimizer_{global_step}_ckpt.pt")
                             print(checkpoints,'checkpoints')
                             print(args.checkpoints_total_limit,'checkpoints_total_limit')
                             print(f"save weights {save_path_cls_net}")
