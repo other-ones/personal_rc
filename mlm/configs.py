@@ -42,7 +42,7 @@ def parse_args(input_args=None):
     parser.add_argument("--avg_norm",type=float,default=8.525119902624288)
     parser.add_argument("--lambda_mlm",type=float,default=1)
     parser.add_argument("--cls_net_path",type=str)
-    parser.add_argument("--mask_prob",type=float,default=0.15)
+    parser.add_argument("--mask_prob",type=float,default=0.25)
     parser.add_argument("--mask_embed_path",type=str)
     parser.add_argument("--log_mlm_steps",type=int,default=25)
     parser.add_argument("--arcface_model_name",type=str,default='r100')

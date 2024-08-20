@@ -10,20 +10,21 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v2.py \
   --learning_rate=1e-4 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
-  --max_train_steps=25001 \
-  --save_steps=1000 \
+  --max_train_steps=100001 \
+  --save_steps=10000 \
   --local_rank=0 \
   --visualize_steps=25 \
-  --num_inference_steps=25 \
   --seed=7776 \
   --mask_tokens='[MASK]' \
   --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
   --run_name='sd1_contextnetv2_nonpadding_1e4' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
-  --whole_word_mask=0 
-  # --report_to="wandb" \
-  # --project_name='ContextNetV2 Train' 
+  --whole_word_mask=0 \
+  --checkpoints_total_limit=10 \
+  --report_to="wandb" \
+  --project_name='ContextNetV2 Train' 
+
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
