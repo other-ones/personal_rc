@@ -7,21 +7,21 @@ import socket
 hostname = socket.gethostname()
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
-    'pet_cat1':('cat','pet'),
     'cat1': ('cat','pet'),
+    'pet_cat1':('cat','pet'),
     'vase':('vase','nonliving'),
     'wooden_pot':('pot','nonliving'),
     'dog3': ('dog','pet'),
-    # 'barn': ('barn','building'),
-    # 'dog6': ('dog','pet'),
-    # 'pet_dog1':('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'teddybear':('teddybear','nonliving'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'flower1':('flower','flower'),
+    'barn': ('barn','building'),
+    'dog6': ('dog','pet'),
+    'pet_dog1':('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'teddybear':('teddybear','nonliving'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'flower1':('flower','flower'),
 }
 
 masked_loss=0
@@ -62,8 +62,8 @@ lambda_mlm_list=[
             # 1
             ]
 mask_prob_list=[0.25]
-lr_list=[1e-6]
-for seed in [8881,2940,1234,7777]:
+lr_list=[1e-5]
+for seed in [2940]:
     dir_name='sgpu_seed{}'.format(seed)
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
