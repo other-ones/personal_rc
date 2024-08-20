@@ -570,7 +570,7 @@ def main(args):
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
-        os.system('cp assets {} -R'.format(codepath))
+        os.system('cp clip_src {} -R'.format(codepath))
         sample_dir=os.path.join(exp_dir,'samples')
         ckpt_dir=os.path.join(exp_dir,'checkpoints')
         os.makedirs(ckpt_dir,exist_ok=True)
