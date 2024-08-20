@@ -1,7 +1,20 @@
 import numpy as np
 from .caption_generator import CaptionGenerator
 
-
+animals = [
+    "cat", "dog", "lion", "tiger", "bear", "wolf", "fox", "horse", "cow", 
+    "sheep", "goat", "deer", "mouse", "rat", "bat", "pig", "whale", "shark", 
+    "dolphin", "seal", "otter", "rabbit", "hare", "elk", "moose", "snake", 
+    "lizard", "frog", "toad", "fish", "crab", "lobster", "shrimp", "eagle", 
+    "hawk", "owl", "sparrow", "pigeon", "duck", "swan", "geese", "turkey", 
+    "chicken", "peacock", "penguin", "giraffe", "elephant", "rhino", "hippo", 
+    "zebra", "buffalo", "bison", "kangaroo", "koala", "panda", "monkey", 
+    "ape", "chimpanzee", "gorilla", "lemur", "iguana", "chameleon", "tortoise", 
+    "turtle", "beetle", "butterfly", "moth", "bee", "wasp", "ant", "spider", 
+    "scorpion", "octopus", "squid", "jellyfish", "starfish", "urchin", "clam", 
+    "oyster", "barnacle", "snail", "slug", "worm", "centipede", "millipede"
+]
+animals=list(set(animals))
 subjects = [
     "teacher", "a soldier", "magician", "acrobat", "explorer", "scientist", "artist", "writer", "detective", "athlete",
     "nurse", "doctor", "politician", "monk", "priest", "sailor", "pilot", "chef", "farmer", "hunter", "fisherman",
@@ -30,6 +43,7 @@ subjects = [
     "Isaac Asimov","Nikola Tesla","Thomas Edison",
     "Galileo Galilei"]
 subjects=list(set(subjects))
+living=animals+subjects
 interactions = [
     'inspected by', 'discussed by', 'examined by',
     'repaired by', 'sketched by', 'cleaned by', 'photographed by',
@@ -170,11 +184,11 @@ attributes=list(set(attributes))
 class CaptionGeneratorSunglasses(CaptionGenerator):
     def __init__(self):
         super().__init__()
-        self.types=['human_interactions','object_relations','backgrounds','styles']
+        self.types=['living_interactions','object_relations','backgrounds','styles']
     def generate_caption(self):
         sampled_type=np.random.choice(self.types)
-        if sampled_type=='human_worn':
-            mlm_caption=self.generate_human_worn_caption()
+        if sampled_type=='living_interactions':
+            mlm_caption=self.generate_living_worn_caption()
         elif sampled_type=='object_relations':
             mlm_caption=self.generate_object_relations_caption()
         elif sampled_type=='backgrounds':
@@ -187,8 +201,8 @@ class CaptionGeneratorSunglasses(CaptionGenerator):
     
     def generate_triplet(self):
         sampled_type_pos,sampled_type_neg=np.random.choice(self.types,size=2)
-        if sampled_type_pos=='human_interactions':
-            anchor=self.generate_human_worn_caption()
+        if sampled_type_pos=='living_interactions':
+            anchor=self.generate_living_worn_caption()
         elif sampled_type_pos=='object_relations':
             anchor=self.generate_object_relations_caption()
         elif sampled_type_pos=='backgrounds':
@@ -196,8 +210,8 @@ class CaptionGeneratorSunglasses(CaptionGenerator):
         elif sampled_type_pos=='styles':
             anchor=self.generate_styles_caption() 
 
-        if sampled_type_neg=='human_interactions':
-            neg=self.generate_human_worn_caption()
+        if sampled_type_neg=='living_interactions':
+            neg=self.generate_living_worn_caption()
         elif sampled_type_neg=='object_relations':
             neg=self.generate_object_relations_caption()
         elif sampled_type_neg=='backgrounds':
@@ -206,12 +220,12 @@ class CaptionGeneratorSunglasses(CaptionGenerator):
             neg=self.generate_styles_caption() 
 
         return anchor,neg
-    def generate_human_worn_caption(self):
-        subject=np.random.choice(subjects)
+    def generate_living_worn_caption(self):
+        subject=np.random.choice(living)
         if np.random.rand()<0.5:
             prompt=f"{subject} wearing <new>"
         else:
-            prompt=f"{subject} wearing <new>"
+            prompt=f"<new> worn by {subject}"
         return prompt
     
     def generate_object_relations_caption(self):
