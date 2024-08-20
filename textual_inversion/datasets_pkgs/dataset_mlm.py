@@ -125,6 +125,9 @@ class TextualInversionDataset(Dataset):
         elif prompt_type=='sunglasses':
             from .mlm_pkgs.caption_generator_sunglasses import CaptionGeneratorSunglasses
             self.prompt_generator=CaptionGeneratorSunglasses()
+        elif prompt_type=='flower':
+            from .mlm_pkgs.caption_generator_flower import CaptionGeneratorFlower
+            self.prompt_generator=CaptionGeneratorFlower()
         else:
             raise Exception('Not Implemented')
         
