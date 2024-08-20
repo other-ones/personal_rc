@@ -91,17 +91,25 @@ colors = [
 ]
 
 relative_words = [
-    "beside", "near", "next to", "behind", "in front of",
-    "above", "below", "across from", "alongside", "amid",
-    "among", "atop", "against", "within", "surrounding",
-    "beneath", "over", "under", "to the left of", "to the right of",
-    "on top of", "hanging over", "leaning on", "framed by",
+    "beside", "near", "next to", "behind", "in front of", "adjacent to", 
+    "above", "below", 
+    "alongside", 
+    "atop", 
+    "against", 
+    "surrounding",
+    "beneath", "over", 
+    "under", 
+    "to the left of", 
+    "to the right of",
+    "on top of",  
     "encircled by", "interspersed with", "between", "flanked by",
-    "opposite", "aligned with", "adjacent to", "tucked behind",
-    "sprawled in front of", "nestled among", "mounted on",
-    "clinging to", "perched on", "suspended above", "arrayed around",
-    "bordering"
-]
+    "aligned with", 
+    "sprawled in front of", 
+    "nestled among", 
+    "perched on", 
+    "suspended above", 
+    "arrayed around"
+    ]
 styles = [
     "Art Nouveau", "Art Deco", "Abstract", "Baroque", "Bauhaus", "Byzantine", "Cubism", "Dada", "Expressionism", "Fauvism",
     "Futurism", "Gothic", "Graffiti", "Impressionism", "Minimalism", "Modernism", "Neo-Impressionism", "Neoclassicism",

@@ -89,19 +89,27 @@ colors = [
     "beige", "ivory", "teal", "navy", "maroon", "turquoise",
     "lime", "charcoal", "coral", "cyan", "magenta", "olive",
 ]
-
 relative_words = [
-    "beside", "near", "next to", "behind", "in front of",
-    "above", "below", "across from", "alongside", "amid",
-    "among", "atop", "against", "within", "surrounding",
-    "beneath", "over", "under", "to the left of", "to the right of",
-    "on top of", "hanging over", "leaning on", "framed by",
-    "encircled by", "interspersed with", "between", "flanked by",
-    "opposite", "aligned with", "adjacent to", "tucked behind",
-    "sprawled in front of", "nestled among", "mounted on",
-    "clinging to", "perched on", "suspended above", "arrayed around",
-    "bordering"
-]
+    "beside", "near", "next to", "behind", "in front of", "adjacent to", 
+    "above", "below", 
+    "alongside", 
+    "atop", 
+    "against", 
+    "surrounding",
+    "beneath", "over", 
+    "under", 
+    "to the left of", 
+    "to the right of",
+    "on top of",  
+    "encircled by", 
+    "interspersed with", "between", "flanked by",
+    "aligned with", 
+    "sprawled in front of", 
+    "nestled among", 
+    "perched on", 
+    "suspended above", 
+    "arrayed around"
+    ]
 styles = [
     "Art Nouveau", "Art Deco", "Abstract", "Baroque", "Bauhaus", "Byzantine", "Cubism", "Dada", "Expressionism", "Fauvism",
     "Futurism", "Gothic", "Graffiti", "Impressionism", "Minimalism", "Modernism", "Neo-Impressionism", "Neoclassicism",

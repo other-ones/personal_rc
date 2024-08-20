@@ -11,18 +11,17 @@ info_map_03={
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
     'vase':('vase','nonliving'),
-    # 'teddybear':('bear','nonliving'),
-    # 'dog6': ('dog','pet'),
-    # 'cat1': ('cat','pet'),
-    # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
-
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'flower1':('flower','flower'),
+    'teddybear':('bear','nonliving'),
+    'dog6': ('dog','pet'),
+    'cat1': ('cat','pet'),
+    'barn': ('barn','building'),
+    'wooden_pot':('pot','nonliving'),
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'flower1':('flower','flower'),
 }
 info_map_01={
     # 'backpack':('backpack','nonliving'),
@@ -48,9 +47,11 @@ elif 'ubuntu' in hostname:
     info_map=info_map_01
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
-lambda_mlms=[0]
+lambda_mlms=[
+            0,
+            0.0001,
+            ]
 target_norms=[0]
-masked_loss=0
 
 
 import subprocess as sp
@@ -68,13 +69,12 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 
 
+seed=2940
 include_priors=[1]
+dir_name='single_seed{}'.format(seed)
+log_dir='logs/ti_models/train/{}'.format(dir_name)
+os.makedirs(log_dir,exist_ok=True)   
 for include_prior in include_priors:
-    if include_prior:
-        log_dir='logs/ti_models/train/single_prior'
-    else:
-        log_dir='logs/ti_models/train/single'
-    os.makedirs(log_dir,exist_ok=True)   
     for lambda_mlm in lambda_mlms:
         lambda_mlm_str=float_to_str(lambda_mlm)
         lambda_mlm_str=lambda_mlm_str.replace('.','')
@@ -82,7 +82,7 @@ for include_prior in include_priors:
         for target_norm in target_norms:
             for idx,concept in enumerate(list(info_map.keys())):
                 prior,category=info_map[concept]
-                prefix='ti_norm{}_'.format(target_norm)
+                prefix='ti_'.format(target_norm)
                 if include_prior:
                     prefix+='prior'
                 else:
@@ -91,12 +91,7 @@ for include_prior in include_priors:
                     run_name="{}_mlm{}_{}".format(prefix,lambda_mlm_str,concept)
                 else:
                     run_name="{}_nomlm_{}".format(prefix,concept)
-                if masked_loss:
-                    run_name+='_masked'
-                if include_prior:
-                    output_dir=os.path.join('saved_models/ti_models/single_prior',concept)
-                else:
-                    output_dir=os.path.join('saved_models/ti_models/single',concept)
+                output_dir=os.path.join('saved_models/ti_models/{}'.format(dir_name),concept)
                 exp_path=os.path.join(output_dir,run_name)
                 if os.path.exists(exp_path):
                     print(exp_path,'exists')
@@ -129,7 +124,7 @@ for include_prior in include_priors:
                 command+='--lr_scheduler="constant" \\\n'
                 command+='--lr_warmup_steps=0 \\\n'
                 command+='--output_dir="{}" \\\n'.format(output_dir)
-                command+='--seed=7777 \\\n'
+                command+='--seed={} \\\n'.format(seed)
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
                 command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
@@ -139,11 +134,10 @@ for include_prior in include_priors:
                 command+='--scale_lr \\\n'
                 command+='--prompt_type="{}" \\\n'.format(category)
                 command+='--silent=0 \\\n'
-                command+='--masked_loss={} \\\n'.format(masked_loss)
                 command+='--normalize_target1={} \\\n'.format(target_norm)
                 command+='--run_name="{}" \\\n'.format(run_name)
-                command+='--report_to="wandb" \\\n'
-                command+='--project_name="TI MLM SINGLE" \\\n'
+                # command+='--report_to="wandb" \\\n'
+                # command+='--project_name="TI MLM SINGLE" \\\n'
                 command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
 
                 os.system(command)

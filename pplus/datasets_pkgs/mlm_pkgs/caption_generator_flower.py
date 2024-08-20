@@ -12,22 +12,35 @@ subjects = [
     "Martin Luther King Jr.", "Frida Kahlo", "Pablo Picasso",  "Stephen Hawking",
     "Beethoven", "Mozart", "Vincent van Gogh","Isaac Newton", "Galileo Galilei",
     "Marco Polo", "Socrates", "Aristotle", "Tutankhamun", "Queen Elizabeth I", "Genghis Khan",
-]
-
+    "Elon Musk","Oprah Winfrey", "Leonardo DiCaprio","Beyoncé","Cristiano Ronaldo","Taylor Swift",
+    "Bill Gates","Rihanna","Angelina Jolie","LeBron James",
+    "Ariana Grande","Lionel Messi","Kim Kardashian","Barack Obama",
+    "Justin Bieber","Tom Hanks","Selena Gomez","Jennifer Lopez",
+    "Emma Watson","Brad Pitt","Lady Gaga","Robert Downey Jr.",
+    "Kanye West","Will Smith","Albert Einstein","Stephen Hawking",
+    "Isaac Newton","Marie Curie","Mahatma Gandhi","Nelson Mandela",
+    "Martin Luther King Jr.","Walt Disney","Steve Jobs",
+    "Mark Zuckerberg","Charles Darwin","Pablo Picasso",
+    "Vincent van Gogh","William Shakespeare","Ludwig van Beethoven",
+    "Wolfgang Amadeus Mozart","Michael Jackson","Freddie Mercury",
+    "Madonna","Elvis Presley","Marilyn Monroe",
+    "J.K. Rowling","Stephen King","Ernest Hemingway",
+    "Jane Austen","George Washington","Napoleon Bonaparte",
+    "Winston Churchill","Mother Teresa","John F. Kennedy",
+    "Isaac Asimov","Nikola Tesla","Thomas Edison",
+    "Galileo Galilei"]
+subjects=list(set(subjects))
 interactions = [
-    "playing with", "talking to", "feeding", "hugging", "walking", "training", "petting", 
-    "brushing", "cuddling with", "carrying", "photographing", "watching", "dressing up", 
-    "giving a bath to", "cleaning up after", "taking to the vet", "grooming", "teaching tricks to", 
-    "running with", "sleeping beside", "reading to", "celebrating a birthday with", 
-    "sharing food with", "taking a selfie with", "protecting", "napping with", "taking for a car ride", 
-    "playing fetch with", "riding in a bicycle basket with", "playing in the park with", "resting beside", 
-    "sitting on a bench with", "enjoying a sunny day with", "sharing a secret with", 
-    "making a video with", "having a picnic with", "watching TV with", "doing yoga with", 
-    "playing a game with", "taking a walk in the rain with", "going for a swim with", 
-    "enjoying a sunset with", "having breakfast with", "dancing with", "skateboarding with", 
-    "hiking with", "watching a movie with", "going on an adventure with"
+    'inspected by', 'discussed by', 'examined by',
+    'repaired by', 'sketched by', 'cleaned by', 'photographed by',
+    'packaged by', 'analyzed by', 'painted by',
+    'filmed by', 'photographed by', 'transported by',
+    'restored by a', 'designed by', 'evaluated by',
+    'auctioned by an', 'played on by', 'modeled by',
+    'recited by', 'researched by',
+    'presented by', 'juggled by', 'planted by'
 ]
-
+interactions=list(set(interactions))
 backgrounds = [
     "Great Wall of China", "Times Square", "botanic garden",
     "Sahara Desert", "coral reef", "Mount Everest base",
@@ -87,13 +100,14 @@ other_objs = [
     "hat", "scarf", "belt", "necklace", "pearls", "perfume bottle", "makeup brush", "eyeglasses",
     "wristband", "keychain", "wallet", "pen", "pencil", "notebook", "stamp", "coin", "vinyl record","sofa"
 ]
+other_objs=list(set(other_objs))
 colors = [
     "red", "blue", "green", "yellow", "black", "white",
     "orange", "purple", "gray", "brown", "silver", "gold",
     "beige", "ivory", "teal", "navy", "maroon", "turquoise",
     "lime", "charcoal", "coral", "cyan", "magenta", "olive",
 ]
-
+colors=list(set(colors))
 relative_words = [
     "beside", "near", "next to", "behind", "in front of", "adjacent to", 
     "above", "below", 
@@ -115,6 +129,7 @@ relative_words = [
     "suspended above", 
     "arrayed around"
     ]
+relative_words=list(set(relative_words))
 styles = [
     "Art Nouveau", "Art Deco", "Abstract", "Baroque", "Bauhaus", "Byzantine", "Cubism", "Dada", "Expressionism", "Fauvism",
     "Futurism", "Gothic", "Graffiti", "Impressionism", "Minimalism", "Modernism", "Neo-Impressionism", "Neoclassicism",
@@ -134,14 +149,33 @@ styles = [
     "Soundwave Art", "Glitch Art", "Algorithmic Art", "Interactive Art", "Virtual Reality Art", "Augmented Reality Art",
     "Net Art", "Generative Art", "AI Art", "Art Brut", "Earth Art", "Land Art", "Sustainable Art", "Green Art"
 ]
-class CaptionGeneratorPet(CaptionGenerator):
+relative_words=list(set(relative_words))
+
+attributes = [
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
+    "beige", "ivory", "teal", "navy", "maroon", "turquoise",
+    "lime", "charcoal", "coral", "cyan", "magenta", "olive",
+    # Textures
+    "smooth", "rough", "shiny", "matte", "glossy", "textured", "polished", "bumpy", "gritty", "furry", "slick", "coarse",
+    # Materials
+    "wooden", "metallic", "plastic", "glass", "ceramic", "stone", "concrete", "cloth", "paper", "rubber", "leather",
+    # Shapes
+    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
+    # Additional Attributes
+    "small", "large", "tiny", "huge", "old", "new", "antique", "modern", "ornate", "simple", "heavy", "lightweight", 
+    "transparent", "opaque", "fragile", "sturdy", "decorative", "functional", "handmade", "mass-produced"
+]
+attributes=list(set(attributes))
+
+class CaptionGeneratorFlower(CaptionGenerator):
     def __init__(self):
         super().__init__()
         self.types=['human_interactions','object_relations','backgrounds','styles']
     def generate_caption(self):
         sampled_type=np.random.choice(self.types)
-        if sampled_type=='human_interactions':
-            mlm_caption=self.generate_human_interactions_caption()
+        if sampled_type=='human_worn':
+            mlm_caption=self.generate_human_worn_caption()
         elif sampled_type=='object_relations':
             mlm_caption=self.generate_object_relations_caption()
         elif sampled_type=='backgrounds':
@@ -150,12 +184,12 @@ class CaptionGeneratorPet(CaptionGenerator):
             mlm_caption=self.generate_styles_caption() 
         else:
             assert False
-        mlm_caption=mlm_caption.replace("<new>","{}")
         return mlm_caption
+    
     def generate_triplet(self):
         sampled_type_pos,sampled_type_neg=np.random.choice(self.types,size=2)
         if sampled_type_pos=='human_interactions':
-            anchor=self.generate_human_interactions_caption()
+            anchor=self.generate_human_worn_caption()
         elif sampled_type_pos=='object_relations':
             anchor=self.generate_object_relations_caption()
         elif sampled_type_pos=='backgrounds':
@@ -164,7 +198,7 @@ class CaptionGeneratorPet(CaptionGenerator):
             anchor=self.generate_styles_caption() 
 
         if sampled_type_neg=='human_interactions':
-            neg=self.generate_human_interactions_caption()
+            neg=self.generate_human_worn_caption()
         elif sampled_type_neg=='object_relations':
             neg=self.generate_object_relations_caption()
         elif sampled_type_neg=='backgrounds':
@@ -173,18 +207,19 @@ class CaptionGeneratorPet(CaptionGenerator):
             neg=self.generate_styles_caption() 
 
         return anchor,neg
-
-    def generate_human_interactions_caption(self):
-        interaction=np.random.choice(interactions)
+    def generate_human_worn_caption(self):
         subject=np.random.choice(subjects)
-        prompt=f"<new> is {interaction} a {subject}"
+        if np.random.rand()<0.5:
+            prompt=f"{subject} wearing <new>"
+        else:
+            prompt=f"{subject} wearing <new>"
         return prompt
     
     def generate_object_relations_caption(self):
         rel=np.random.choice(relative_words)        
-        color=np.random.choice(colors)        
+        attr=np.random.choice(attributes)        
         other_obj=np.random.choice(other_objs)        
-        prompt=f"<new> {rel} a {color} {other_obj}"
+        prompt=f"<new> {rel} a {attr} {other_obj}"
         return prompt
     def generate_backgrounds_caption(self):
         background=np.random.choice(backgrounds)
