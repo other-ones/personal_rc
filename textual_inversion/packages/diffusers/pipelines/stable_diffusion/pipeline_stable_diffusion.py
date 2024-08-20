@@ -315,9 +315,9 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
         inj_embeddings2=None,
         is_keyword_tokens1=None,
         is_keyword_tokens2=None,
-        is_prior1=None,
-        is_prior2=None,
-        attn_mod_params=None,
+        # is_prior1=None,
+        # is_prior2=None,
+        # attn_mod_params=None,
     ):
         r"""
         Encodes the prompt into text encoder hidden states.
@@ -395,9 +395,9 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
                 inj_embeddings2=inj_embeddings2,
                 is_keyword_tokens1=is_keyword_tokens1,
                 is_keyword_tokens2=is_keyword_tokens2,
-                attn_mod_params=attn_mod_params,
-                is_prior1=is_prior1,
-                is_prior2=is_prior2,
+                # attn_mod_params=attn_mod_params,
+                # is_prior1=is_prior1,
+                # is_prior2=is_prior2,
             )
             prompt_embeds = prompt_embeds[0]
 
@@ -604,9 +604,9 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
         inj_embeddings2= None,
         is_keyword_tokens1= None,
         is_keyword_tokens2= None,
-        is_prior1= None,
-        is_prior2= None,
-        attn_mod_params= None,
+        # is_prior1= None,
+        # is_prior2= None,
+        # attn_mod_params= None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -723,9 +723,9 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
             inj_embeddings2=inj_embeddings2,
             is_keyword_tokens1=is_keyword_tokens1,
             is_keyword_tokens2=is_keyword_tokens2,
-            is_prior1=is_prior1,
-            is_prior2=is_prior2,
-            attn_mod_params=attn_mod_params,
+            # is_prior1=is_prior1,
+            # is_prior2=is_prior2,
+            # attn_mod_params=attn_mod_params,
         )
         # pdb.set_trace() 
         # 4. Prepare timesteps
