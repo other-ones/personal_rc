@@ -900,13 +900,13 @@ def main(args):
                     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
                 else:
                     target_emb=learned_embeds
-                # encoder_hidden_states = text_encoder(
-                #                                     input_ids,
-                #                                     is_keyword_tokens1=is_keyword_tokens,
-                #                                     inj_embeddings1=target_emb,
-                #                                      )[0].to(dtype=weight_dtype)
-                position_ids=torch.arange(tokenizer.model_max_length).to(accelerator.device)
-                encoder_hidden_states = text_encoder(input_ids,position_ids=position_ids)[0].to(dtype=weight_dtype)
+                encoder_hidden_states = text_encoder(
+                                                    input_ids,
+                                                    is_keyword_tokens1=is_keyword_tokens,
+                                                    inj_embeddings1=target_emb,
+                                                     )[0].to(dtype=weight_dtype)
+                # position_ids=torch.arange(tokenizer.model_max_length).to(accelerator.device)
+                # encoder_hidden_states = text_encoder(input_ids,position_ids=position_ids)[0].to(dtype=weight_dtype)
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 if noise_scheduler.config.prediction_type == "epsilon":
                     target = noise
@@ -932,13 +932,13 @@ def main(args):
                 # 3. MLM Loss
                 loss_mlm=None
                 if args.lambda_mlm:
-                    # clip_text_embedding_masked = text_encoder(input_ids_masked,
-                    #                                         mask_embedding=mask_embeds.unsqueeze(0),
-                    #                                         mask_idxs=masked_idxs,
-                    #                                         is_keyword_tokens1=is_keyword_tokens_mlm,
-                    #                                         inj_embeddings1=target_emb,
-                    #                                         )[0].to(accelerator.device, dtype=weight_dtype)
-                    clip_text_embedding_masked = text_encoder(input_ids_masked)[0].to(accelerator.device, dtype=weight_dtype)
+                    clip_text_embedding_masked = text_encoder(input_ids_masked,
+                                                            mask_embedding=mask_embeds.unsqueeze(0),
+                                                            mask_idxs=masked_idxs,
+                                                            is_keyword_tokens1=is_keyword_tokens_mlm,
+                                                            inj_embeddings1=target_emb,
+                                                            )[0].to(accelerator.device, dtype=weight_dtype)
+                    # clip_text_embedding_masked = text_encoder(input_ids_masked)[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
                     # masked_idxs_flat=masked_idxs.view(-1)
                     loss_mlm = F.cross_entropy(

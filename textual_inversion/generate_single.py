@@ -350,7 +350,7 @@ def main(args):
         'A close up shot of the {}'.format(placeholder),
         'Top view of the {}'.format(placeholder)]*args.num_images_per_prompt
     elif args.prompt_type=='flower':
-        [
+        eval_prompts=[
             "Photo of {}".format(placeholder),
             "{} growing in the desert".format(placeholder),
             "{} at a beach with a view of the seashore".format(placeholder),
@@ -371,9 +371,9 @@ def main(args):
             "a red color {}".format(placeholder),
             "Dried up {}".format(placeholder),
             "a dahlia in the style of {}".format(placeholder),
-            ]
+            ]*args.num_images_per_prompt
     elif args.prompt_type=='sunglasses':
-        [
+        eval_prompts=[
             "photo of a {}".format(placeholder),
             "{} on top of a vintage car in the countryside".format(placeholder),
             "A pair of {} rest on a bookshelf".format(placeholder),
@@ -394,7 +394,7 @@ def main(args):
             "digital painting of a turtle wearing {}".format(placeholder),
             "smart hedgehog in {}".format(placeholder),
             "{} digital 3d render".format(placeholder),
-            ]
+            ]*args.num_images_per_prompt
     else:
         assert False
     # batch_size=len(prompts)

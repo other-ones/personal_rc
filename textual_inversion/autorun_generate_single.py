@@ -34,7 +34,7 @@ def get_gpu_memory():
 
 
 ports=np.arange(5000,6000)
-target_devices=[1,2,3,4,5,6,7]
+target_devices=[0,1,2,3,4,5,6,7]
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4 and stat_idx in target_devices:
