@@ -1,5 +1,5 @@
-cp /home/twkim/anaconda3/envs/context/lib/python/site-packages/transformers/models/clip/modeling_clip.py assets/modeling_clip.py;
-cp /home/twkim/anaconda3/envs/context/lib/python/site-packages/transformers/modeling_outputs.py assets/modeling_outputs.py;
+# cp /home/twkim/anaconda3/envs/context/lib/python/site-packages/transformers/models/clip/modeling_clip.py assets/modeling_clip.py;
+# cp /home/twkim/anaconda3/envs/context/lib/python/site-packages/transformers/modeling_outputs.py assets/modeling_outputs.py;
 current_dir=$(pwd)
 cd ../;
 git add .;
