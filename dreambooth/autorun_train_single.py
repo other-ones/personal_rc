@@ -18,7 +18,7 @@ info_map={
     'chair1': ('chair','nonliving'),
     'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
-    # 'flower1':('flower','flower'),
+    'flower1':('flower','flower'),
     
 }
 # cuda_ids=[0,1,2,3,4,5,6,7]
