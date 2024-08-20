@@ -45,7 +45,7 @@ idx=0
 seed=2940
 dir_name='single_seed{}'.format(seed)
 dir_path=os.path.join('saved_models/ti_models',dir_name)
-log_dir='logs/generate/{}'.format(dir)
+log_dir='logs/generate/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)    
 delay=30
 num_images_per_prompt=8
@@ -91,6 +91,7 @@ for cidx,concept in enumerate(concepts):
         command+='--placeholder_token1="<{}>" \\\n'.format(concept)
         command+='--prior_concept1="{}" \\\n'.format(prior)
         command+='--resolution=512 \\\n'
+        command+='--dst_exp_path={} \\\n'.format(exp_path)
         command+='--eval_batch_size=15 \\\n'
         command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
         command+='--output_dir="{}" \\\n'.format(output_dir)

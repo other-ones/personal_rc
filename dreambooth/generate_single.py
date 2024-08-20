@@ -1,3 +1,4 @@
+import shutil
 from utils import render_caption
 import time
 
@@ -129,6 +130,13 @@ def main(args):
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
+        # copy clip
+        os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
+        target = os.readlink('clip_src/modeling_clip.py')
+        shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
+        target = os.readlink('clip_src/modeling_outputs.py')
+        shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
+        # copy clip
         # 1. command
         command_path=os.path.join(codepath,'command.txt')
         command_file=open(command_path,'w')

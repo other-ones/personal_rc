@@ -1,3 +1,4 @@
+import shutil
 from utils import render_caption
 import time
 
@@ -130,6 +131,13 @@ def main(args):
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
+        # copy clip
+        os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
+        target = os.readlink('clip_src/modeling_clip.py')
+        shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
+        target = os.readlink('clip_src/modeling_outputs.py')
+        shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
+        # copy clip
         # 1. command
         command_path=os.path.join(codepath,'command.txt')
         command_file=open(command_path,'w')
@@ -403,16 +411,16 @@ def main(args):
     print(prior_embed.shape,'prior_embed.shape')
     prior_embed=prior_embed.to(accelerator.device)
     learned_embed1=learned_embed1.to(accelerator.device)
-    attn_mod_params={
-                    'calibrate_ppos1':args.calibrate_ppos1,
-                    'calibrate_ppos2':args.calibrate_ppos2,
-                    'calibrate_pneg1':args.calibrate_pneg1,
-                    'calibrate_pneg2':args.calibrate_pneg2,
-                    'calibrate_kpos1':args.calibrate_kpos1,
-                    'calibrate_kpos2':args.calibrate_kpos2,
-                    'calibrate_kneg1':args.calibrate_kneg1,
-                    'calibrate_kneg2':args.calibrate_kneg2,
-                }
+    # attn_mod_params={
+    #                 'calibrate_ppos1':args.calibrate_ppos1,
+    #                 'calibrate_ppos2':args.calibrate_ppos2,
+    #                 'calibrate_pneg1':args.calibrate_pneg1,
+    #                 'calibrate_pneg2':args.calibrate_pneg2,
+    #                 'calibrate_kpos1':args.calibrate_kpos1,
+    #                 'calibrate_kpos2':args.calibrate_kpos2,
+    #                 'calibrate_kneg1':args.calibrate_kneg1,
+    #                 'calibrate_kneg2':args.calibrate_kneg2,
+    #             }
     with torch.no_grad():
         if args.normalize_target1:
             target_emb1=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
@@ -423,10 +431,10 @@ def main(args):
             if not len(prompts):
                 break
             is_keyword_tokens_list=[]
-            is_prior1_list=[]
+            # is_prior1_list=[]
             for prompt in prompts:
                 is_keyword_tokens=[False]
-                is_prior1=[False]
+                # is_prior1=[False]
                 text_words=prompt.split()
                 for word_idx in range(len(text_words)):
                     cap_word=text_words[word_idx]
@@ -439,33 +447,33 @@ def main(args):
                         else:
                             is_keyword_tokens.append(False)
                         # prior1
-                        if tok_decoded==args.prior_concept1:
-                            is_prior1.append(True)
-                        else:
-                            is_prior1.append(False)
+                        # if tok_decoded==args.prior_concept1:
+                        #     is_prior1.append(True)
+                        # else:
+                        #     is_prior1.append(False)
                 for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
                     is_keyword_tokens.append(False)
-                for _ in range(len(is_prior1),tokenizer.model_max_length):
-                    is_prior1.append(False)
+                # for _ in range(len(is_prior1),tokenizer.model_max_length):
+                #     is_prior1.append(False)
                 assert len(is_keyword_tokens)==tokenizer.model_max_length
-                assert len(is_prior1)==tokenizer.model_max_length
+                # assert len(is_prior1)==tokenizer.model_max_length
                 is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
-                is_prior1=torch.BoolTensor(is_prior1)
+                # is_prior1=torch.BoolTensor(is_prior1)
                 assert torch.sum(is_keyword_tokens)==1,'torch.sum(is_keyword_tokens)==1'
-                assert torch.sum(is_prior1)==1,'torch.sum(is_prior1)==1'
+                # assert torch.sum(is_prior1)==1,'torch.sum(is_prior1)==1'
                 is_keyword_tokens_list.append(is_keyword_tokens)
-                is_prior1_list.append(is_prior1)
+                # is_prior1_list.append(is_prior1)
             is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)
-            is_prior1_list=torch.stack(is_prior1_list)
-            print(is_prior1_list.shape,'is_prior1_list.shape')
+            # is_prior1_list=torch.stack(is_prior1_list)
+            # print(is_prior1_list.shape,'is_prior1_list.shape')
             images = pipeline(prompt=prompts, 
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             is_keyword_tokens1=is_keyword_tokens_list,
                             inj_embeddings1=target_emb1,
-                            is_prior1=is_prior1_list,
-                            attn_mod_params=attn_mod_params,
+                            # is_prior1=is_prior1_list,
+                            # attn_mod_params=attn_mod_params,
                             ).images
             
             # 
