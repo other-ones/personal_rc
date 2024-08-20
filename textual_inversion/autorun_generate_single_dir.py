@@ -44,69 +44,68 @@ for stat_idx,stat in enumerate(stats):
 device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
-dirs=['single']
-for dir in dirs:
-    dir_path=os.path.join('saved_models',dir)
-    log_dir='logs/generate/{}'.format(dir)
-    os.makedirs(log_dir,exist_ok=True)    
-    concepts=os.listdir(dir_path)
-    for concept in concepts:
-        if concept not in info_map:
+seed=2940
+dir_name='single_seed{}'.format(seed)
+dir_path=os.path.join('saved_models',dir)
+log_dir='logs/generate/{}'.format(dir)
+os.makedirs(log_dir,exist_ok=True)    
+delay=30
+num_images_per_prompt=8
+concepts=os.listdir(dir_path)
+for concept in concepts:
+    if concept not in info_map:
+        continue
+    concept_path=os.path.join(dir_path,concept)
+    exps=os.listdir(concept_path)
+    for exp_idx,exp in enumerate(exps):
+        prior,category=info_map[concept]
+        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s3000.pt')
+        if not os.path.exists(learned_embed_path1):
+            print(learned_embed_path1,'does not exist')
             continue
-        concept_path=os.path.join(dir_path,concept)
-        exps=os.listdir(concept_path)
-        for exp_idx,exp in enumerate(exps):
-            prior,category=info_map[concept]
-            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s3000.pt')
-            if not os.path.exists(learned_embed_path1):
-                print(learned_embed_path1,'does not exist')
-                continue
-            exp_name=learned_embed_path1.split('/')[-3]
-            if 'noprior' in exp_name:
-                include_prior_concept=0
-            else:
-                assert '_prior_' in exp_name
-                include_prior_concept=1
-            output_dir=os.path.join('results/{}/{}'.format(dir,concept))
-            exp_path=os.path.join(output_dir,exp_name)
-            if os.path.exists(exp_path):
-                print(exp_name,'exists')
-                continue
-            while True:
-                stats=get_gpu_memory()
-                found=False
-                for stat_idx in target_devices:
-                    stat=stats[stat_idx]    
-                    if stat>2e4 :
-                        device_idx=stat_idx
-                        found=True
-                        break
-                if found:
+        include_prior_concept=1
+        exp_name=exp
+        exp_name+='_s3000'
+        output_dir=os.path.join('results/{}/{}'.format(dir_name,concept))
+        exp_path=os.path.join(output_dir,exp_name)
+        if os.path.exists(exp_path):
+            print(exp_name,'exists')
+            continue
+        while True:
+            stats=get_gpu_memory()
+            found=False
+            for stat_idx in target_devices:
+                stat=stats[stat_idx]    
+                if stat>2e4 :
+                    device_idx=stat_idx
+                    found=True
                     break
-                print(run_name,'sleep',stat_idx,stat)
-                time.sleep(delay)
-            print(exp_name,device_idx)
-            log_path=os.path.join(log_dir,exp_name+'.out')
-            command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-            command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
-            command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
-            command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-            command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-            command+='--prior_concept1="{}" \\\n'.format(prior)
-            command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=18 \\\n'
-            command+='--num_images_per_prompt=15 \\\n'
-            command+='--output_dir="{}" \\\n'.format(output_dir)
-            command+='--seed=1234 \\\n'
-            command+='--mask_tokens="[MASK]" \\\n'
-            command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-            command+='--prompt_type="{}" \\\n'.format(category)
-            command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior_concept,log_path)
-            os.system(command)
-            print('STARTED')
-            idx+=1
-            time.sleep(15)
+            if found:
+                break
+            print(exp,'sleep',stat_idx,stat)
+            time.sleep(delay)
+        print(exp_name,device_idx)
+        log_path=os.path.join(log_dir,exp_name+'.out')
+        command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+        command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
+        command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+        command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
+        command+='--placeholder_token1="<{}>" \\\n'.format(concept)
+        command+='--prior_concept1="{}" \\\n'.format(prior)
+        command+='--resolution=512 \\\n'
+        command+='--eval_batch_size=15 \\\n'
+        command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
+        command+='--output_dir="{}" \\\n'.format(output_dir)
+        command+='--seed={} \\\n'.format(seed)
+        command+='--mask_tokens="[MASK]" \\\n'
+        command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
+        command+='--prompt_type="{}" \\\n'.format(category)
+        command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior_concept,log_path)
+        os.system(command)
+        print('STARTED')
+        idx+=1
+        time.sleep(15)
 
-    
+
 
 
