@@ -174,13 +174,15 @@ def main():
     # if args.num_vectors_general < 1 or args.num_vectors_personal<1:
     #     raise ValueError(f"--num_vectors has to be larger or equal to 1, but is {args.num_vectors}")
     # assert args.num_vectors_general==1
+    print(len(tokenizer),'len(tokenizer)1')
     num_added_tokens = tokenizer.add_tokens(mask_tokens)
     # Convert the initializer_token, placeholder_token to ids
     mask_token_ids = tokenizer.convert_tokens_to_ids(mask_tokens)
     text_encoder.resize_token_embeddings(len(tokenizer))
     # Initialise the newly added general/personal token with the embeddings of the initializer token (for validation)
     token_embeds = text_encoder.get_input_embeddings().weight.data
-    print(token_embeds.shape,'token_embeds.shape')
+    print(len(tokenizer),'len(tokenizer)2')
+    print(mask_token_ids,'mask_token_ids')
     # Track text embeddings - for scale investigation
     text_encoder.text_model.encoder.requires_grad_(False)
     text_encoder.text_model.final_layer_norm.requires_grad_(False)
@@ -199,7 +201,8 @@ def main():
         for token_id in mask_token_ids:
             token_embeds[token_id] = mask_embeds.clone()
     mask_embeds_copy=mask_embeds.detach().clone().to(accelerator.device)
-
+    # mask_embeds_copy=torch.ones_like(mask_embeds).to(accelerator.device)
+    mask_embeds=mask_embeds.to(accelerator.device)
     # For verification
     sample_text='a sign neuripsdfs {}'.format(args.mask_tokens*3)
     print(sample_text,'sample_text')
@@ -547,7 +550,6 @@ def main():
 
                 if (global_step) % (args.save_steps) == 0:
                     if accelerator.is_main_process:
-                        
                         mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
                         if global_step>-1 and (not args.debug):
                             if args.checkpoints_total_limit >0:
@@ -587,7 +589,7 @@ def main():
                     logs['masked_norm']=masked_embeds_norm.item()
                     # print(mask_embeds_copy.shape,'mask_embeds_copy.shape')
                     # print(mask_embeds.shape,'mask_embeds.shape')
-                    logs['cos_sim']=cos_sim(mask_embeds_copy,mask_embeds).item()
+                    logs['cos_sim']='{:.4f}'.format(cos_sim(mask_embeds_copy,mask_embeds).item())
                 if args.report_to=='wandb' and accelerator.is_main_process:
                     wandb.log(logs)
                 progress_bar.set_postfix(**logs)
