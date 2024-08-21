@@ -299,11 +299,10 @@ def main():
         # 1. input ids
         input_ids = [example["input_ids"] for example in examples]
         input_ids=torch.stack(input_ids)
-
-
         input_ids_masked = [example["input_ids_masked"] for example in examples]
         input_ids_masked=torch.stack(input_ids_masked)
         # 1. input ids
+
         # 2. masked_idxs
         masked_idxs = [example["masked_idxs"] for example in examples] #N,77, list of booleans
         masked_idxs = torch.stack(masked_idxs)
@@ -315,7 +314,6 @@ def main():
         # 3. mlm_labels
         mlm_labels = [example["mlm_labels"] for example in examples] #N,77, list of booleans
         mlm_labels = torch.stack(mlm_labels)
-        # print(mlm_labels.shape,'mlm_labels.shape')
         # 3. mlm_labels
 
         non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans

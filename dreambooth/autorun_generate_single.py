@@ -56,6 +56,8 @@ for dir in dirs:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
+            if '2P5' not in exp:
+                continue
             prior,category=info_map[concept]
             resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-1000/unet_s1000.pt')
             resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-1000/text_encoder_s1000.pt')

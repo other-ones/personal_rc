@@ -191,6 +191,9 @@ class MLMDataset(Dataset):
             num_tokens=len(word_token_ids)
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
+                # if whole_word_mask=False
+                # then sample the mask probability again
+                # otherwise use the previous result
                 if not self.whole_word_mask:
                     if np.random.rand()<self.mask_prob: 
                         masked=True
@@ -201,12 +204,17 @@ class MLMDataset(Dataset):
 
 
                 # 1. mlm_labels
+                # if mlm_target=='masked' 
+                # then append the token id
                 if self.mlm_target=='masked':
                     if masked:
                         mlm_labels.append(tok_id)
                     else:
                         mlm_labels.append(-100)
-                elif self.mlm_target in ['non_special','all','non_padding']: #append regardless of masked
+                        
+                # if mlm_target !='masked'
+                # append regardless of masked
+                elif self.mlm_target in ['non_special','all','non_padding']: 
                     mlm_labels.append(tok_id)
                 else:
                     assert False

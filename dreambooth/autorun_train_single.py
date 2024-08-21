@@ -50,9 +50,10 @@ dir_name='single_seed{}'.format(seed)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-6]
+lr_list=[2.5e-6]
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
+    lr_str=lr_str.replace('.','P')
     for mask_prob in mask_prob_list:
         mask_prob_str=float_to_str(mask_prob)
         mask_prob_str=mask_prob_str.replace('.','')
