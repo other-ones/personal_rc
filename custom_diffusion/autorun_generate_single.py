@@ -59,7 +59,7 @@ def get_gpu_memory():
     return memory_free_values
 
 
-target_step=500
+target_step=2000
 ports=np.arange(5000,6000)
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
@@ -74,7 +74,7 @@ num_devices=1
 target_devices=[0,1,2,3,4,5,6,7]
 
 
-for seed in [8881,2940,7777,1234]:
+for seed in [2940]:
     dir_name='sgpu_seed{}'.format(seed)
     dir_path=os.path.join('saved_models/custom_diffusion',dir_name)
     log_dir='logs/generate/{}'.format(dir_name)
@@ -115,7 +115,7 @@ for seed in [8881,2940,7777,1234]:
                 if len(idle_devices)>=num_devices:
                     idx+=1
                     break
-                print(run_name,'sleep')
+                print(exp_name,'sleep')
                 time.sleep(delay)
             running_devices=','.join(idle_devices[:num_devices])
             print(exp_name,running_devices)
@@ -127,8 +127,8 @@ for seed in [8881,2940,7777,1234]:
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=5 \\\n'
-            command+='--num_images_per_prompt=15 \\\n'
+            command+='--eval_batch_size=15 \\\n'
+            command+='--num_images_per_prompt=8 \\\n'
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed={} \\\n'.format(seed)
             command+='--mask_tokens="[MASK]" \\\n'

@@ -458,6 +458,7 @@ def main(args):
             prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
             for token_id in placeholder_token_id1:
                 token_embeds[token_id] = token_embeds[initializer_token_id].clone()
+            prior_embed=prior_embed.to(accelerator.device)
     # Add learned concept
     if args.resume_path is not None and args.resume_path!='None':
         learned_embed_path1=os.path.join(args.resume_path,'{}.bin'.format(args.placeholder_token1))
@@ -857,7 +858,7 @@ def main(args):
         # Only show the progress bar once on each machine.
         disable=not accelerator.is_local_main_process,
     )
-
+    cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
         if args.placeholder_token1 is not None:
@@ -1144,15 +1145,20 @@ def main(args):
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             if loss_mlm is not None:
                 logs['loss_mlm']=loss_mlm.detach().item()
-            learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].detach()
-            if args.normalize_target1:
-                target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
-            else:
-                target_emb=learned_embeds
-            norm_target=torch.norm(target_emb.detach(),p=1,dim=-1)
-            norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
-            logs['norm_mask']=norm_mask.item()
-            logs['norm_target']=norm_target.item()
+            with torch.no_grad():
+                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].detach()
+                if args.normalize_target1:
+                    target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
+                else:
+                    target_emb=learned_embeds
+                norm_target=torch.norm(target_emb.detach(),p=1,dim=-1)
+                norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
+                logs['norm_mask']=norm_mask.item()
+                logs['norm_target']=norm_target.item()
+                print(learned_embeds.shape,'learned_embeds.shape')
+                print(prior_embed.shape,'prior_embed.shape')
+                cos_sim_value=cos_sim(learned_embeds,prior_embed).item()
+                logs['cos_sim']=cos_sim_value
             progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:

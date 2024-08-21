@@ -11,17 +11,17 @@ info_map={
     'pet_cat1':('cat','pet'),
     'vase':('vase','nonliving'),
     'wooden_pot':('pot','nonliving'),
-    'dog3': ('dog','pet'),
-    'barn': ('barn','building'),
-    'dog6': ('dog','pet'),
-    'pet_dog1':('dog','pet'),
-    'backpack':('backpack','nonliving'),
-    'teddybear':('teddybear','nonliving'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
-    'flower1':('flower','flower'),
+    # 'dog3': ('dog','pet'),
+    # 'barn': ('barn','building'),
+    # 'dog6': ('dog','pet'),
+    # 'pet_dog1':('dog','pet'),
+    # 'backpack':('backpack','nonliving'),
+    # 'teddybear':('teddybear','nonliving'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'flower1':('flower','flower'),
 }
 
 masked_loss=0
@@ -62,7 +62,7 @@ lambda_mlm_list=[
             # 1
             ]
 mask_prob_list=[0.25]
-lr_list=[1e-5]
+lr_list=[5e-5]
 for seed in [2940]:
     dir_name='sgpu_seed{}'.format(seed)
     for lr in lr_list:
@@ -118,10 +118,10 @@ for seed in [2940]:
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
-                    command+='--max_train_steps=1001 \\\n'
+                    command+='--max_train_steps=2001 \\\n'
                     command+='--validation_steps=100 \\\n'
-                    # command+='--checkpoints_total_limit=1 \\\n'
-                    command+='--checkpointing_steps=100 \\\n'
+                    command+='--checkpoints_total_limit=2 \\\n'
+                    command+='--checkpointing_steps=500 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
