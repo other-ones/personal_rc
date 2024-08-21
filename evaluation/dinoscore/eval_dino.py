@@ -110,7 +110,6 @@ if __name__=='__main__':
                     continue
                 fsize=os.stat(caption_path).st_size
                 if fsize==0:
-                    print(exp_path,'here')
                     continue
                 # log_path=os.path.join(exp_path,'result.txt')
                 if args.grounded:
