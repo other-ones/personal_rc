@@ -111,8 +111,8 @@ def main():
         viz_dir = os.path.join(exp_dir,'viz')
         os.makedirs(viz_dir, exist_ok=True)
         codepath=os.path.join(exp_dir,'src')
-        if os.path.exists(codepath) and 'tmp' not in codepath:
-            assert False
+        # if os.path.exists(codepath) and 'tmp' not in codepath:
+        #     assert False
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
@@ -228,28 +228,22 @@ def main():
 
     # Dataset and DataLoaders creation:
     print(mask_token_ids,'mask_token_ids')
-    prior_concepts=[args.prior_concept1]
-    placeholder_tokens=[args.placeholder_token1]
-    placeholder_ids=[placeholder_token_id1[0]]
-    
     train_dataset_mlm = TextualInversionDataset(
-        include_prior_concept=args.include_prior_concept,
-        data_root1=args.train_data_dir1,
-        data_root2=args.train_data_dir2,
+        data_root=args.train_data_dir1,
         tokenizer=tokenizer,
+        include_prior_concept=args.include_prior_concept,
         size=args.resolution,
-        repeats=args.repeats,
-        learnable_property=args.learnable_property,
-        center_crop=args.center_crop,
         flip_p=args.flip_p,
+        center_crop=args.center_crop,
         exclude_suffix=args.exclude_suffix,
-        mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
+        mask_prob=args.mask_prob,
+        mask_token_ids=mask_token_ids[0],
         get_images=False,
         prompt_type=args.prompt_type,
-        placeholder_tokens=placeholder_tokens,
-        placeholder_ids=placeholder_ids,
-        prior_concepts=prior_concepts,
+        prior_concept=args.prior_concept1,
+        placeholder_token=args.placeholder_token1,
+        caption_root=args.caption_root,
     )
    
     
@@ -268,7 +262,7 @@ def main():
         non_keyword_idxs = [example["non_keyword_idxs"] for example in examples] #N,77, list of booleans
         non_keyword_idxs = torch.stack(non_keyword_idxs)
         
-        is_keyword_tokens1 = [example["is_keyword_tokens1"] for example in examples] #N,77, list of booleans
+        is_keyword_tokens1 = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
         is_keyword_tokens1 = torch.stack(is_keyword_tokens1)
         is_prior1 = [example["is_prior1"] for example in examples] #N,77, list of booleans
         is_prior1 = torch.stack(is_prior1)
@@ -391,6 +385,7 @@ def main():
             is_prior1=batch_text_multi["is_prior1"].to(accelerator.device)
             input_ids_pos=batch_text_multi["input_ids_pos"]# B,77 list of booleans (tensor)
             raw_captions=batch_text_multi["raw_captions"]
+            print(raw_captions[:2],'raw_captions[:2]')
             non_special_idxs=batch_text_multi["non_special_idxs"]
             non_keyword_idxs=batch_text_multi["non_keyword_idxs"]
             is_keyword_tokens1=batch_text_multi["is_keyword_tokens1"].to(accelerator.device)
@@ -462,9 +457,12 @@ def main():
                                     is_prior1=is_prior1,
                                     inj_embeddings1=target_emb1,
                                     output_attentions=True,
-                                    non_keyword_idxs=non_keyword_idxs,
-                                    attn_mod_params=attn_mod_params
+                                    # non_keyword_idxs=non_keyword_idxs,
+                                    # attn_mod_params=attn_mod_params
                                     )
+                encoder_hidden_states=out[0]                
+                print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
+                exit()
                 attention_per_layers=out.attentions #[12,400,12,77,77]
                 k1_p1_attn_list=[]
                 p1_k1_attn_list=[]

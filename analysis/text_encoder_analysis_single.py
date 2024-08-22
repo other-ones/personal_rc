@@ -230,28 +230,21 @@ def main():
 
     # Dataset and DataLoaders creation:
     print(mask_token_ids,'mask_token_ids')
-    prior_concepts=[args.prior_concept1]
-    placeholder_tokens=[args.placeholder_token1]
-    placeholder_ids=[placeholder_token_id1[0]]
-    
     train_dataset_mlm = TextualInversionDataset(
-        include_prior_concept=args.include_prior_concept,
-        data_root1=args.train_data_dir1,
-        data_root2=args.train_data_dir2,
+        data_root=args.train_data_dir1,
         tokenizer=tokenizer,
+        include_prior_concept=args.include_prior_concept,
         size=args.resolution,
-        repeats=args.repeats,
-        learnable_property=args.learnable_property,
-        center_crop=args.center_crop,
         flip_p=args.flip_p,
+        center_crop=args.center_crop,
         exclude_suffix=args.exclude_suffix,
-        mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
+        mask_prob=args.mask_prob,
+        mask_token_ids=mask_token_ids[0],
         get_images=False,
         prompt_type=args.prompt_type,
-        placeholder_tokens=placeholder_tokens,
-        placeholder_ids=placeholder_ids,
-        prior_concepts=prior_concepts,
+        prior_concept=args.prior_concept,
+        placeholder_token=args.placeholder_token,
         caption_root=args.caption_root,
     )
    

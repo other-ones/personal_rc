@@ -69,6 +69,7 @@ if __name__ == "__main__":
     parser.add_argument('--dir_path',type=str)
     parser.add_argument('--keywords',type=str)
     parser.add_argument('--num_samples',type=int)
+    parser.add_argument('--exclude',type=str)
 
     # /home/twkim/project/textual_inversion/results/single_normalized/tmp
     args=parser.parse_args()
@@ -96,8 +97,11 @@ if __name__ == "__main__":
                         break
                 if not valid:
                     continue
+               
                 # if keyword is not None and (keyword not in exp):
                 #     continue
+            if args.exclude in exp:
+                    continue
             exp_path=os.path.join(concept_path,exp)
             pred_root=os.path.join(exp_path,'generated')
             result_path=os.path.join(exp_path, 'clip.json')

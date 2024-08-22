@@ -97,6 +97,7 @@ if __name__=='__main__':
     parser.add_argument('--grounded',type=int,default=0)
     parser.add_argument('--sort',type=int,default=0)
     parser.add_argument('--exclude_attr_change',type=int,default=0)
+    parser.add_argument('--exclude',type=str)
     args=parser.parse_args()
     method_root=args.method_root
     if args.keywords:
@@ -122,6 +123,8 @@ if __name__=='__main__':
             concept_results=[]
             exps=sorted(exps)[::-1]
             for exp in exps:
+                if args.exclude in exp:
+                    continue
                 exp_path=os.path.join(concept_path,exp)
                 if keywords is not None:
                     valid=True

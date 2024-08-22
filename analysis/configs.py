@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--caption_root',type=str,default='../datasets_pkgs/captions')
     parser.add_argument('--initialize_token',type=int,default=1)
     parser.add_argument('--calibrate_ppos1',type=float,default=0)
     parser.add_argument('--calibrate_ppos2',type=float,default=0)

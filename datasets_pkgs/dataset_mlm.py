@@ -96,9 +96,7 @@ class TextualInversionDataset(Dataset):
         data_root,
         tokenizer,
         include_prior_concept,
-        learnable_property="object",  # [object, style]
         size=512,
-        repeats=10000,
         interpolation="bicubic",
         flip_p=0,
         center_crop=False,
@@ -110,7 +108,7 @@ class TextualInversionDataset(Dataset):
         prompt_type=None,
         prior_concept=None,
         placeholder_token=None,
-        caption_root=None
+        caption_root=None,
     ):
         self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
@@ -120,6 +118,8 @@ class TextualInversionDataset(Dataset):
         max_length=0
         for cap_file in cap_file_list:
             fname=cap_file.split('.')[0]
+            if prompt_type is not None and prompt_type not in fname:
+                continue
             cap_file_path=os.path.join(caption_dir_path,cap_file)
             self.captions[fname]=open(cap_file_path).readlines()
             print('{}\t{}'.format(fname,len(self.captions[fname])))
@@ -243,7 +243,7 @@ class TextualInversionDataset(Dataset):
                 return_tensors="pt",
             ).input_ids[0]
         
-        
+        example["raw_caption"]=mlm_caption
 
 
         words_mlm=mlm_caption.split()
