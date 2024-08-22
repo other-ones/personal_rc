@@ -664,7 +664,14 @@ def main(args):
             token_embeds[placeholder_token_id1] = learned_embed1.clone()
         del learned_embed1
     from contextnet import ContextNet
-    cls_net=ContextNet(768, len(token_embeds))
+    if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
+        cls_net=ContextNet(1024, len(token_embeds)-1) #-1 for placeholder
+        cls_output_dim=len(token_embeds)-1
+    elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
+        cls_net=ContextNet(768, len(token_embeds)-1) # -1 for placeholder
+        cls_output_dim=len(token_embeds)-1
+    else:
+        assert False,'undefined sd version'
     # HERE
     def unwrap_model(model):
         model = accelerator.unwrap_model(model)

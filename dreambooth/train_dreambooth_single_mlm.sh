@@ -29,6 +29,6 @@ accelerate launch --main_process_port 4235  train_dreambooth_single_mlm.py \
   --with_prior_preservation=1 \
   --class_prompt1="a picture of a dog" \
   --class_data_dir1="priors/samples_dog" \
-  --simple_caption=1 \
-  --make_composition=1 \
-  --caption_root='../../datasets_pkgs/captions'
+  --simple_caption=0 \
+  --make_composition=0 \
+  --caption_root='../datasets_pkgs/captions'
