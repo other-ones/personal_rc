@@ -10,6 +10,33 @@ import torch
 from torch.nn.functional import cosine_similarity
 from PIL import Image
 
+exclude_words_per_type={
+    'pet':['wearing','outfit','a red','a purple','a shiny','a wet','a cube shaped'],
+    'nonliving':['a red','a purple','a shiny','a wet','a cube shaped'],
+    'building':['painting','artist','style','futuristic','surreal','close up shot','top view'],
+    'flower':['painting','digital','style','color','dried'],
+    'sunglasses':['style','artist','painting','digital','art piece',],
+}
+info_map={
+    'backpack':('backpack','nonliving'),
+    'teddybear':('bear','nonliving'),
+    'wooden_pot':('pot','nonliving'),
+    'vase':('vase','nonliving'),
+    'cat1': ('cat','pet'),
+    'pet_cat1':('cat','pet'),
+    'pet_dog1':('dog','pet'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'dog3': ('dog','pet'),
+    'dog6': ('dog','pet'),
+    'flower1':('flower','flower'),
+
+}
+
+
 class DINOEvaluator:
     def __init__(self, device, dino_model='facebook/dino-vits16') -> None:
         self.device = device
@@ -69,6 +96,7 @@ if __name__=='__main__':
     parser.add_argument('--method_root',required=True)
     parser.add_argument('--grounded',type=int,default=0)
     parser.add_argument('--sort',type=int,default=0)
+    parser.add_argument('--exclude_attr_change',type=int,default=0)
     args=parser.parse_args()
     method_root=args.method_root
     if args.keywords:
@@ -111,21 +139,47 @@ if __name__=='__main__':
                 fsize=os.stat(caption_path).st_size
                 if fsize==0:
                     continue
-                # log_path=os.path.join(exp_path,'result.txt')
-                if args.grounded:
-                    score_name='masked_dino'
-                    fake_root=os.path.join(exp_path,'masked')
+                if args.exclude_attr_change:
+                    cap_data=json.load(open(caption_path))
+                    prior,prompt_type=info_map[concept]
+                    exclude_words=exclude_words_per_type[prompt_type]
+                    exclude_list=[]
+                    for fname in cap_data:
+                        caption=cap_data[fname]
+                        for word in exclude_words:
+                            if word in caption:
+                                exclude_list.append(fname)
+                                break
+
+
                 else:
-                    score_name='dino'
-                    fake_root=os.path.join(exp_path,'generated')
+                    exclude_list=None
+                # log_path=os.path.join(exp_path,'result.txt')
+                if args.exclude_attr_change:
+                    if args.grounded:
+                        score_name='masked_dino_noattr'
+                        fake_root=os.path.join(exp_path,'masked')
+                        log_path=os.path.join(exp_path,'result.txt')
+                        if not os.path.exists(log_path):
+                            continue
+                    else:
+                        score_name='dino_noattr'
+                        fake_root=os.path.join(exp_path,'generated')
+                else:
+                    if args.grounded:
+                        score_name='masked_dino'
+                        fake_root=os.path.join(exp_path,'masked')
+                        log_path=os.path.join(exp_path,'result.txt')
+                        if not os.path.exists(log_path):
+                            continue
+                    else:
+                        score_name='dino'
+                        fake_root=os.path.join(exp_path,'generated')
                 dst_path=os.path.join(exp_path,'{}.json'.format(score_name))
-                if os.path.exists(dst_path):
-                    read_data=json.load(open(dst_path))
-                    result_line='{}\t{}'.format(exp,read_data[score_name])
-                    concept_results.append(result_line)
-                    # print('{}\t{}'.format(exp_path,read_data[score_name]))
-                    continue
-                # if not (os.path.exists(log_path)):
+                # if os.path.exists(dst_path):
+                #     read_data=json.load(open(dst_path))
+                #     result_line='{}\t{}'.format(exp,read_data[score_name])
+                #     concept_results.append(result_line)
                 #     continue
                 if not os.path.exists(fake_root):
                     continue
@@ -133,6 +187,10 @@ if __name__=='__main__':
                 generated_images=[]
                 for item in os.listdir(fake_root):
                     if not item.endswith(('.png','.jpg')):
+                        continue
+                    item_name=item.split('.')[0]
+                    if exclude_list is not None and item_name in exclude_list:
+                        # print(item_name)
                         continue
                     generated_images.append(Image.open(os.path.join(fake_root,item)))
                 if not len(generated_images):

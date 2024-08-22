@@ -7,21 +7,21 @@ hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
-    'pet_cat1':('cat','pet'),
-    'cat1': ('cat','pet'),
-    'vase':('vase','nonliving'),
-    'backpack':('backpack','nonliving'),
-    'pet_dog1':('dog','pet'),
-    'teddybear':('bear','nonliving'),
     'dog6': ('dog','pet'),
-    'barn': ('barn','building'),
-    'wooden_pot':('pot','nonliving'),
-    'dog3': ('dog','pet'),
-    'chair1': ('chair','nonliving'),
-    'cat_statue': ('toy','nonliving'),
-    'rc_car':('toy','nonliving'),
-    'pink_sunglasses':('sunglasses','sunglasses'),
-    'flower1':('flower','flower'),
+    # 'pet_cat1':('cat','pet'),
+    # 'cat1': ('cat','pet'),
+    # 'vase':('vase','nonliving'),
+    # 'backpack':('backpack','nonliving'),
+    # 'pet_dog1':('dog','pet'),
+    # 'teddybear':('bear','nonliving'),
+    # 'barn': ('barn','building'),
+    # 'wooden_pot':('pot','nonliving'),
+    # 'dog3': ('dog','pet'),
+    # 'chair1': ('chair','nonliving'),
+    # 'cat_statue': ('toy','nonliving'),
+    # 'rc_car':('toy','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'flower1':('flower','flower'),
 }
 info_map_01={
     # 'backpack':('backpack','nonliving'),
@@ -73,8 +73,8 @@ np.random.shuffle(ports)
 
 
 seed=2940
-include_priors=[1]
-dir_name='singlev2_seed{}'.format(seed)
+include_priors=[0]
+dir_name='singlev2_noprior_seed{}'.format(seed)
 log_dir='logs/ti_models/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 mask_prob_list=[0.25]

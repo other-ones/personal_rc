@@ -43,7 +43,7 @@ device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
 seed=2940
-dir_name='singlev2_seed{}'.format(seed)
+dir_name='singlev2_noprior_seed{}'.format(seed)
 dir_path=os.path.join('saved_models/ti_models',dir_name)
 log_dir='logs/generate/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)    
@@ -67,7 +67,7 @@ for cidx,concept in enumerate(concepts):
         output_dir=os.path.join('results/{}/{}'.format(dir_name,concept))
         exp_path=os.path.join(output_dir,exp_name)
         if os.path.exists(exp_path):
-            print(exp_name,'exists')
+            print(exp_path,'exists')
             continue
         while True:
             stats=get_gpu_memory()
