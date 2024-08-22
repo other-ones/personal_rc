@@ -115,6 +115,8 @@ class DreamboothDataset(Dataset):
         simple_caption=False,
 
     ):
+        self.instance_images_path = list(Path(data_root).iterdir())
+        self.num_instance_images = len(self.instance_images_path)
         self.simple_caption=simple_caption
         if class_data_root is not None:
             self.class_data_root = Path(class_data_root)
