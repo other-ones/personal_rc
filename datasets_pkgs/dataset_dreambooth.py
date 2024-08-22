@@ -96,9 +96,7 @@ class DreamboothDataset(Dataset):
         data_root,
         tokenizer,
         include_prior_concept,
-        learnable_property="object",  # [object, style]
         size=512,
-        repeats=10000,
         interpolation="bicubic",
         flip_p=0,
         center_crop=False,
@@ -114,7 +112,10 @@ class DreamboothDataset(Dataset):
         class_num=None,
         class_data_root=None,
         class_prompt=None,
+        simple_caption=False,
+
     ):
+        self.simple_caption=simple_caption
         if class_data_root is not None:
             self.class_data_root = Path(class_data_root)
             self.class_data_root.mkdir(parents=True, exist_ok=True)
@@ -256,10 +257,14 @@ class DreamboothDataset(Dataset):
 
             # 2. Caption for TI
             placeholder_string = self.placeholder_token
-            if self.include_prior_concept:
-                text = random.choice(prefixes).format(placeholder_string)+' {}'.format(self.prior_concept)
+            if self.simple_caption:
+                prefix=prefixes[0]
             else:
-                text = random.choice(prefixes).format(placeholder_string)
+                prefix=random.choice(prefixes)
+            if self.include_prior_concept:
+                text = prefix.format(placeholder_string)+' {}'.format(self.prior_concept)
+            else:
+                text = prefix.format(placeholder_string)
             example["input_ids"] = self.tokenizer(
                 text,
                 padding="max_length",
