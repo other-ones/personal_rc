@@ -21,7 +21,7 @@ from utils import render_caption
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 sys.path.insert(0, './packages')
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+from datasets_pkgs.dataset_dreambooth import DreamboothDataset
 from data_utils import cycle, create_wbd
 import argparse
 import copy
@@ -829,7 +829,7 @@ def main(args):
     #     class_prompt_encoder_hidden_states=pre_computed_class_prompt_encoder_hidden_states,
     #     tokenizer_max_length=args.tokenizer_max_length,
     # )
-    train_dataset = TextualInversionDataset(
+    train_dataset = DreamboothDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
@@ -848,8 +848,9 @@ def main(args):
         class_prompt=args.class_prompt1,
         simple_caption=args.simple_caption,
         mask_prob=args.mask_prob,
+        caption_root=args.caption_root,
     )
-    train_dataset_mlm = TextualInversionDataset(
+    train_dataset_mlm = DreamboothDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
@@ -864,6 +865,7 @@ def main(args):
         get_images=False,
         prompt_type=args.prompt_type,
         simple_caption=args.simple_caption,
+        caption_root=args.caption_root,
         # class_data_root=class_data_dir1 if args.with_prior_preservation else None,
         # class_num=args.num_class_images,
         # class_prompt=args.class_prompt1,
