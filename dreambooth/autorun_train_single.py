@@ -126,6 +126,7 @@ for lr in lr_list:
                     command+='--with_prior_preservation={} \\\n'.format(1)
                     command+='--class_prompt1="a picture of a {}" \\\n'.format(prior)
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(prior)
+                    command+='--caption_root="../datasets_pkgs/captions" \\\n'
                     if fixte==0: # do not fix text_encoder
                         command+='--train_text_encoder \\\n'
                     # command+='--report_to="wandb" \\\n'
