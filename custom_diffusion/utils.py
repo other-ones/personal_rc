@@ -15,7 +15,7 @@ def invert_scientific_notation(value):
         # new_base = base * (10 ** abs(inverted_exponent))
         
         # Convert the base to integer and return in scientific notation format
-        return f"{int(base)}e{inverted_exponent}"
+        return f"{(base)}e{inverted_exponent}"
 
     else:
         raise ValueError("The input is not in a valid scientific notation format.")

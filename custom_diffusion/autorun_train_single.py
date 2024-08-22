@@ -62,15 +62,16 @@ lambda_mlm_list=[
             # 1
             ]
 mask_prob_list=[0.25]
-lr_list=[5e-5]
+lr_list=[2.5e-5]
 for seed in [2940]:
     dir_name='sgpu_seed{}'.format(seed)
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
+        lr_str=lr_str.replace('.','P')
         for mask_prob in mask_prob_list:
             mprob_str=float_to_str(mask_prob)
-            for lambda_mlm in lambda_mlm_list:
-                for concept in list(info_map.keys()):
+            for concept in list(info_map.keys()):
+                for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     prior,category=info_map[concept]
                     run_name='custom'

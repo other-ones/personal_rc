@@ -300,23 +300,17 @@ class CLIPAttention(nn.Module):
             # is_prior2=is_prior2.view(bsz*self.num_heads,tgt_len) # 400,12,77 -> 4800,77
             
         # get query proj
-        proj_shape = (bsz * self.num_heads, -1, self.head_dim)
         query_states = self.q_proj(hidden_states) * self.scale
-        query_states = self._shape(query_states, tgt_len, bsz).view(*proj_shape)
-
-
-
-
-
         key_states = self._shape(self.k_proj(hidden_states), -1, bsz)
-        key_states = key_states.view(*proj_shape)
-
         value_states = self._shape(self.v_proj(hidden_states), -1, bsz)
+
+        proj_shape = (bsz * self.num_heads, -1, self.head_dim)
+        query_states = self._shape(query_states, tgt_len, bsz).view(*proj_shape)
+        key_states = key_states.view(*proj_shape)
         value_states = value_states.view(*proj_shape)
 
         src_len = key_states.size(1)
         attn_weights = torch.bmm(query_states, key_states.transpose(1, 2))
-
         attn_weights=attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
 
         if attn_mod_params is not None:
@@ -348,7 +342,7 @@ class CLIPAttention(nn.Module):
                 k1_min_scores=torch.min(k1_scores,dim=-1,keepdim=True)[0] # 4800,1
                 k1_p2_scores=k1_scores[is_prior2].view(bsz * self.num_heads,1)# 4800,1
                 offsets_k1_p2=torch.abs(k1_p2_scores-k1_min_scores)
-                k1_p2_scores=k1_p2_scores.view(bsz * self.num_heads,1)-(offsets_k1_p2*calibrate_kneg)
+                k1_p2_scores=k1_p2_scores.view(bsz * self.num_heads,1)-(offsets_k1_p2*calibrate_kneg1)
                 k1_scores[is_prior2]=k1_p2_scores.view(bsz * self.num_heads)
 
 
@@ -791,6 +785,7 @@ class CLIPEncoder(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+
         is_keyword_tokens1: Optional[bool] = None,
         is_keyword_tokens2: Optional[bool] = None,
         non_keyword_idxs: Optional[bool] = None,
