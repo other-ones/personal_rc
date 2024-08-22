@@ -1121,7 +1121,7 @@ def main(args):
                     mlm_logits=cls_net(clip_text_embedding_masked)
                     masked_idxs_flat=masked_idxs.view(-1)
                     loss_mlm = F.cross_entropy(
-                        mlm_logits.view(-1,len(orig_embeds_params)),
+                        mlm_logits.view(-1,cls_output_dim),
                         mlm_labels.view(-1),
                         ignore_index=-100,
                         reduction='none'
