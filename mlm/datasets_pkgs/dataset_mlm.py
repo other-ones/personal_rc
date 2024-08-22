@@ -129,8 +129,6 @@ class MLMDataset(Dataset):
     def __getitem__(self, index):
         example = {}
         samples_idxs=np.random.choice(np.arange(self.num_instance),replace=False)
-        # sampled_caption=self.corpus_dataset[int(samples_idxs)]['text']
-        # sampled_caption=self.corpus_dataset[int(samples_idxs)]['text']
         sampled_caption=self.captions[int(samples_idxs)]
 
 
@@ -165,9 +163,8 @@ class MLMDataset(Dataset):
         masked_idxs=[False]
         # mlm_target: 
         # non_special: non_special toke nonly
-        # all: bos+eos+non_special
+        # all: bos+eos+non_special+masked
         # we don't learn pading
-
         if self.mlm_target in ['non_special','masked']: # if non-special only then bos is not learned
             mlm_labels=[-100]
         elif self.mlm_target in ['all','non_padding']:
@@ -211,13 +208,15 @@ class MLMDataset(Dataset):
                         mlm_labels.append(tok_id)
                     else:
                         mlm_labels.append(-100)
-                        
+
                 # if mlm_target !='masked'
                 # append regardless of masked
                 elif self.mlm_target in ['non_special','all','non_padding']: 
                     mlm_labels.append(tok_id)
                 else:
                     assert False
+                # 1. mlm_labels
+
 
                 # 2. masked_idxs
                 if masked:
