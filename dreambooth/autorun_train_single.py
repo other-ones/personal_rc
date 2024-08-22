@@ -8,17 +8,17 @@ info_map={
     'wooden_pot':('pot','nonliving'),
     'vase':('vase','nonliving'),
     'cat1': ('cat','pet'),
-    # 'dog6': ('dog','pet'),
-    # 'pet_dog1':('dog','pet'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'barn': ('barn','building'),
-    # 'teddybear':('teddybear','nonliving'),
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'flower1':('flower','flower'),
+    'dog6': ('dog','pet'),
+    'pet_dog1':('dog','pet'),
+    'backpack':('backpack','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'barn': ('barn','building'),
+    'teddybear':('teddybear','nonliving'),
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'flower1':('flower','flower'),
     
 }
 # cuda_ids=[0,1,2,3,4,5,6,7]
@@ -50,7 +50,7 @@ dir_name='singlev2_seed{}'.format(seed)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for idx,concept in enumerate(list(info_map.keys())):
-lr_list=[2.5e-6]
+lr_list=[1e-6]
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     lr_str=lr_str.replace('.','P')

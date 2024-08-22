@@ -122,8 +122,8 @@ def main(args):
     if accelerator.is_main_process:
         print(exp_dir,'exp_dir')
         codepath=os.path.join(exp_dir,'src')
-        # if os.path.exists(codepath) and 'tmp' not in codepath:
-        #     assert False
+        if os.path.exists(codepath) and 'tmp' not in codepath:
+            assert False
         caption_path = os.path.join(args.output_dir,exp_name,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
@@ -345,6 +345,7 @@ def main(args):
        'cat sitting in front of the {}'.format(placeholder),
        'cat sitting in front of {} in snowy ice'.format(placeholder),
        'squirrel in front of the {}'.format(placeholder),
+
        '{} oil painting ghibli inspired'.format(placeholder),
        '{} painting by artist claude monet'.format(placeholder),
        '{} digital painting 3d render geometric style'.format(placeholder),
@@ -367,6 +368,7 @@ def main(args):
             "a vase filled with {} on a table".format(placeholder),
             "Bouquet of {} and roses".format(placeholder),
             "{} and a chocolate cake on the table".format(placeholder),
+
             "{} oil painting ghibli inspired".format(placeholder),
             "{} painting by artist claude monet".format(placeholder),
             "A digital illustration of {}".format(placeholder),
@@ -391,6 +393,7 @@ def main(args):
             "A scientist wearing {} examines a test tube".format(placeholder),
             "A dog wearing {} on the porch".format(placeholder),
             "A giraffe wearing {}".format(placeholder),
+
             "{} painted in the style of andy warhol".format(placeholder),
             "painting of {} by artist claude monet".format(placeholder),
             "A digital illustration of {}".format(placeholder),
@@ -398,6 +401,7 @@ def main(args):
             "a watercolor painting of {}".format(placeholder),
             "cool neon party cat in {}".format(placeholder),
             "digital painting of a turtle wearing {}".format(placeholder),
+
             "smart hedgehog in {}".format(placeholder),
             "{} digital 3d render".format(placeholder),
             ]

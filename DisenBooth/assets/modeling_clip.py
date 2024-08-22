@@ -352,7 +352,7 @@ class CLIPAttention(nn.Module):
                 k2_min_scores=torch.min(k2_scores,dim=-1,keepdim=True)[0] # 4800,1
                 k2_p1_scores=k2_scores[is_prior1].view(bsz * self.num_heads,1) # 4800,1
                 offsets_k2_p1=torch.abs(k2_p1_scores-k2_min_scores)
-                k2_p1_scores=k2_p1_scores.view(bsz * self.num_heads,1)-(offsets_k2_p1*calibrate_kneg)
+                k2_p1_scores=k2_p1_scores.view(bsz * self.num_heads,1)-(offsets_k2_p1*calibrate_kneg2)
                 k2_scores[is_prior1]=k2_p1_scores.view(bsz * self.num_heads)
 
             if calibrate_pneg1:

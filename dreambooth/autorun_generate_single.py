@@ -42,13 +42,13 @@ device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
 seed=2940
-dirs=['single_seed{}'.format(seed)]
+dirs=['singlev2_seed{}'.format(seed)]
 num_images_per_prompt=8
 for dir in dirs:
     dir_path=os.path.join('saved_models/dreambooth_models',dir)
     log_dir='logs/generate/{}'.format(dir)
     os.makedirs(log_dir,exist_ok=True)    
-    concepts=os.listdir(dir_path)
+    concepts=list(info_map.keys())
     concepts=sorted(concepts)
     for concept in concepts:
         if concept not in info_map:
@@ -56,7 +56,7 @@ for dir in dirs:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
-            if '2P5' not in exp:
+            if '2P5' in exp:
                 continue
             prior,category=info_map[concept]
             resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-1000/unet_s1000.pt')
@@ -65,7 +65,7 @@ for dir in dirs:
                 print(resume_unet_path,'does not exist')
                 continue
             exp_name=resume_unet_path.split('/')[-4]
-            exp_name+='_s1000'
+            # exp_name+='_s1000'
             output_dir=os.path.join('results/{}/{}'.format(dir,concept))
             exp_path=os.path.join(output_dir,exp_name)
             if os.path.exists(exp_path):
@@ -79,7 +79,7 @@ for dir in dirs:
                     stat_idx+=1
                     break
                 print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
-                time.sleep(10)
+                time.sleep(30)
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print(exp_name,device_idx)
@@ -103,7 +103,7 @@ for dir in dirs:
             os.system(command)
             print('STARTED')
             idx+=1
-            time.sleep(15)
+            time.sleep(30)
 
     
 
