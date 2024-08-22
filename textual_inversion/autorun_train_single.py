@@ -49,7 +49,7 @@ elif 'ubuntu' in hostname:
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             0,
-            0.0001,
+            0.0005,
             0.001,
             ]
 target_norms=[0]
@@ -146,6 +146,7 @@ for mask_prob in mask_prob_list:
                 command+='--prompt_type="{}" \\\n'.format(category)
                 command+='--silent=0 \\\n'
                 command+='--normalize_target1=0 \\\n'
+                command+='--caption_root="../datasets_pkgs/captions" \\\n'
                 command+='--run_name="{}" \\\n'.format(run_name)
                 # command+='--report_to="wandb" \\\n'
                 # command+='--project_name="TI MLM SINGLE" \\\n'
