@@ -1,5 +1,4 @@
 import inspect
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
 
 from contextlib import nullcontext
 from configs import parse_args
@@ -19,7 +18,9 @@ from utils import render_caption
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 sys.path.insert(0, './packages')
+from datasets_pkgs.dataset_mlm import TextualInversionDataset
 from data_utils import cycle, create_wbd
 import argparse
 import copy
