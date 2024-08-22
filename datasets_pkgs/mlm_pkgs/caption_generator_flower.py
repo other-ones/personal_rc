@@ -55,6 +55,13 @@ class CaptionGeneratorFlower(CaptionGenerator):
             neg=self.generate_styles_caption() 
 
         return anchor,neg
+
+
+
+
+
+
+        
     def generate_human_interaction_caption(self):
         subject=np.random.choice(HUMANS)
         interaction=np.random.choice(FLOWER_INTERACTIONS)

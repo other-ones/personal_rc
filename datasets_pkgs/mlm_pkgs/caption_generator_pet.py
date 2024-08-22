@@ -1,6 +1,6 @@
 import numpy as np
 from .caption_generator import CaptionGenerator
-from .consts import BACKGROUNDS,STYLES,NONLIVINGS,PET_ACTIVITIES,HUMANS,RELATIVES,NONLIVING_ATTRIBUTES
+from .consts import BACKGROUNDS,STYLES,NONLIVINGS,LIVING_ACTIVITIES,HUMANS,RELATIVES,NONLIVING_ATTRIBUTES
 from .consts import ARTISTS,LOCATIONS,OUTFITS
 
 
@@ -52,7 +52,7 @@ class CaptionGeneratorPet(CaptionGenerator):
         return anchor,neg
 
     def generate_human_interactions_caption(self):
-        interaction=np.random.choice(PET_ACTIVITIES)
+        interaction=np.random.choice(LIVING_ACTIVITIES)
         subject=np.random.choice(HUMANS)
         prompt=f"<new> is {interaction} a {subject}"
 
@@ -75,7 +75,7 @@ class CaptionGeneratorPet(CaptionGenerator):
             prompt=f"A view of the <new> at {background}"
         else:
             location=np.random.choice(LOCATIONS)
-            activity=np.random.choice(PET_ACTIVITIES)
+            activity=np.random.choice(LIVING_ACTIVITIES)
             prompt=f"<new> {activity} {location}"
         return prompt
 

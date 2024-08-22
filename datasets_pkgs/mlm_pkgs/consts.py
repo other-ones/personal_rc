@@ -48,7 +48,11 @@ LOCATIONS=[
     "on an isolated desert highway", "in an opulent Monaco casino", "at a historic Pilgrim landing site",
     "on a San Francisco cable car", "at enigmatic Stonehenge", "at a vibrant Rio de Janeiro carnival"
 ]
+BUILDING_LOCATIONS=[
 
+]
+
+BUILDING_LOCATIONS=list(set(BUILDING_LOCATIONS))
 
 
 BACKGROUNDS = [
@@ -184,7 +188,7 @@ BACKGROUNDS.extend(["Mount Fuji", "Niagara Falls", "Yellowstone National Park", 
     "Torres Strait Islands", "Cape Arnhem", "Great Northern Highway", "Cape Leveque", "Mitchell Falls",
     "Horizontal Falls", "Windjana Gorge", "Gibb River Road", "Pentecost River", "Bungle Bungles",
     "King Leopold Ranges", "Prince Regent River", "Kimberley Coast", "Buccaneer Archipelago",
-    "Dampier Peninsula", "Broome", "Derby", "Fitzroy Crossing", "Kununurra", "El Questro",
+    "Dampier Peninsula", "Broome of Australia", "Derby", "Fitzroy Crossing", "Kununurra", "El Questro",
     "Ord River", "Lake Argyle", "Victoria River"])
 BACKGROUNDS=list(set(BACKGROUNDS))
 
@@ -256,6 +260,7 @@ HUMANS = [
     "Marco Polo", "Socrates", "Aristotle", "Tutankhamun", "Queen Elizabeth I", "Genghis Khan",
 ]
 HUMANS.extend([
+    "person",
     "doctor", "nurse", "dentist", "firefighter", "police officer", "judge", "lawyer", "accountant",
     "scientist", "engineer", "teacher", "professor", "student", "mechanic", "plumber", "electrician",
     "carpenter", "pilot", "sailor", "chef", "cook", "butcher", "baker", "barista", "waiter", "bartender",
@@ -318,7 +323,16 @@ HUMANS=list(set(HUMANS))
 
 
 
-PET_ACTIVITIES = [
+LIVING_ACTIVITIES = [
+    "walking", "sitting", "running", "playing with a ball", "posing for photos",
+    "resting", "stretching", "waiting", "enjoying the sun", "observing surroundings",
+    "jumping", "lying down", "drinking water", "exploring", "socializing with others",
+    "practicing tricks", "eating snacks", "standing still", "playing tug-of-war", "chasing each other",
+    "playing hide and seek", "dancing", "balancing on a surface", "doing exercises", "taking a break",
+    "watching passersby", "relaxing in the shade", "performing tricks", "staying close to each other", "cooling off",
+    "taking deep breaths", "listening to sounds", "basking in the breeze", "giving high-fives", "holding a pose",
+    "playing catch", "waiting for someone", "greeting others", "exploring a new spot", "sitting on a bench",
+
     "making a documentary","reading poetry","learning a martial art","doing a cooking demonstration",
     "practicing calligraphy", "building a robot","riding a camel", "filming a vlog","sipping cocktails",
     "doing tai chi","working on a laptop", "having a coffee","stargazing","practicing martial arts","doing a wine tasting",
@@ -345,7 +359,7 @@ PET_ACTIVITIES = [
     "planning the next destination", "checking maps", "practicing a foreign language", "drawing people",
     "making travel plans", "drawing animals", "reading travel brochures", "thinking of art concepts",
     "watching clouds", "playing a card game", "sketching nature", "taking landscape photos",
-    "writing postcards", "telling stories", "recording a time-lapse video",
+    "writing postcards", "telling stories", "recording a time-lapse video","examines a test tub",
     "taking slow-motion videos", "doing a sketch", "playing a guessing game", "sharing stories",
     "doing light stretching", "recording nature sounds", "writing poetry", "sketching plants",
     "reading about history", "drawing famous landmarks", "making quick sketches", "observing wildlife",
@@ -372,8 +386,21 @@ PET_ACTIVITIES = [
     "drawing quick impressions", "writing a personal reflection", "taking photos from different angles",
     "recording video clips", "writing about the location", "sketching the environment", "recording daily experiences"
 ]
-PET_ACTIVITIES=list(set(PET_ACTIVITIES))
-
+LIVING_ACTIVITIES=list(set(LIVING_ACTIVITIES))
+SUNGLASSES_ACTIVITIES = [
+    "walks down the street", "relaxes on the beach", "poses for a photo", "drives a car", "rides a bike", 
+    "plays fetch", "reads a book", "sunbathes on the beach", "dances at a party", "skateboards in the park", 
+    "surfs on the waves", "hikes up a trail", "jogs in the morning", "plays in the park", "lounges by the pool", 
+    "enjoys an ice cream", "sips a drink", "watches the sunset", "plays with a frisbee", "walks a dog", 
+    "rides a skateboard", "sits on a bench", "watches a game", "waits for a bus", "takes a selfie", 
+    "dances at a concert", "plays the guitar", "sits on the porch", "plays a sport", "chats with friends", 
+    "poses in front of a landmark", "cruises on a boat", "explores the city", "waits in line", "stands by a fountain", 
+    "walks through a garden", "plays with a ball", "hangs out at the mall", "enjoys a picnic", "runs on the beach", 
+    "watches the waves", "strolls through the park", "sits at a café", "swings in a hammock", "plays catch", 
+    "stands in the shade", "waits at a crosswalk", "climbs a hill", "watches the clouds", "explores a new place", 
+    "waits for a train", "walks through a market", "feeds the birds", "enjoys a cool breeze", "plays at the playground", 
+    "takes a walk in the park", "sits on a rooftop", "plays with a kite", "hangs out by the pier", "watches a parade"
+]
 
 NONLIVINGS = [
     "car",
@@ -424,8 +451,22 @@ RELATIVES = [
     # "atop", 
     # "against", 
     ]
-RELATIVES=list(set(RELATIVES))
 
+RELATIVES=list(set(RELATIVES))
+RELATIVES_BUILDING=[
+    "in front of","behind","next to",
+    "inside","on top of","near",
+    "beside","at the entrance of","alongside",
+    "in the shadow of","in the corner of","under the roof of",
+    "against the wall of","at the back of","in the loft of",
+    "under the overhang of","in the doorway of","under the window of",
+    "on the steps of","under the porch of","around",
+    "in the yard of","adjacent to","in the field near",
+    "across from","on the side of","under roof",
+    "leaning against","overlooking","facing",
+    "surrounded by","in the vicinity of",
+    "opposite", "outside", "under the shadow of"
+]
 
 RELATIVES_SUNGLASSES = [
     "beside", "near", "next to", "behind", 
@@ -566,6 +607,8 @@ NONLIVING_INTERACTIONS=[
 ]
 NONLIVING_INTERACTIONS=list(set(NONLIVING_INTERACTIONS))
 
+
+
 NONLIVING_ATTRIBUTES = [
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
@@ -603,8 +646,27 @@ NONLIVING_ATTRIBUTES = [
     "powder-coated", "brushed metal", "handcrafted", "eco-friendly", "holographic", "transparent", "glowing",
     "iridescent", "luminescent", "translucent", "opalescent", "gemstone-studded", "encrusted"
 ]
-NONLIVING_ATTRIBUTES=list(set(NONLIVING_ATTRIBUTES))
 
+NONLIVING_ATTRIBUTES=list(set(NONLIVING_ATTRIBUTES))
+BUILDING_ATTRIBUTES=[
+    "wooden", "stone", "metal-roofed", "red-painted", "weathered", "large", "small", "rustic", "modern", "two-story",
+    "single-story", "gable-roofed", "hipped-roofed", "lofted", "spacious", "compact", "ventilated", "well-lit", "dark",
+    "open-sided", "closed-sided", "insulated", "uninsulated", "hay-filled", "tool-lined", "livestock-filled", "grain-storing",
+    "vented", "shuttered", "arched", "elevated", "ground-level", "multi-room", "single-room", "timber-framed", "corrugated metal",
+    "brick-walled", "stone-foundation", "concrete-floored", "dirt-floored", "lofted ceiling", "beamed", "fenced-in", "paint-chipped",
+    "well-maintained", "dilapidated", "historic", "newly-built", "working", "abandoned", "refurbished", "stained", "traditional",
+    "convertible", "rusty", "iron-hinged", "board-and-batten", "cedar-shingled", "quaint", "sprawling", "laddered", "overhang",
+    "wind-blown", "ivy-covered", "sturdy", "landmark", "log-beamed", "storm-worn", "countryside", "distant", "overgrown",
+    "weatherproof", "old-fashioned", "newly-painted", "solar-panel", "rain-soaked", "sun-bleached", "metal-sided",
+    "side-entrance", "painted", "window-shuttered", "rooftop", "wind-battered", "barbed-wire", "shade", "gravel", "open",
+    "tarp-covered", "birdhouse-covered", "frost-covered", "muddy", "snow-covered", "sunlit", "farm-equipment-filled",
+    "painted-star", "stable", "hay-scented", "cobwebbed", "wooden-ladder", "weathered-wood", "rural", "surrounded", "rusted",
+    "tin-roofed", "solar-lit", "fenced", "firewood-stacked", "vine-covered", "quiet", "peaceful", "tall-grass", "hedged",
+    "chipped-paint", "tree-framed", "patchwork", "solid", "creaky", "sturdy", "stone-paved", "classic", "pasture",
+    "rolling-hill", "wildlife-filled", "open-pasture", "wooden-fenced", "dirt-driveway", "picket-fenced", "painted-quilt",
+    "tractor-parked"
+]
+BUILDING_ATTRIBUTES=list(set(BUILDING_ATTRIBUTES))
 PET_ATTRIBUTES = [
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
@@ -630,9 +692,39 @@ PET_ATTRIBUTES = [
     "short-haired", "long-haired", "curly-haired", "wavy-haired", "hairless", "bald", "tailed", "tailless", "whiskered",
     "four-legged", "two-legged", "winged", "horned", "clawed", "webbed", "beaked", "snouted", "round-eyed", "bright-eyed",
     "sharp-toothed", "floppy-eared", "pointy-eared", "droopy-eared", "whiskerless", "thick-coated", "double-coated",
-    "single-coated", "maned", "crested", "spiny", "scaled"
+    "single-coated", "maned", "crested", "spiny", "scaled", "futuristic style"
     ]
 PET_ATTRIBUTES=list(set(PET_ATTRIBUTES))
+
+FLOWER_ATTRIBUTES = [
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
+    "cream", "tan", "chocolate", "beige", "amber", "ivory", "peach", "lavender", "teal", "navy", "maroon", "copper", "bronze",
+    "turquoise", "mustard", "burgundy", "coral", "mint", "pearl", "rust", "sand", "platinum", "fuchsia",
+
+    # Shapes
+    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
+    "cube-shaped", "pointy", "angular", "curved", "elongated", "flat", "slender", "broad", "compact", "tapered",
+    "heart-shaped", "star-shaped", "fan-shaped", "spiral", "petal-shaped", "lobed", "fluted", "crescent", "wave-shaped", "fringed",
+    "bell-shaped", "trumpet-shaped", "tubular", "cup-shaped", "funnel-shaped", "daisy-shaped", "spike-shaped", "disc-shaped", "umbel-shaped", "panicle-shaped",
+
+    # Textures
+    "wet", "shiny", "smooth", "rough", "silky", "coarse", "slick", "velvety", "soft", "matte", 
+    "plush", "feathery", "waxy", "leathery", "papery", "powdery", "crisp", "wrinkled", "glossy", "brittle", 
+    "pitted", "grainy", "velutinous", "glabrous", "lanceolate",
+
+    # Patterns
+    "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "patched", "solid", "brindled", "checked",
+    "zigzag", "paisley", "tartan", "camouflage", "banded", "gradient", "veined", "mottled", "swirled", "flecked",
+    "streaked", "gridded", "honeycombed", "chevron", "plaid", "reticulate", "net-veined", "mosaic", "ringed", "whorled",
+
+    # Sizes
+    "small", "large", "tiny", "huge", "giant", "mini", "medium", "massive", "petite", "pint-sized",
+    "colossal", "diminutive", "microscopic", "oversized", "slender", "bulky", "trim", "stocky", "compact", "ample",
+    "dwarf", "mammoth", "gracile", "stout", "towering", "miniature", "robust", "delicate", "gigantic", "teensy"
+]
+
+
 HUMAN_ATTRIBUTES = [
     "tall", "short", "fat", "skinny", "muscular", "lean", "chubby", "slim", 
     "bald", "hairy", "bearded", "mustached", "clean-shaven", "freckled", 
@@ -846,8 +938,28 @@ ANIMALS = [
     "oyster", "barnacle", "snail", "slug", "worm", "centipede", "millipede"
 ]
 ANIMALS=list(set(ANIMALS))
+ANIMAL_ATTRIBUTES=[
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
+    "cream", "tan", "chocolate", "beige", "amber", "ivory", "peach", "lavender", "teal", "navy", "maroon", "copper", "bronze",
+    
+    # Shapes
+    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
+    "cube-shaped", "pointy", "angular", "curved", "elongated", "flat", "slender", "broad", "compact", "tapered",
 
+    # Textures
+    "wet", "shiny", "fluffy", "fuzzy", "smooth", "rough", "silky", "coarse", "bristly", "slick", "velvety", "soft", "bushy",
+    "greasy", "matte", "plush", "feathery", "scaly", "hairy", "spiky",
 
+    # Patterns
+    "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "patched", "solid", "brindled", "checked",
+    "zigzag", "paisley", "tartan", "camouflage", "banded", "gradient",
+
+    # Sizes
+    "small", "large", "tiny", "huge", "giant", "mini", "medium", "massive", "petite", "bulky", "stocky", "slim", "stout",
+    "lean", "plump", "pint-sized",
+]
+ANIMAL_ATTRIBUTES=list(set(ANIMAL_ATTRIBUTES))
 ARTISTS= [
     "Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet", 
     "Salvador Dalí", "Frida Kahlo", "Henri Matisse", "Jackson Pollock", 
@@ -913,3 +1025,29 @@ OUTFITS = [
 ]
 
 OUTFITS=list(set(OUTFITS))
+
+
+VIEWPOINTS = [
+    "a top view of", "a front view of", "a side view of", "a rear view of", "an aerial view of",
+    "a close-up view of", "a distant view of", "a corner view of", "an interior view of", "an exterior view of",
+    "a bird's-eye view of", "a street-level view of", "a panoramic view of", "an angled view of", "a perspective view of",
+    "a night view of", "a day view of", "a rooftop view from", "a window view from", "a courtyard view of",
+    "a skyline view including", "a reflected view of", "an underground view of", "a 3D model view of", "a historical view of",
+    "a drone view of", "a side elevation view of", "a cross-sectional view of", "an oblique view of", "a low-angle view of",
+    "a high-angle view of", "a fisheye lens view of", "a time-lapse view of", "a shadowed view of", "a sunlit view of",
+    "a foggy view of", "a rainy view of", "a snow-covered view of", "a night-lit view of", "a silhouette view of",
+    "a reflective glass view of", "a mirrored view of", "a thermal view of", "an infrared view of", "a blueprint view of",
+    "a scanned view of", "a 360-degree view of", "an exploded view of", "a sectional elevation view of", "a longitudinal section view of",
+    "a transverse section view of", "an isometric view of", "a CAD model view of", "a conceptual sketch view of", "a nighttime skyline view including",
+    "a seasonal view of", "a construction phase view of", "a demolished view of", "an abandoned view of", "a historical reconstruction view of",
+    "a nightscape view with", "a sunrise view with", "a sunset view with", "a winter view of", "a summer view of",
+    "a reflective pool view with", "an overgrown view of", "a decayed view of", "a modernized view of", "an artistic rendering of",
+    "a minimalist view of", "a maximalist view of", "a drone-following view of", "a zoomed-in detail view of", "a textured surface view of",
+    "a view from the entrance of", "a view of the roof of", "a look down from", "a look up at", "a street view next to",
+    "a view of the front door of", "a view of the windows of", "a view of the foundation of",
+    "a look at the facade of", "a view of the entire", "the main entrance of", "a view of the garden in front of",
+    "a view of the parking lot next to", "a view of the path leading to", "a look at the signs on", "a view of the steps leading to", "a look at the balconies of",
+    "a view from the driveway of", "a look at the side yard of", "a view from the sidewalk in front of", "a view from the alley beside", "a look at the porch of",
+    "a look at the garage door of", "a view of the chimney on", "a look at the roofline of", "a look at the fence around",
+    "a view from the patio of", "a view of the landscaping around", "a view of the lighting on", "a view of the address on", "a view of the back yard of"
+]

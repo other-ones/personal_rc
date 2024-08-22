@@ -1,6 +1,6 @@
-export MODEL_NAME="stabilityai/stable-diffusion-2-1-base"
+export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1"
-export CUDA_VISIBLE_DEVICES=0;
+export CUDA_VISIBLE_DEVICES=2;
 accelerate launch --main_process_port 4230  train_mlm_single.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
@@ -18,11 +18,12 @@ accelerate launch --main_process_port 4230  train_mlm_single.py \
   --seed=7777 \
   --mask_tokens="[MASK]" \
   --lambda_mlm=0.001 --freeze_mask_embedding=1 \
-  --cls_net_path='saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/cls_net_100000_ckpt.pt' \
-  --mask_embed_path='saved_models/mlm_models/sd2_contextnet_nonpadding_1e4/checkpoints/mask_embeds_100000_ckpt.pt' \
+  --cls_net_path='saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/cls_net_60000_ckpt.pt' \
+  --mask_embed_path='saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/mask_embeds_60000_ckpt.pt' \
   --mlm_target='masked' \
   --mlm_batch_size=50 \
   --run_name='tmp_mlm0001' \
   --scale_lr \
   --prompt_type='pet' \
-  --include_prior_concept=0 
+  --include_prior_concept=0 \
+  --caption_root='../datasets_pkgs/captions'

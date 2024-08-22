@@ -1,10 +1,12 @@
 import inspect
+import os
 
-
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+# from datasets_pkgs.dataset_mlm import TextualInversionDataset
 from configs import parse_args
 import sys
 sys.path.insert(0, './packages')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+from datasets_pkgs.dataset_mlm import TextualInversionDataset
 import argparse
 import logging
 import math
@@ -309,11 +311,11 @@ def main():
     # # # # # # # # # # 
     from contextnet import ContextNet
     if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-        cls_net=ContextNet(1024, len(token_embeds)-1)
+        cls_net=ContextNet(1024, len(token_embeds)-1) #-1 for placeholder
         cls_output_dim=len(token_embeds)-1
     elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
-        cls_net=ContextNet(768, len(token_embeds))
-        cls_output_dim=len(token_embeds)
+        cls_net=ContextNet(768, len(token_embeds)-1) # -1 for placeholder
+        cls_output_dim=len(token_embeds)-1
     else:
         assert False,'undefined sd version'
 
@@ -375,6 +377,7 @@ def main():
         get_images=True,
         prompt_type=args.prompt_type,
         mask_prob=args.mask_prob,
+        caption_root=args.caption_root,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -392,6 +395,7 @@ def main():
         get_images=False,
         prompt_type=args.prompt_type,
         mask_prob=args.mask_prob,
+        caption_root=args.caption_root,
     )
     
     def collate_fn(examples):
@@ -421,8 +425,8 @@ def main():
         # 5. For MLM 
         input_ids_masked = [example["input_ids_masked"] for example in examples]
         input_ids_masked=torch.stack(input_ids_masked)
-        input_ids_non_mask = [example["input_ids_non_mask"] for example in examples]
-        input_ids_non_mask=torch.stack(input_ids_non_mask)
+        input_ids_pos = [example["input_ids_pos"] for example in examples]
+        input_ids_pos=torch.stack(input_ids_pos)
         masked_idxs = [example["masked_idxs"] for example in examples] #N,77, list of booleans
         masked_idxs = torch.stack(masked_idxs)
         mlm_labels = [example["mlm_labels"] for example in examples] #N,77, list of booleans
@@ -438,7 +442,7 @@ def main():
             "pixel_values": pixel_values,
             "input_ids": input_ids, # for reconstruction
             "input_ids_masked": input_ids_masked, # for mlm
-            "input_ids_non_mask": input_ids_non_mask, # for mlm
+            "input_ids_pos": input_ids_pos, # for mlm
             "masked_idxs": masked_idxs,
             "mlm_labels": mlm_labels,
             "non_special_idxs": non_special_idxs,
@@ -615,7 +619,7 @@ def main():
                 mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
                 non_special_idxs=batch_mlm["non_special_idxs"]
                 input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
-                input_ids_non_mask=batch_mlm["input_ids_non_mask"].to(accelerator.device)
+                input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                 # input_ids_non_mask=batch_mlm["input_ids_non_mask"]
                 # 1. Load Batch
                 
@@ -735,15 +739,15 @@ def main():
                         masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
                         non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
                         mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
-                        input_ids_non_mask=input_ids_non_mask[viz_idx:viz_idx+1]
+                        input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
                         input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
 
-                        input_ids_non_mask=input_ids_non_mask[non_special_idxs]
+                        input_ids_pos=input_ids_pos[non_special_idxs]
                         input_ids_masked=input_ids_masked[non_special_idxs]
                         mlm_logits=mlm_logits[non_special_idxs]
                         masked_idxs=masked_idxs[non_special_idxs]
 
-                        decoded=tokenizer.batch_decode(input_ids_non_mask)
+                        decoded=tokenizer.batch_decode(input_ids_pos)
                         decoded_masked=tokenizer.batch_decode(input_ids_masked)
                         decoded_logits=tokenizer.batch_decode(mlm_logits)
                         decoded_list=[]

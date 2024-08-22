@@ -98,7 +98,7 @@ class TextualInversionDataset(Dataset):
         include_prior_concept,
         learnable_property="object",  # [object, style]
         size=512,
-        repeats=100,
+        repeats=10000,
         interpolation="bicubic",
         flip_p=0,
         center_crop=False,
@@ -109,27 +109,24 @@ class TextualInversionDataset(Dataset):
         get_images=True,
         prompt_type=None,
         prior_concept=None,
-        placeholder_token=None
+        placeholder_token=None,
+        caption_root=None
     ):
         self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
-        if prompt_type=='nonliving':
-            from .mlm_pkgs.caption_generator_nonliving import CaptionGeneratorNonLiving
-            self.prompt_generator=CaptionGeneratorNonLiving()
-        elif prompt_type=='pet':
-            from .mlm_pkgs.caption_generator_pet import CaptionGeneratorPet
-            self.prompt_generator=CaptionGeneratorPet()
-        elif prompt_type=='building':
-            from .mlm_pkgs.caption_generator_building import CaptionGeneratorBuilding
-            self.prompt_generator=CaptionGeneratorBuilding()
-        elif prompt_type=='sunglasses':
-            from .mlm_pkgs.caption_generator_sunglasses import CaptionGeneratorSunglasses
-            self.prompt_generator=CaptionGeneratorSunglasses()
-        elif prompt_type=='flower':
-            from .mlm_pkgs.caption_generator_flower import CaptionGeneratorFlower
-            self.prompt_generator=CaptionGeneratorFlower()
-        else:
-            raise Exception('Not Implemented')
+        caption_dir_path=os.path.join(caption_root,prompt_type)
+        cap_file_list=os.listdir(caption_dir_path)
+        self.captions={}
+        max_length=0
+        for cap_file in cap_file_list:
+            fname=cap_file.split('.')[0]
+            cap_file_path=os.path.join(caption_dir_path,cap_file)
+            self.captions[fname]=open(cap_file_path).readlines()
+            print('{}\t{}'.format(fname,len(self.captions[fname])))
+            if max_length<len(self.captions[fname]):
+                max_length=len(self.captions[fname])
+        self._length=max_length
+        self.caption_types=list(self.captions.keys())
         
         self.get_images = get_images
         self.mask_token_ids = mask_token_ids
@@ -145,7 +142,7 @@ class TextualInversionDataset(Dataset):
         self.flip_p = flip_p
         self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
         self.num_images = len(self.image_paths)
-        self._length = self.num_images * repeats
+        # self._length = self.num_images * repeats
         self.interpolation = {
             "linear": PIL_INTERPOLATION["linear"],
             "bilinear": PIL_INTERPOLATION["bilinear"],
@@ -227,33 +224,29 @@ class TextualInversionDataset(Dataset):
             for _ in range(len(is_keyword_tokens),self.tokenizer.model_max_length):
                 is_keyword_tokens.append(False)
             assert len(is_keyword_tokens)==self.tokenizer.model_max_length
+            assert sum(is_keyword_tokens)==1
             example["is_keyword_tokens"]=torch.BoolTensor(is_keyword_tokens)
         # 3. MLM
-        mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
+        # mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
+        sampled_type=np.random.choice(self.caption_types)
+        mlm_caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
         if self.include_prior_concept:
             placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
         else:
             placeholder='{}'.format(self.placeholder_token)
-        caption_pos=mlm_pos.replace('<new>','{}'.format(placeholder)) # caption without masked embedding
-        caption_neg=mlm_neg.replace('<new>','{}'.format(placeholder)) #
+        mlm_caption=mlm_caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
         example["input_ids_pos"] = self.tokenizer(
-                caption_pos,
-                padding="max_length",
-                truncation=True,
-                max_length=self.tokenizer.model_max_length,
-                return_tensors="pt",
-            ).input_ids[0]
-        example["input_ids_neg"] = self.tokenizer(
-                caption_neg,
+                mlm_caption,
                 padding="max_length",
                 truncation=True,
                 max_length=self.tokenizer.model_max_length,
                 return_tensors="pt",
             ).input_ids[0]
         
+        
 
 
-        words_anchor=caption_pos.split()
+        words_mlm=mlm_caption.split()
         is_keyword_tokens_mlm=[False] # first token for <startoftext>
         masked_idxs=[False]
         if self.mlm_target=='non_special': # if non-special only then bos is not learned
@@ -262,21 +255,21 @@ class TextualInversionDataset(Dataset):
             mlm_labels=[self.tokenizer.bos_token_id]
         input_ids_masked=[self.tokenizer.bos_token_id]
         non_special_idxs=[False]
-        for word_idx in range(len(words_anchor)):
-            cap_word=words_anchor[word_idx]
-            word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
+        for word_idx in range(len(words_mlm)):
+            mlm_word=words_mlm[word_idx]
+            word_token_ids=self.tokenizer.encode(mlm_word,add_special_tokens=False)
             num_tokens=len(word_token_ids)
             non_special_idxs+=([True]*num_tokens)
             for tok_id in word_token_ids:
                 # 1) input ids and indices for mask token
-                if np.random.rand()<self.mask_prob and (self.placeholder_token not in cap_word) and (cap_word not in self.prior_concept): 
+                if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.prior_concept): 
                     masked_idxs.append(True)
                     input_ids_masked.append(self.mask_token_ids)
                 else:
                     masked_idxs.append(False)
                     input_ids_masked.append(tok_id)
                 # 2) keyword indices and labels for MLM
-                if self.placeholder_token in cap_word:
+                if self.placeholder_token == mlm_word:
                     assert num_tokens==1
                     is_keyword_tokens_mlm.append(True)
                     mlm_labels.append(-100)
@@ -289,6 +282,7 @@ class TextualInversionDataset(Dataset):
         for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
             is_keyword_tokens_mlm.append(False)
         assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
+        assert sum(is_keyword_tokens_mlm)==1
         example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
 
         # 4) input_ids or MLM
@@ -324,13 +318,5 @@ class TextualInversionDataset(Dataset):
         example['masked_idxs']=masked_idxs
         example['non_special_idxs']=non_special_idxs
 
-        # 7) non_mask_input_ids
-        example["input_ids_non_mask"]= self.tokenizer(
-            caption_pos,
-            padding="max_length",
-            truncation=True,
-            max_length=self.tokenizer.model_max_length,
-            return_tensors="pt",
-        ).input_ids[0]
         return example
 
