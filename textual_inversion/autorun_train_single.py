@@ -7,13 +7,13 @@ hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
-    'backpack':('backpack','nonliving'),
     'pet_cat1':('cat','pet'),
-    'pet_dog1':('dog','pet'),
+    'cat1': ('cat','pet'),
     'vase':('vase','nonliving'),
+    'backpack':('backpack','nonliving'),
+    'pet_dog1':('dog','pet'),
     'teddybear':('bear','nonliving'),
     'dog6': ('dog','pet'),
-    'cat1': ('cat','pet'),
     'barn': ('barn','building'),
     'wooden_pot':('pot','nonliving'),
     'dog3': ('dog','pet'),
@@ -49,8 +49,9 @@ elif 'ubuntu' in hostname:
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             0,
-            0.0005,
             0.001,
+            0.0005,
+            0.0002,
             ]
 target_norms=[0]
 
