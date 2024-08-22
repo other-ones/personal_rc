@@ -32,7 +32,7 @@ from torchvision import transforms
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from datasets_pkgs.dataset_analysis_single import TextualInversionDataset
+from datasets_pkgs.dataset_mlm import TextualInversionDataset
 import diffusers
 from diffusers import (
     AutoencoderKL,
@@ -44,8 +44,6 @@ from diffusers import (
 )
 from diffusers.optimization import get_scheduler
 from diffusers.utils import is_wandb_available
-# from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_card
-# from diffusers.utils.import_utils import is_xformers_available
 
 # ADDED
 from data_utils import cycle, create_wbd
@@ -252,7 +250,6 @@ def main():
         placeholder_tokens=placeholder_tokens,
         placeholder_ids=placeholder_ids,
         prior_concepts=prior_concepts,
-        caption_root=args.caption_root,
     )
    
     

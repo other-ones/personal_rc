@@ -176,11 +176,11 @@ if __name__=='__main__':
                         score_name='dino'
                         fake_root=os.path.join(exp_path,'generated')
                 dst_path=os.path.join(exp_path,'{}.json'.format(score_name))
-                # if os.path.exists(dst_path):
-                #     read_data=json.load(open(dst_path))
-                #     result_line='{}\t{}'.format(exp,read_data[score_name])
-                #     concept_results.append(result_line)
-                #     continue
+                if os.path.exists(dst_path):
+                    read_data=json.load(open(dst_path))
+                    result_line='{}\t{}'.format(exp,read_data[score_name])
+                    concept_results.append(result_line)
+                    continue
                 if not os.path.exists(fake_root):
                     continue
                 src_images=[Image.open(os.path.join(real_root,item)).convert('RGB').resize((512,512)) for item in os.listdir(real_root)]

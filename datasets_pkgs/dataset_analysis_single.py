@@ -90,7 +90,7 @@ else:
         "nearest": PIL.Image.NEAREST,
     }
 
-class TextualInversionDatasetSingle(Dataset):
+class TextualInversionDataset(Dataset):
     def __init__(
         self,
         data_root1,
@@ -111,26 +111,28 @@ class TextualInversionDatasetSingle(Dataset):
         prompt_type=None,
         placeholder_tokens=[],
         placeholder_ids=[],
-        prior_concepts="*",
-        make_composition=True,
+        prior_concept=None,
+        caption_root=None,
 
     ):
-        self.make_composition = make_composition
+        self.include_prior_concept=include_prior_concept
         self.placeholder_ids = placeholder_ids
         self.placeholder_tokens = placeholder_tokens
-        self.prior_concepts = prior_concepts
-        print(placeholder_tokens,'placeholder_tokens')
-        print(prior_concepts,'prior_concepts')
+        self.prior_concept = prior_concept
+        caption_dir_path=os.path.join(caption_root,prompt_type)
         self.prompt_type=prompt_type
-        self.include_prior_concept=include_prior_concept
-        if prompt_type=='two_pets':
-            from .mlm_pkgs.caption_generator_two_pets import CaptionGeneratorTwoPets
-            self.prompt_generator=CaptionGeneratorTwoPets()
-        elif prompt_type=='pet':
-            from .mlm_pkgs.caption_generator_pet import CaptionGeneratorPet
-            self.prompt_generator=CaptionGeneratorPet()
-        else:
-            raise Exception('Not Implemented')
+        self.captions={}
+        max_length=0
+        cap_file_list=os.listdir(caption_dir_path)
+        for cap_file in cap_file_list:
+            fname=cap_file.split('.')[0]
+            cap_file_path=os.path.join(caption_dir_path,cap_file)
+            self.captions[fname]=open(cap_file_path).readlines()
+            print('{}\t{}'.format(fname,len(self.captions[fname])))
+            if max_length<len(self.captions[fname]):
+                max_length=len(self.captions[fname])
+        self._length=max_length
+        self.caption_types=list(self.captions.keys())
         
         self.get_images = get_images
         self.mask_token_ids = mask_token_ids
@@ -147,8 +149,6 @@ class TextualInversionDatasetSingle(Dataset):
         self.image_paths1 = [os.path.join(self.data_roots[0], file_path) for file_path in os.listdir(self.data_roots[0])]
         self.image_paths=[self.image_paths1]
         self.num_images = len(self.image_paths1)
-
-        self._length = self.num_images * repeats
         self.interpolation = {
             "linear": PIL_INTERPOLATION["linear"],
             "bilinear": PIL_INTERPOLATION["bilinear"],
@@ -156,44 +156,7 @@ class TextualInversionDatasetSingle(Dataset):
             "lanczos": PIL_INTERPOLATION["lanczos"],
         }[interpolation]
 
-        # self.templates = imagenet_style_templates_small if learnable_property == "style" else imagenet_templates_small
-        # self.flip_transform = transforms.RandomHorizontalFlip(p=self.flip_p)
-        self.junctions=[
-            "displayed alongside",
-            "displayed next to",
-            "exhibited with",
-            "exhibited next to",
-            "shown next to",
-            "presented with",
-            "featured with",
-            "positioned beside",
-            "accompanied with",
-            "placed adjacent to",
-            "arranged with",
-            "paired alongside",
-            "set against",
-            "aligned with",
-            "juxtaposed with",
-            "matched with",
-            "grouped with",
-            "associated next to",
-            "framed with",
-            "with",
-            "next to",
-            "shown with",
-            "alongside",
-            "shown next to",
-            "adjacent to",
-            "together with",
-            "accompanied by",
-            "in proximity to",
-            "in collaboration with",
-            "associated with",
-            "in partnership with",
-            "in relation to",
-            "displayed with",
-            "near by"]
-        self.junctions=list(set(self.junctions))
+        
     def __len__(self):
         return self._length
 
