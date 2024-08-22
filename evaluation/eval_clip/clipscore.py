@@ -238,10 +238,9 @@ def cal_clipscore(image_ids, image_paths, text_list, device=None, scale_weight=1
     model, transform = clip.load("ViT-B/32", device=device, jit=False)
     model.eval()
     image_paths=sorted(image_paths)
-    image_feats = extract_all_images(image_paths, model, device, batch_size=16, num_workers=8)
+    image_feats = extract_all_images(image_paths, model, device, batch_size=64, num_workers=8)
     # print(image_paths[0],'image_paths[0]')
     # print(np.sum(image_feats[0]),'image_feats_sum_td')
-    # print(image_feats.shape,'image_feats.shape')
     # get image-text clipscore
     _, per_instance_image_text, candidate_feats = get_clip_score(model, image_feats, text_list, device, w=scale_weight)
 
