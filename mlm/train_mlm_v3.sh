@@ -4,7 +4,7 @@ export MODEL_NAME="stabilityai/stable-diffusion-2-1";
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
-export CUDA_VISIBLE_DEVICES=0,4;
+export CUDA_VISIBLE_DEVICES=6,7;
 accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v3.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --output_dir="saved_models/mlm_models" \

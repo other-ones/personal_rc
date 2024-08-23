@@ -520,7 +520,7 @@ def main():
                     
                     bg_embeds=text_emb[ibt]
                     bg_embeds_simple=text_emb_simple[ibt_simple]
-                    sim=cos_sim(bg_embeds,bg_embeds)
+                    sim=cos_sim(bg_embeds,bg_embeds_simple)
 
                     # print(sim.shape,'sim.shape')
                     # print(bg_embeds.shape,'bg_embeds.shape')
