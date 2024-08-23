@@ -227,7 +227,7 @@ def main():
     elif '-2-1' in args.pretrained_model_name_or_path:
         embed_dim=1024
 
-    cls_net=ContextNet(embed_dim, len(token_embeds))
+    cls_net=ContextNetV3(embed_dim, len(token_embeds))
     num_hidden_layers=4
     in_proj_std = (embed_dim**-0.5) * ((2 * num_hidden_layers) ** -0.5)
     out_proj_std = (embed_dim**-0.5) 

@@ -26,7 +26,7 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v3.py \
   --whole_word_mask=0 \
   --checkpoints_total_limit=10 \
   --report_to="wandb" \
-  --project_name='ContextNetV2 Train' 
+  --project_name='ContextNetV3 Train' 
 
 
 
