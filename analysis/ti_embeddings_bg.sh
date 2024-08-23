@@ -19,17 +19,15 @@ accelerate launch --main_process_port 1234  ti_embeddings_bg.py \
   --prompt_type='pet' \
   --placeholder_token1="<cat1>" \
   --prior_concept1="cat" \
-  --learned_embed_path1="saved_models/ti_models/singlev2_seed2940/cat1/tiv2_prior_mlm0001_cat1_mprob025/checkpoints/learned_embeds_s3000.pt" \
-  --include_prior_concept=1 \
-  --run_name='cat1_mlm0001' \
-  --target='prior' \
-  --caption_path='../datasets_pkgs/captions/analysis/pet/cat.txt'
+  --learned_embed_path1="saved_models/ti_models/singlev2_noprior_seed2940/cat1/tiv2_noprior_mlm0001_cat1_mprob025/checkpoints/learned_embeds_s10000.pt" \
+  --include_prior_concept=0 \
+  --run_name='cat1_mlm0001'
 
 # nomlm
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR1="/data/twkim/diffusion/personalization/collected/images/cat1"
 export CUDA_VISIBLE_DEVICES=3;
-accelerate launch --main_process_port 1234  ti_embeddings.py \
+accelerate launch --main_process_port 1234  ti_embeddings_bg.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR1 \
   --resolution=512 \
@@ -46,8 +44,8 @@ accelerate launch --main_process_port 1234  ti_embeddings.py \
   --prompt_type='pet' \
   --placeholder_token1="<cat1>" \
   --prior_concept1="cat" \
-  --learned_embed_path1="saved_models/ti_models/singlev2_seed2940/cat1/tiv2_prior_nomlm_cat1/checkpoints/learned_embeds_s3000.pt" \
-  --include_prior_concept=1 \
+  --learned_embed_path1="saved_models/ti_models/singlev2_noprior_seed2940/cat1/tiv2_noprior_nomlm_cat1/checkpoints/learned_embeds_s10000.pt" \
+  --include_prior_concept=0 \
   --target='prior' \
   --run_name='cat1_nomlm' \
   --caption_path='../datasets_pkgs/captions/analysis/pet/cat.txt' 
