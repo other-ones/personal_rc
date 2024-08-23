@@ -108,25 +108,16 @@ class TextualInversionDataset(Dataset):
         prompt_type=None,
         prior_concept=None,
         placeholder_token=None,
-        caption_root=None,
+        caption_path=None,
+        target=None,
+        prior_only=None,
     ):
+        self.prior_only=prior_only
         self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
-        caption_dir_path=os.path.join(caption_root,prompt_type)
-        cap_file_list=os.listdir(caption_dir_path)
-        self.captions={}
-        max_length=0
-        for cap_file in cap_file_list:
-            fname=cap_file.split('.')[0]
-            if prompt_type is not None and prompt_type not in fname:
-                continue
-            cap_file_path=os.path.join(caption_dir_path,cap_file)
-            self.captions[fname]=open(cap_file_path).readlines()
-            print('{}\t{}'.format(fname,len(self.captions[fname])))
-            if max_length<len(self.captions[fname]):
-                max_length=len(self.captions[fname])
-        self._length=max_length
-        self.caption_types=list(self.captions.keys())
+        self.captions=open(caption_path).readlines()
+        print('num captions:\t{}'.format(len(self.captions)))
+        self._length=len(self.captions)
         
         self.get_images = get_images
         self.mask_token_ids = mask_token_ids
@@ -158,13 +149,20 @@ class TextualInversionDataset(Dataset):
     def __getitem__(self, index):
         example = {}
         # 1. caption
-        sampled_type=np.random.choice(self.caption_types)
-        caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
+        caption=self.captions[index%len(self.captions)]
+        caption=caption.strip()
         if self.include_prior_concept:
             placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
         else:
             placeholder='{}'.format(self.placeholder_token)
-        caption=caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
+
+
+        if self.prior_only:
+            caption=caption.replace('<new1>',self.prior_concept) # caption without masked embedding
+            caption=caption.replace('  ',' ')
+        else:
+            caption=caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
+            
         example["input_ids_pos"] = self.tokenizer(
                 caption,
                 padding="max_length",
@@ -178,7 +176,7 @@ class TextualInversionDataset(Dataset):
         words=caption.split()
         is_keyword_tokens1=[False] # first token for <startoftext>
         non_special_idxs=[False]
-        non_keyword_idxs=[False]
+        non_keyword_idxs=[True] # non keyword
         is_prior1=[False]
         for word_idx in range(len(words)):
             cap_word=words[word_idx]
@@ -195,26 +193,47 @@ class TextualInversionDataset(Dataset):
                 else:
                     is_keyword_tokens1.append(False)
                     non_keyword_idxs.append(True)
-                if tok_decoded==self.prior_concepts[0]:
+                if tok_decoded==self.prior_concept:
+
                     is_prior1.append(True)
                 else:
                     is_prior1.append(False)
-         
+
+                    
+        # 3) is_keyword_tokens_mlm - keyword indices for MLM
+        for _ in range(len(is_keyword_tokens1),self.tokenizer.model_max_length):
+            is_keyword_tokens1.append(False)
+        assert len(is_keyword_tokens1)==self.tokenizer.model_max_length
+        if not self.prior_only:
+            assert sum(is_keyword_tokens1)==1
+        else:
+            assert sum(is_keyword_tokens1)==0
+        example["is_keyword_tokens1"]=torch.BoolTensor(is_keyword_tokens1)
+
+
+        # prior1
+        for _ in range(len(non_keyword_idxs),self.tokenizer.model_max_length):
+            non_keyword_idxs.append(True)
+        non_keyword_idxs=torch.BoolTensor(non_keyword_idxs)
+        assert len(non_keyword_idxs)==self.tokenizer.model_max_length
+        # print(torch.sum(non_keyword_idxs),'torch.sum(non_keyword_idxs)')
+        if not self.prior_only: # keyword==1
+            assert torch.sum(non_keyword_idxs)==(self.tokenizer.model_max_length-1),'torch.sum(non_keyword_idxs)==(self.tokenizer.model_max_length-1)'
+        else:
+            assert torch.sum(non_keyword_idxs)==(self.tokenizer.model_max_length),'torch.sum(non_keyword_idxs)==(self.tokenizer.model_max_length)'
+        example['non_keyword_idxs']=non_keyword_idxs
+
         # prior1
         for _ in range(len(is_prior1),self.tokenizer.model_max_length):
             is_prior1.append(False)
         is_prior1=torch.BoolTensor(is_prior1)
         assert len(is_prior1)==self.tokenizer.model_max_length
-        assert torch.sum(is_prior1)==1,'torch.sum(is_prior1)==1'
+        if self.include_prior_concept:
+            assert torch.sum(is_prior1)==1,'torch.sum(is_prior1)==1'
         example['is_prior1']=is_prior1
 
 
-        # 3) is_keyword_tokens_mlm - keyword indices for MLM
-        for _ in range(len(is_keyword_tokens1),self.tokenizer.model_max_length):
-            is_keyword_tokens1.append(False)
-        assert len(is_keyword_tokens1)==self.tokenizer.model_max_length
-        assert sum(is_keyword_tokens1)==1
-        example["is_keyword_tokens1"]=torch.BoolTensor(is_keyword_tokens1)
+        
 
         
 

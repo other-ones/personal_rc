@@ -8,20 +8,20 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     'dog6': ('dog','pet'),
-    # 'pet_cat1':('cat','pet'),
-    # 'cat1': ('cat','pet'),
-    # 'vase':('vase','nonliving'),
-    # 'backpack':('backpack','nonliving'),
-    # 'pet_dog1':('dog','pet'),
-    # 'teddybear':('bear','nonliving'),
-    # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'flower1':('flower','flower'),
+    'pet_cat1':('cat','pet'),
+    'cat1': ('cat','pet'),
+    'vase':('vase','nonliving'),
+    'backpack':('backpack','nonliving'),
+    'pet_dog1':('dog','pet'),
+    'teddybear':('bear','nonliving'),
+    'barn': ('barn','building'),
+    'wooden_pot':('pot','nonliving'),
+    'dog3': ('dog','pet'),
+    'chair1': ('chair','nonliving'),
+    'cat_statue': ('toy','nonliving'),
+    'rc_car':('toy','nonliving'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'flower1':('flower','flower'),
 }
 info_map_01={
     # 'backpack':('backpack','nonliving'),
@@ -50,8 +50,8 @@ elif 'ubuntu' in hostname:
 lambda_mlm_list=[
             0,
             0.001,
-            0.0005,
-            0.0002,
+            # 0.0005,
+            # 0.0002,
             ]
 target_norms=[0]
 
@@ -128,7 +128,7 @@ for mask_prob in mask_prob_list:
                 command+='--resolution=512 \\\n'
                 command+='--train_batch_size=1 \\\n'
                 command+='--gradient_accumulation_steps=4 \\\n'
-                command+='--max_train_steps=3001 \\\n'
+                command+='--max_train_steps=10001 \\\n'
                 command+='--learning_rate=5e-4 \\\n'
                 command+='--lr_scheduler="constant" \\\n'
                 command+='--lr_warmup_steps=0 \\\n'

@@ -32,7 +32,7 @@ from torchvision import transforms
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+from datasets_pkgs.dataset_analysis_ti import TextualInversionDataset
 import diffusers
 from diffusers import (
     AutoencoderKL,
@@ -108,8 +108,8 @@ def main():
 
     # Handle the repository creation
     if accelerator.is_main_process:
-        viz_dir = os.path.join(exp_dir,'viz')
-        os.makedirs(viz_dir, exist_ok=True)
+        # viz_dir = os.path.join(exp_dir,'viz')
+        # os.makedirs(viz_dir, exist_ok=True)
         codepath=os.path.join(exp_dir,'src')
         # if os.path.exists(codepath) and 'tmp' not in codepath:
         #     assert False
@@ -117,10 +117,10 @@ def main():
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
-        sample_dir=os.path.join(exp_dir,'samples')
-        ckpt_dir=os.path.join(exp_dir,'checkpoints')
-        os.makedirs(ckpt_dir,exist_ok=True)
-        os.makedirs(sample_dir, exist_ok=True)
+        # sample_dir=os.path.join(exp_dir,'samples')
+        # ckpt_dir=os.path.join(exp_dir,'checkpoints')
+        # os.makedirs(ckpt_dir,exist_ok=True)
+        # os.makedirs(sample_dir, exist_ok=True)
         # 1. command
         command_path=os.path.join(codepath,'command.txt')
         command_file=open(command_path,'w')
@@ -244,6 +244,7 @@ def main():
         prior_concept=args.prior_concept1,
         placeholder_token=args.placeholder_token1,
         caption_root=args.caption_root,
+        include_keyword=args.include_keyword,
     )
    
     
@@ -262,7 +263,7 @@ def main():
         non_keyword_idxs = [example["non_keyword_idxs"] for example in examples] #N,77, list of booleans
         non_keyword_idxs = torch.stack(non_keyword_idxs)
         
-        is_keyword_tokens1 = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
+        is_keyword_tokens1 = [example["is_keyword_tokens1"] for example in examples] #N,77, list of booleans
         is_keyword_tokens1 = torch.stack(is_keyword_tokens1)
         is_prior1 = [example["is_prior1"] for example in examples] #N,77, list of booleans
         is_prior1 = torch.stack(is_prior1)
@@ -379,6 +380,10 @@ def main():
     cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     import time
     text_encoder.train()
+    if args.include_prior_concept:
+        placeholder='{} {}'.format(args.placeholder_token1, args.prior_concept1)
+    else:
+        placeholder='{}'.format(args.placeholder_token1)
     for step, batch_text_multi in enumerate(train_dataloader_mlm):
         with accelerator.accumulate(text_encoder):
             # for MLM
@@ -462,35 +467,51 @@ def main():
                                     )
                 encoder_hidden_states=out[0]                
                 print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
-                exit()
-                attention_per_layers=out.attentions #[12,400,12,77,77]
-                k1_p1_attn_list=[]
-                p1_k1_attn_list=[]
-                print(len(attention_per_layers),'len(attention_per_layers)')
-                for layer_idx in range(len(attention_per_layers)):
-                    layer_attentions=attention_per_layers[layer_idx] # 400,12,77,77
-                    layer_attentions=torch.mean(layer_attentions,dim=1) # 400,12,77,77 -> 400,77,77
-                    key1_attentions=layer_attentions[is_keyword_tokens1] # 400,77
-                    prior1_attentions=layer_attentions[is_prior1] # 400,77
-                    key1_prior1_attentions=key1_attentions[is_prior1] # 400
-                    prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
-                    k1_p1_attn_list.append(key1_prior1_attentions)
-                    p1_k1_attn_list.append(prior1_key1_attentions)
+                if args.include_keyword:
+                    target_embeds=encoder_hidden_states[is_keyword_tokens1]
+                else:
+                    target_embeds=encoder_hidden_states[is_prior1]
+                print(target_embeds.shape,'target_embeds.shape')
+                save_path=os.path.join(exp_dir,'embeds.pt')
+                torch.save(target_embeds,save_path)
+                dst_file=open(os.path.join(exp_dir,'captions.txt'),'w')
+                captions=[]
+                for cap in sorted(raw_captions):
+                    cap=cap.strip()
+                    if args.include_keyword:
+                        cap=cap.replace(placeholder,args.prior_concept1)
+                    captions.append(cap)
+                for cap in sorted(captions):
+                    dst_file.write("{}\n".format(cap))
+                # exit()
+                # attention_per_layers=out.attentions #[12,400,12,77,77]
+                # k1_p1_attn_list=[]
+                # p1_k1_attn_list=[]
+                # print(len(attention_per_layers),'len(attention_per_layers)')
+                # for layer_idx in range(len(attention_per_layers)):
+                #     layer_attentions=attention_per_layers[layer_idx] # 400,12,77,77
+                #     layer_attentions=torch.mean(layer_attentions,dim=1) # 400,12,77,77 -> 400,77,77
+                #     key1_attentions=layer_attentions[is_keyword_tokens1] # 400,77
+                #     prior1_attentions=layer_attentions[is_prior1] # 400,77
+                #     key1_prior1_attentions=key1_attentions[is_prior1] # 400
+                #     prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
+                #     k1_p1_attn_list.append(key1_prior1_attentions)
+                #     p1_k1_attn_list.append(prior1_key1_attentions)
                     
-                k1_p1_attn_list=torch.stack(k1_p1_attn_list)#13,400
-                k1_p1_attn_list=k1_p1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
-                p1_k1_attn_list=torch.stack(p1_k1_attn_list)#13,400
-                p1_k1_attn_list=p1_k1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
-                xpoints=np.arange(12)
-                print(k1_p1_attn_list.shape,'k1_p1_attn_list.shape')
-                print(p1_k1_attn_list.shape,'p1_k1_attn_list.shape')
-                for k1_p1_attns,p1_k1_attns in zip(k1_p1_attn_list,p1_k1_attn_list):
-                    plt.plot(xpoints,k1_p1_attns, 'b',linewidth=0.2)
-                    # print(k1_p1_attns,'k1_p1_attns')
-                    # plt.plot(xpoints,p1_k1_attns, 'r',linewidth=0.2)
-                    # print(k1_p1_attns[-1],p1_k1_attns[-1])
-                    count+=1
-                plt.savefig('attn_curve_kpos{}_ppos{}.jpg'.format(args.calibrate_kpos1,args.calibrate_ppos1),dpi=500)
+                # k1_p1_attn_list=torch.stack(k1_p1_attn_list)#13,400
+                # k1_p1_attn_list=k1_p1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
+                # p1_k1_attn_list=torch.stack(p1_k1_attn_list)#13,400
+                # p1_k1_attn_list=p1_k1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
+                # xpoints=np.arange(12)
+                # print(k1_p1_attn_list.shape,'k1_p1_attn_list.shape')
+                # print(p1_k1_attn_list.shape,'p1_k1_attn_list.shape')
+                # for k1_p1_attns,p1_k1_attns in zip(k1_p1_attn_list,p1_k1_attn_list):
+                #     plt.plot(xpoints,k1_p1_attns, 'b',linewidth=0.2)
+                #     # print(k1_p1_attns,'k1_p1_attns')
+                #     # plt.plot(xpoints,p1_k1_attns, 'r',linewidth=0.2)
+                #     # print(k1_p1_attns[-1],p1_k1_attns[-1])
+                #     count+=1
+                # plt.savefig('attn_curve_kpos{}_ppos{}.jpg'.format(args.calibrate_kpos1,args.calibrate_ppos1),dpi=500)
                 break
             break
     # Create the pipeline using the trained modules and save it.
