@@ -221,7 +221,7 @@ def main():
         
     # from token_cls import TokenCLS
     # cls_net = TokenCLS(input_dim=768, output_dim=len(token_embeds))
-    from contextnet import ContextNet
+    from contextnet_v3 import ContextNetV3
     if 'v1-5' in args.pretrained_model_name_or_path:
         embed_dim=768
     elif '-2-1' in args.pretrained_model_name_or_path:

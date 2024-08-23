@@ -15,7 +15,7 @@ class FeedForward(nn.Module):
         X = self.W_ff1(X)
         X = self.relu(X)
         return self.W_ff2(X)
-class ContextNet(nn.Module):
+class ContextNetV3(nn.Module):
     def __init__(
         self,
         in_channels=3,
