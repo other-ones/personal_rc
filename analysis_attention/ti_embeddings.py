@@ -32,7 +32,7 @@ from torchvision import transforms
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from datasets_pkgs.dataset_analysis_ti_bg import TextualInversionDataset
+from datasets_pkgs.dataset_analysis_ti import TextualInversionDataset
 import diffusers
 from diffusers import (
     AutoencoderKL,
@@ -245,6 +245,7 @@ def main():
         prompt_type=args.prompt_type,
         prior_concept=args.prior_concept1,
         placeholder_token=args.placeholder_token1,
+        caption_path=args.caption_path,
         prior_only=(args.learned_embed_path1 is None),
     )
    
@@ -255,22 +256,10 @@ def main():
        
         # 3. For MLM 
         raw_captions = [example["raw_caption"] for example in examples]
-        raw_captions_simple = [example["raw_caption_simple"] for example in examples]
-        input_ids = [example["input_ids"] for example in examples]
-        input_ids=torch.stack(input_ids)
+        input_ids_pos = [example["input_ids_pos"] for example in examples]
 
-        input_ids_simple = [example["input_ids_simple"] for example in examples]
-        input_ids_simple=torch.stack(input_ids_simple)
-
-        is_bg_tokens = [example["is_bg_tokens"] for example in examples] #N,77, list of booleans
-        is_bg_tokens = torch.stack(is_bg_tokens)
-
-
-
-        is_bg_tokens_simple = [example["is_bg_tokens_simple"] for example in examples] #N,77, list of booleans
-        is_bg_tokens_simple = torch.stack(is_bg_tokens_simple)
         
-
+        input_ids_pos=torch.stack(input_ids_pos)
         non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans
         non_special_idxs = torch.stack(non_special_idxs)
         non_keyword_idxs = [example["non_keyword_idxs"] for example in examples] #N,77, list of booleans
@@ -278,8 +267,6 @@ def main():
         
         is_keyword_tokens1 = [example["is_keyword_tokens1"] for example in examples] #N,77, list of booleans
         is_keyword_tokens1 = torch.stack(is_keyword_tokens1)
-        is_keyword_tokens1_simple = [example["is_keyword_tokens1_simple"] for example in examples] #N,77, list of booleans
-        is_keyword_tokens1_simple = torch.stack(is_keyword_tokens1_simple)
         is_prior1 = [example["is_prior1"] for example in examples] #N,77, list of booleans
         is_prior1 = torch.stack(is_prior1)
         # 3. For MLM 
@@ -287,15 +274,10 @@ def main():
 
         batch = {
             "raw_captions": raw_captions,
-            "raw_captions_simple": raw_captions_simple,
-            "input_ids": input_ids,
-            "input_ids_simple": input_ids_simple,
-            "is_bg_tokens": is_bg_tokens, # for mlm
-            "is_bg_tokens_simple": is_bg_tokens_simple,
+            "input_ids_pos": input_ids_pos, # for mlm
             "non_special_idxs": non_special_idxs,
             "non_keyword_idxs": non_keyword_idxs,
             "is_keyword_tokens1": is_keyword_tokens1,# for triplet
-            "is_keyword_tokens1_simple": is_keyword_tokens1_simple,# for triplet
             "is_prior1": is_prior1,# for triplet
         }
         return batch
@@ -361,6 +343,7 @@ def main():
 
     # Train!
     total_batch_size = args.train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
+
     logger.info("***** Running training *****")
     logger.info(f"  Num examples = {len(train_dataloader_mlm)}")
     logger.info(f"  Num Epochs = {args.num_train_epochs}")
@@ -403,26 +386,21 @@ def main():
         placeholder='{} {}'.format(args.placeholder_token1, args.prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
-    for step, batch_text in enumerate(train_dataloader_mlm):
+    for step, batch_text_multi in enumerate(train_dataloader_mlm):
         with accelerator.accumulate(text_encoder):
             # for MLM
-            is_bg_tokens=batch_text["is_bg_tokens"].to(accelerator.device)
-            is_bg_tokens_simple=batch_text["is_bg_tokens_simple"].to(accelerator.device)
-            is_prior1=batch_text["is_prior1"].to(accelerator.device)
-            input_ids=batch_text["input_ids"]# B,77 list of booleans (tensor)
-            input_ids_simple=batch_text["input_ids_simple"]# B,77 list of booleans (tensor)
-            raw_captions=batch_text["raw_captions"]
-            raw_captions_simple=batch_text["raw_captions_simple"]
+            is_prior1=batch_text_multi["is_prior1"].to(accelerator.device)
+            input_ids_pos=batch_text_multi["input_ids_pos"]# B,77 list of booleans (tensor)
+            raw_captions=batch_text_multi["raw_captions"]
             print(raw_captions[:2],'raw_captions[:2]')
-            print(raw_captions_simple[:2],'raw_captions_simple[:2]')
-            non_special_idxs=batch_text["non_special_idxs"]
-            non_keyword_idxs=batch_text["non_keyword_idxs"]
-            is_keyword_tokens1=batch_text["is_keyword_tokens1"].to(accelerator.device)
+            non_special_idxs=batch_text_multi["non_special_idxs"]
+            non_keyword_idxs=batch_text_multi["non_keyword_idxs"]
+            is_keyword_tokens1=batch_text_multi["is_keyword_tokens1"].to(accelerator.device)
             # for MLM
             
 
             # 1. MLM Result Logging
-            input_ids_key1=input_ids[is_keyword_tokens1]
+            input_ids_key1=input_ids_pos[is_keyword_tokens1]
             decoded_key1=tokenizer.batch_decode(input_ids_key1)
             decoded_key1_list=[]
             num_logs=10
@@ -442,7 +420,7 @@ def main():
             # print('Key2\t\t|{}'.format(decoded_key2))
             for viz_idx in range(num_logs):
                 non_special_idxs_viz=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
-                input_ids_pos_viz=input_ids[viz_idx:viz_idx+1]
+                input_ids_pos_viz=input_ids_pos[viz_idx:viz_idx+1]
                 input_ids_pos_viz=input_ids_pos_viz[non_special_idxs_viz]
                 decoded=tokenizer.batch_decode(input_ids_pos_viz)
                 decoded_list=[]
@@ -470,19 +448,11 @@ def main():
             
             if accelerator.is_main_process:
                 count=1
-                # for iip in input_ids:
+                # for iip in input_ids_pos:
                 #     print(torch.sum(iip).sum(),'iip')
                 
                 if args.learned_embed_path1:
-                    out = text_encoder(input_ids,
-                                        is_keyword_tokens1=is_keyword_tokens1,
-                                        is_prior1=is_prior1,
-                                        inj_embeddings1=target_emb1,
-                                        output_attentions=True,
-                                        # non_keyword_idxs=non_keyword_idxs,
-                                        # attn_mod_params=attn_mod_params
-                                        )
-                    out_simple = text_encoder(input_ids_simple,
+                    out = text_encoder(input_ids_pos,
                                         is_keyword_tokens1=is_keyword_tokens1,
                                         is_prior1=is_prior1,
                                         inj_embeddings1=target_emb1,
@@ -491,15 +461,7 @@ def main():
                                         # attn_mod_params=attn_mod_params
                                         )
                 else:
-                    out = text_encoder(input_ids,
-                                        is_keyword_tokens1=None,
-                                        is_prior1=is_prior1,
-                                        inj_embeddings1=None,
-                                        output_attentions=True,
-                                        # non_keyword_idxs=non_keyword_idxs,
-                                        # attn_mod_params=attn_mod_params
-                                        )
-                    out_simple = text_encoder(input_ids_simple,
+                    out = text_encoder(input_ids_pos,
                                         is_keyword_tokens1=None,
                                         is_prior1=is_prior1,
                                         inj_embeddings1=None,
@@ -508,38 +470,22 @@ def main():
                                         # attn_mod_params=attn_mod_params
                                         )
                 encoder_hidden_states=out[0]                
-                encoder_hidden_states_simple=out[0]                
                 print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
-                print(encoder_hidden_states_simple.shape,'encoder_hidden_states_simple.shape')
-                dst_file=open(os.path.join(exp_dir,'cos_sim.txt'),'w')
-                avg_list=[]
-                for bidx,(ibt,ibt_simple) in enumerate(zip(is_bg_tokens,is_bg_tokens_simple)):
-                    # print(ibt.shape,'ibt.shape')
-                    # print(ibt_simple.shape,'ibt_simple.shape')
-                    text_emb=encoder_hidden_states[bidx]
-                    text_emb_simple=encoder_hidden_states_simple[bidx]
-                    
-                    bg_embeds=text_emb[ibt]
-                    bg_embeds_simple=text_emb_simple[ibt_simple]
-                    sim=cos_sim(bg_embeds,bg_embeds)
-
-                    # print(sim.shape,'sim.shape')
-                    # print(bg_embeds.shape,'bg_embeds.shape')
-                    # print(bg_embeds_simple.shape,'bg_embeds_simple.shape')
-                    raw_cap=raw_captions[bidx]
-                    raw_cap_simple=raw_captions_simple[bidx]
-                    print(raw_cap,'raw_cap',raw_cap,'raw_cap_simple')
-                    print(sim.mean().item(),'sim')
-                    avg_list.append(sim.mean().item())
-                    dst_file.write('{}\t{}\t{}\n'.format(raw_cap,raw_cap_simple,sim))
-                print(np.mean(avg_list),exp_dir)
-                exit()
-                
-                # for emb1,emb2 in zip(bg_embeds,bg_embeds_simple):
-                #     print(bg_embeds.shape)
-                #     bg_embeds=torch.cat(bg_embeds,1)
-                #     cap=cap.strip()
-                #     dst_file.write("{}\n".format(cap))
+                if args.target=='keyword':
+                    target_embeds=encoder_hidden_states[is_keyword_tokens1]
+                elif args.target=='prior':
+                    target_embeds=encoder_hidden_states[is_prior1]
+                print(target_embeds.shape,'target_embeds.shape')
+                if args.learned_embed_path1 is None:
+                    assert args.target=='prior'
+                    save_path=os.path.join(exp_dir,'prior_embeds.pt')
+                else:
+                    save_path=os.path.join(exp_dir,'learned_embeds_incprior_{}_target_{}.pt'.format(args.include_prior_concept,args.target))
+                torch.save(target_embeds,save_path)
+                dst_file=open(os.path.join(exp_dir,'captions.txt'),'w')
+                for cap in sorted(raw_captions):
+                    cap=cap.strip()
+                    dst_file.write("{}\n".format(cap))
                 
                 break
             break
