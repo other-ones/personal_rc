@@ -52,6 +52,7 @@ import torch.nn.functional as F
 # ADDED
 if is_wandb_available():
     import wandb
+from torchmetrics.functional.pairwise import pairwise_cosine_similarity
 
 
 # ------------------------------------------------------------------------------
@@ -259,6 +260,10 @@ def main():
         input_ids = [example["input_ids"] for example in examples]
         input_ids=torch.stack(input_ids)
 
+        input_ids_simple_concept = [examples[0]["input_ids_simple_concept"]]
+        input_ids_simple_concept=torch.stack(input_ids_simple_concept)
+
+
         input_ids_simple = [example["input_ids_simple"] for example in examples]
         input_ids_simple=torch.stack(input_ids_simple)
 
@@ -296,6 +301,7 @@ def main():
             "non_keyword_idxs": non_keyword_idxs,
             "is_keyword_tokens1": is_keyword_tokens1,# for triplet
             "is_keyword_tokens1_simple": is_keyword_tokens1_simple,# for triplet
+            "input_ids_simple_concept": input_ids_simple_concept,# for triplet
             "is_prior1": is_prior1,# for triplet
         }
         return batch
@@ -403,6 +409,8 @@ def main():
         placeholder='{} {}'.format(args.placeholder_token1, args.prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
+   
+                        
     for step, batch_text in enumerate(train_dataloader_mlm):
         with accelerator.accumulate(text_encoder):
             # for MLM
@@ -418,6 +426,8 @@ def main():
             non_special_idxs=batch_text["non_special_idxs"]
             non_keyword_idxs=batch_text["non_keyword_idxs"]
             is_keyword_tokens1=batch_text["is_keyword_tokens1"].to(accelerator.device)
+            input_ids_simple_concept=batch_text["input_ids_simple_concept"].to(accelerator.device)
+            
             # for MLM
             
 
@@ -490,6 +500,9 @@ def main():
                                         # non_keyword_idxs=non_keyword_idxs,
                                         # attn_mod_params=attn_mod_params
                                         )
+                    out_simple_concept = text_encoder(input_ids_simple_concept,output_attentions=True,)
+                    
+                    
                 else:
                     out = text_encoder(input_ids,
                                         is_keyword_tokens1=None,
@@ -507,39 +520,66 @@ def main():
                                         # non_keyword_idxs=non_keyword_idxs,
                                         # attn_mod_params=attn_mod_params
                                         )
+                    out_simple_concept = text_encoder(input_ids_simple_concept,output_attentions=True,)
                 encoder_hidden_states=out[0]                
-                encoder_hidden_states_simple=out[0]                
+                encoder_hidden_states_simple=out_simple[0]                
+                encoder_hidden_states_simple_concept=out_simple_concept[0]                
                 print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
                 print(encoder_hidden_states_simple.shape,'encoder_hidden_states_simple.shape')
+                print(encoder_hidden_states_simple_concept.shape,'encoder_hidden_states_simple_concept.shape')
                 dst_file=open(os.path.join(exp_dir,'cos_sim.txt'),'w')
                 avg_list=[]
-                for bidx,(ibt,ibt_simple) in enumerate(zip(is_bg_tokens,is_bg_tokens_simple)):
-                    # print(ibt.shape,'ibt.shape')
-                    # print(ibt_simple.shape,'ibt_simple.shape')
-                    text_emb=encoder_hidden_states[bidx]
-                    text_emb_simple=encoder_hidden_states_simple[bidx]
-                    
-                    bg_embeds=text_emb[ibt]
-                    bg_embeds_simple=text_emb_simple[ibt_simple]
-                    sim=cos_sim(bg_embeds,bg_embeds)
+                norm_list=[]
+                norm_bg_list=[]
+                key_bg_sim_list=[]
+                key_bg_sim_simple_list=[]
 
-                    # print(sim.shape,'sim.shape')
-                    # print(bg_embeds.shape,'bg_embeds.shape')
-                    # print(bg_embeds_simple.shape,'bg_embeds_simple.shape')
-                    raw_cap=raw_captions[bidx]
-                    raw_cap_simple=raw_captions_simple[bidx]
-                    print(raw_cap,'raw_cap',raw_cap,'raw_cap_simple')
-                    print(sim.mean().item(),'sim')
-                    avg_list.append(sim.mean().item())
-                    dst_file.write('{}\t{}\t{}\n'.format(raw_cap,raw_cap_simple,sim))
-                print(np.mean(avg_list),exp_dir)
-                exit()
+                print(is_keyword_tokens1.shape,'is_keyword_tokens1.shape')
+                key_embeds=encoder_hidden_states[is_keyword_tokens1]
+                bg_embeds=encoder_hidden_states[is_bg_tokens]
+                bg_embeds_simple=encoder_hidden_states_simple[is_bg_tokens_simple]
+                key_bg_sim=pairwise_cosine_similarity(key_embeds,bg_embeds).mean().item()
+                key_bg_sim_simple=pairwise_cosine_similarity(key_embeds,bg_embeds_simple).mean().item()
+                print(key_bg_sim,'key_bg_sim',exp_dir)
+                print(key_bg_sim_simple,'key_bg_sim_simple',exp_dir)
+
+                # sot_emb_simple_concept=encoder_hidden_states_simple_concept[0][0]
+                # for bidx,(ibt,ibt_simple) in enumerate(zip(is_bg_tokens,is_bg_tokens_simple)):
+                #     ik_list=is_keyword_tokens1[bidx]
+                #     text_emb=encoder_hidden_states[bidx]
+                #     text_emb_simple=encoder_hidden_states_simple[bidx]
+                #     key_emb=text_emb[ik_list]
+                #     bg_embeds=text_emb[ibt]
+                #     bg_embeds_simple=text_emb_simple[ibt_simple]
+                #     sim=cos_sim(bg_embeds,bg_embeds_simple)
+
+                    
+
+
+                #     key_bg_sim_list.append(key_bg_sim)
+                #     key_bg_sim_simple_list.append(key_bg_sim_simple)
+
+
+                #     norm_bg=torch.norm(bg_embeds,p=1,dim=-1).mean().item()
+                #     norm_bg_simple=torch.norm(bg_embeds_simple,p=1,dim=-1).mean().item()
+                #     norm_list.append(norm_bg)
+                #     norm_bg_list.append(norm_bg_simple)
+                #     # bg_embeds=bg_embeds.view(1,-1)
+                #     # bg_embeds_simple=bg_embeds_simple.view(1,-1)
+                #     raw_cap=raw_captions[bidx]
+                #     raw_cap_simple=raw_captions_simple[bidx]
+                #     avg_list.append(sim.mean().item())
+                #     dst_file.write('{}\t{}\t{}\n'.format(raw_cap,raw_cap_simple,sim))
+                # print(np.mean(avg_list),exp_dir)
+                # print(np.mean(key_bg_sim_list),exp_dir,'key_bg_sim_list')
+                # print(np.mean(key_bg_sim_simple_list),exp_dir,'key_bg_sim_simple_list')
+                # exit()
                 
-                # for emb1,emb2 in zip(bg_embeds,bg_embeds_simple):
-                #     print(bg_embeds.shape)
-                #     bg_embeds=torch.cat(bg_embeds,1)
-                #     cap=cap.strip()
-                #     dst_file.write("{}\n".format(cap))
+                # # for emb1,emb2 in zip(bg_embeds,bg_embeds_simple):
+                # #     print(bg_embeds.shape)
+                # #     bg_embeds=torch.cat(bg_embeds,1)
+                # #     cap=cap.strip()
+                # #     dst_file.write("{}\n".format(cap))
                 
                 break
             break

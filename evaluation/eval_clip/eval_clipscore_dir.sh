@@ -21,7 +21,7 @@ python eval_clipscore_dir.py  \
 
 export CUDA_VISIBLE_DEVICES=5;
 python eval_clipscore_dir.py  \
---dir_path='../../textual_inversion/results/sd2/single_prior' 
+--dir_path='../../textual_inversion/results/debug_prior_seed2940' 
 
 
 

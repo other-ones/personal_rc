@@ -100,7 +100,7 @@ if __name__ == "__main__":
                
                 # if keyword is not None and (keyword not in exp):
                 #     continue
-            if args.exclude in exp:
+            if args.exclude is not None and args.exclude in exp:
                     continue
             exp_path=os.path.join(concept_path,exp)
             pred_root=os.path.join(exp_path,'generated')

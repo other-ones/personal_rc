@@ -43,25 +43,38 @@ device_idx=stat_idx
 idx=0
 # dirs=['multi','single']
 seed=2940
-dir_name='singlev2_noprior_seed{}'.format(seed)
+include_prior_concept=1
+
+
+
+
+if include_prior_concept:
+    dir_name='singlev3_prior_seed{}'.format(seed)
+else:
+    dir_name='singlev3_prior_seed{}'.format(seed)
 dir_path=os.path.join('saved_models/ti_models',dir_name)
 log_dir='logs/generate/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)    
 delay=30
 num_images_per_prompt=8
 concepts=os.listdir(dir_path)
+
+
+
+    
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
     concept_path=os.path.join(dir_path,concept)
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
+        # if not ('nomlm' in exp or 'mprob015' in exp):
+        #     continue
         prior,category=info_map[concept]
         learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s3000.pt')
         if not os.path.exists(learned_embed_path1):
             print(learned_embed_path1,'does not exist')
             continue
-        include_prior_concept=1
         exp_name=exp
         exp_name+='_s3000'
         output_dir=os.path.join('results/{}/{}'.format(dir_name,concept))
