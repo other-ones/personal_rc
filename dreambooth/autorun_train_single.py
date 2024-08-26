@@ -46,7 +46,7 @@ ports=np.arange(1111,2222)
 fixte_list=[0]
 mask_prob_list=[0.25]
 seed=2940
-dir_name='singlev2_seed{}'.format(seed)
+dir_name='singlev3_seed{}'.format(seed)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for idx,concept in enumerate(list(info_map.keys())):
@@ -65,7 +65,7 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     prior,category=info_map[concept]
-                    run_name='dreamboothv2'
+                    run_name='dreamboothv3'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                     else:
@@ -112,8 +112,8 @@ for lr in lr_list:
                     command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
                     # --cls_net_path='saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/cls_net_60000_ckpt.pt' \
                     # --mask_embed_path='saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/mask_embeds_60000_ckpt.pt' \
-                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/cls_net_60000_ckpt.pt" \\\n'
-                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/mask_embeds_60000_ckpt.pt" \\\n'
+                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                     command+='--mlm_target=masked \\\n'
                     command+='--mlm_batch_size=20 \\\n'
                     command+='--mask_prob={} \\\n'.format(mask_prob)

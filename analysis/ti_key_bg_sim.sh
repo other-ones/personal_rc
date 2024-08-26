@@ -2,7 +2,7 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR1="/data/twkim/diffusion/personalization/collected/images/cat1"
 export CUDA_VISIBLE_DEVICES=0;
-accelerate launch --main_process_port 1234  ti_embeddings_bg.py \
+accelerate launch --main_process_port 1234  ti_key_bg_sim.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR1 \
   --resolution=512 \
@@ -27,7 +27,7 @@ accelerate launch --main_process_port 1234  ti_embeddings_bg.py \
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR1="/data/twkim/diffusion/personalization/collected/images/cat1"
 export CUDA_VISIBLE_DEVICES=0;
-accelerate launch --main_process_port 1234  ti_embeddings_bg.py \
+accelerate launch --main_process_port 1234  ti_key_bg_sim.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR1 \
   --resolution=512 \
@@ -55,7 +55,7 @@ accelerate launch --main_process_port 1234  ti_embeddings_bg.py \
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR1="/data/twkim/diffusion/personalization/collected/images/cat1"
 export CUDA_VISIBLE_DEVICES=2;
-accelerate launch --main_process_port 1234  ti_embeddings.py \
+accelerate launch --main_process_port 1234  ti_key_bg_sim.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR1 \
   --resolution=512 \

@@ -532,19 +532,25 @@ def main():
                 norm_list=[]
                 norm_bg_list=[]
                 key_bg_sim_list=[]
-                key_bg_sim_simple_list=[]
+                bg_sim_list=[]
 
                 print(is_keyword_tokens1.shape,'is_keyword_tokens1.shape')
                 key_embeds=encoder_hidden_states[is_keyword_tokens1]
                 bg_embeds=encoder_hidden_states[is_bg_tokens]
+                bg_embeds_simple_bg=encoder_hidden_states_simple_bg[is_bg_tokens_simple]
                 for ke,be in zip(key_embeds,bg_embeds):
                     sim=cos_sim(ke,be)
                     key_bg_sim_list.append(sim.item())
+                for bes,be in zip(bg_embeds_simple_bg,bg_embeds):
+                    sim=cos_sim(bes,be)
+                    bg_sim_list.append(sim.item())
 
-                # bg_embeds_simple_bg=encoder_hidden_states_simple_bg[is_bg_tokens_simple]
+                
+
                 # key_bg_sim=pairwise_cosine_similarity(key_embeds,bg_embeds).mean().item()
                 # key_bg_sim_simple_bg=pairwise_cosine_similarity(key_embeds,bg_embeds_simple_bg).mean().item()
                 print(np.mean(key_bg_sim_list),'key_bg_sim_list',exp_dir)
+                print(np.mean(bg_sim_list),'bg_sim_list',exp_dir)
                 # print(key_bg_sim_simple_bg,'key_bg_sim_simple_bg',exp_dir)
 
                 

@@ -349,28 +349,31 @@ class TextualInversionDataset(Dataset):
 
 
         
-        words=caption_simple.split()
+        words_simple_bg=caption_simple.split()
         is_bg_tokens_simple=[False]      # first token for <startoftext>
         is_keyword_tokens1_simple=[False]       # first token for <startoftext>
-        for word_idx in range(len(words)):
-            cap_word=words[word_idx]
-            cap_word_raw=cap_word.replace('<bg>','')
-            word_token_ids=self.tokenizer.encode(cap_word_raw,add_special_tokens=False)
+        for word_idx in range(len(words_simple_bg)):
+            cap_word_simple_bg=words_simple_bg[word_idx]
+            cap_word_simple_bg_raw=cap_word_simple_bg.replace('<bg>','')
+            word_token_ids_simple_bg=self.tokenizer.encode(cap_word_simple_bg_raw,add_special_tokens=False)
             num_tokens=len(word_token_ids)
-            for tok_id in word_token_ids:
+            for tok_id in word_token_ids_simple_bg:
                 tok_decoded=self.tokenizer.decode(tok_id)
-                if "<bg>" in cap_word:
+                if "<bg>" in cap_word_simple_bg:
                     is_bg_tokens_simple.append(True)
+                    # print(tok_decoded,'tok_decoded')
                 else:
                     is_bg_tokens_simple.append(False)
                 if tok_decoded==self.placeholder_token:
                     is_keyword_tokens1_simple.append(True)
                 else:
                     is_keyword_tokens1_simple.append(False)
+        # print()
         # is_bg_tokens_simple
         for _ in range(len(is_bg_tokens_simple),self.tokenizer.model_max_length):
             is_bg_tokens_simple.append(False)
         assert len(is_bg_tokens_simple)==self.tokenizer.model_max_length
+        assert sum(is_bg_tokens_simple)!=0
         example["is_bg_tokens_simple"]=torch.BoolTensor(is_bg_tokens_simple)   
 
         # is_keyword_tokens1_simple
