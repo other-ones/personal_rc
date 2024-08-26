@@ -663,12 +663,12 @@ def main(args):
         with torch.no_grad():
             token_embeds[placeholder_token_id1] = learned_embed1.clone()
         del learned_embed1
-    from contextnet import ContextNet
+    from contextnet_v3 import ContextNetV3
     if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-        cls_net=ContextNet(1024, len(token_embeds)-1) #-1 for placeholder
+        cls_net=ContextNetV3(1024, len(token_embeds)-1) #-1 for placeholder
         cls_output_dim=len(token_embeds)-1
     elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
-        cls_net=ContextNet(768, len(token_embeds)-1) # -1 for placeholder
+        cls_net=ContextNetV3(768, len(token_embeds)-1) # -1 for placeholder
         cls_output_dim=len(token_embeds)-1
     else:
         assert False,'undefined sd version'

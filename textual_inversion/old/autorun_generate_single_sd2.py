@@ -21,7 +21,7 @@ info_map_03={
     'cat_statue': ('toy','nonliving'),
     'rc_car':('toy','nonliving'),
     'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'flower1':('flower','flower'),
+    'flower1':('flower','flower'),
 }
 info_map_01={
     # 'backpack':('backpack','nonliving'),

@@ -6,7 +6,7 @@ from configs import parse_args
 import sys
 sys.path.insert(0, './packages')
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
+from datasets_pkgs.dataset_ti import TextualInversionDataset
 import argparse
 import logging
 import math

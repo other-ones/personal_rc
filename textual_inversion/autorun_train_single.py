@@ -71,22 +71,23 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 
-
+target_devices=[2,3,4,5,6,7]
 seed=2940
 include_priors=[1]
-  
+mmstep=20000
+delay=30
 mask_prob_list=[0.25]
 for mask_prob in mask_prob_list:
     mask_prob_str=float_to_str(mask_prob)
     mask_prob_str=mask_prob_str.replace('.','')
     for include_prior in include_priors:
         if include_prior:
-            dir_name='singlev3_prior_seed{}'.format(seed)
+            dir_name='singlev3_mmstep{}_prior_seed{}'.format(mmstep,seed)
         else:
-            dir_name='singlev3_noprior_seed{}'.format(seed)
+            dir_name='singlev3_mmstep{}_noprior_seed{}'.format(mmstep,seed)
         log_dir='logs/ti_models/train/{}'.format(dir_name)
         os.makedirs(log_dir,exist_ok=True) 
-        for idx,concept in enumerate(list(info_map.keys())):
+        for cidx,concept in enumerate(list(info_map.keys())):
             device_idx=stat_idx
             for lambda_mlm in lambda_mlm_list:
                 lambda_mlm_str=float_to_str(lambda_mlm)
@@ -110,20 +111,21 @@ for mask_prob in mask_prob_list:
                     continue
                 while True:
                     stats=get_gpu_memory()
-                    stat=stats[stat_idx%len(stats)]
-                    if stat>2e4:
-                        device_idx=stat_idx
-                        stat_idx+=1
-                        stat_idx=(stat_idx%len(stats))
+                    found=False
+                    for stat_idx in target_devices:
+                        stat=stats[stat_idx]    
+                        if stat>2e4 :
+                            device_idx=stat_idx
+                            found=True
+                            break
+                    if found:
                         break
-                    print(run_name,'sleep',stat_idx,stat)
-                    time.sleep(10)
-                    stat_idx+=1
-                    stat_idx=(stat_idx%len(stats))
+                    print(run_name,'sleep','{}/{}'.format(cidx+1,len(concepts)))
+                    time.sleep(delay)
                 print(run_name,device_idx)
                 log_path=os.path.join(log_dir,run_name+'.out')
                 command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-                command+='accelerate launch --main_process_port {} train_mlm_single.py \\\n'.format(ports[idx],idx)
+                command+='accelerate launch --main_process_port {} train_mlm_single.py \\\n'.format(ports[cidx])
                 command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                 command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                 command+='--learnable_property="object" \\\n'
@@ -140,8 +142,8 @@ for mask_prob in mask_prob_list:
                 command+='--seed={} \\\n'.format(seed)
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-{}/cls_net_{}_ckpt.pt" \\\n'.format(mmstep,mmstep)
+                command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-{}/mask_embeds_{}_ckpt.pt" \\\n'.format(mmstep,mmstep)
                 # command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
                 # command+='--mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                 command+='--mask_prob={} \\\n'.format(mask_prob)

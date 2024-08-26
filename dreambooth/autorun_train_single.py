@@ -75,7 +75,7 @@ for lr in lr_list:
                     if lambda_mlm:
                         run_name+='_mprob{}'.format(mask_prob_str)
                     run_name+='_lr{}'.format(lr_str)
-                    output_dir=os.path.join('saved_models/dreambooth_models/{}'.format(dir_name),concept)
+                    output_dir=os.path.join('saved_models/dreambooth/{}'.format(dir_name),concept)
                     exp_path=os.path.join(output_dir,run_name)
                     if os.path.exists(exp_path):
                         print(exp_path,'exists')
