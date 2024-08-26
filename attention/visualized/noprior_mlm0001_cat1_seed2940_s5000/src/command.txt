@@ -1,0 +1,15 @@
+cwd	/home/twkim/project/rich_context/attention
+visualize_attns.py
+--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5
+--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/cat1/
+--placeholder_token1=<cat1>
+--resolution=512
+--seed=2940
+--mask_tokens=[MASK]
+--learned_embed_path1=saved_models/ti_models/singlev2_noprior_seed2940/cat1/tiv2_noprior_mlm0001_cat1_mprob025/checkpoints/learned_embeds_s5000.pt
+--prior_concept1=cat
+--include_prior_concept=0
+--prompt_type=pet
+--eval_batch_size=1
+--num_images_per_prompt=1
+--dst_exp_path=visualized/noprior_mlm0001_cat1

@@ -143,9 +143,9 @@ class TextualInversionDataset(Dataset):
         self.include_prior_concept=include_prior_concept
         # self.captions=open(caption_path).readlines()
         if include_prior_concept:
-            placeholder='{} {}'.format(placeholder_token,prior_concept)
+            self.placeholder='{} {}'.format(placeholder_token,prior_concept)
         else:
-            placeholder='{}'.format(placeholder_token)
+            self.placeholder='{}'.format(placeholder_token)
         self.captions_raw=[]
         self.captions=[]
         self.captions_simple=[]
@@ -166,8 +166,8 @@ class TextualInversionDataset(Dataset):
                 caption_simple_raw="a picture of {}".format(bg)
             else:
 
-                caption="a picture of {} with {} in the background".format(placeholder,bg_new)
-                caption_raw="a picture of {} with {} in the background".format(placeholder,bg)
+                caption="a picture of {} with {} in the background".format(self.placeholder,bg_new)
+                caption_raw="a picture of {} with {} in the background".format(self.placeholder,bg)
                 caption_simple="a picture of {}".format(bg_new)
                 caption_simple_raw="a picture of {}".format(bg)
             print(caption_simple,'caption_simple')
@@ -222,7 +222,6 @@ class TextualInversionDataset(Dataset):
         caption_simple=caption_simple.strip()
         caption_simple_raw=caption_simple_raw.strip()
 
-
         # if self.include_prior_concept:
         #     placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
         # else:
@@ -232,9 +231,17 @@ class TextualInversionDataset(Dataset):
         #     caption=caption.replace('  ',' ')
         # else:
         #     caption=caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
+        caption_simple_concept="a picture of {}".format(self.placeholder)
             
         example["input_ids"] = self.tokenizer(
                 caption_raw,
+                padding="max_length",
+                truncation=True,
+                max_length=self.tokenizer.model_max_length,
+                return_tensors="pt",
+            ).input_ids[0]
+        example["input_ids_simple_concept"] = self.tokenizer(
+                caption_simple_concept,
                 padding="max_length",
                 truncation=True,
                 max_length=self.tokenizer.model_max_length,
@@ -369,7 +376,6 @@ class TextualInversionDataset(Dataset):
         # is_keyword_tokens1_simple
         for _ in range(len(is_keyword_tokens1_simple),self.tokenizer.model_max_length):
             is_keyword_tokens1_simple.append(False)
-        print(sum(is_keyword_tokens1_simple)==0,'sum(is_keyword_tokens1_simple)==0')
         assert len(is_keyword_tokens1_simple)==self.tokenizer.model_max_length
         assert sum(is_keyword_tokens1_simple)==0
         example["is_keyword_tokens1_simple"]=torch.BoolTensor(is_keyword_tokens1_simple)

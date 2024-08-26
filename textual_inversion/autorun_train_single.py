@@ -73,22 +73,26 @@ np.random.shuffle(ports)
 
 
 seed=2940
-include_priors=[0]
-dir_name='singlev2_noprior_seed{}'.format(seed)
-log_dir='logs/ti_models/train/{}'.format(dir_name)
-os.makedirs(log_dir,exist_ok=True)   
+include_priors=[1]
+  
 mask_prob_list=[0.25]
 for mask_prob in mask_prob_list:
     mask_prob_str=float_to_str(mask_prob)
     mask_prob_str=mask_prob_str.replace('.','')
     for include_prior in include_priors:
+        if include_prior:
+            dir_name='singlev3_prior_seed{}'.format(seed)
+        else:
+            dir_name='singlev3_noprior_seed{}'.format(seed)
+        log_dir='logs/ti_models/train/{}'.format(dir_name)
+        os.makedirs(log_dir,exist_ok=True) 
         for idx,concept in enumerate(list(info_map.keys())):
             device_idx=stat_idx
             for lambda_mlm in lambda_mlm_list:
                 lambda_mlm_str=float_to_str(lambda_mlm)
                 lambda_mlm_str=lambda_mlm_str.replace('.','')
                 prior,category=info_map[concept]
-                prefix='tiv2_'
+                prefix='tiv3_'
                 if include_prior:
                     prefix+='prior'
                 else:
@@ -128,7 +132,7 @@ for mask_prob in mask_prob_list:
                 command+='--resolution=512 \\\n'
                 command+='--train_batch_size=1 \\\n'
                 command+='--gradient_accumulation_steps=4 \\\n'
-                command+='--max_train_steps=10001 \\\n'
+                command+='--max_train_steps=3001 \\\n'
                 command+='--learning_rate=5e-4 \\\n'
                 command+='--lr_scheduler="constant" \\\n'
                 command+='--lr_warmup_steps=0 \\\n'
@@ -136,8 +140,8 @@ for mask_prob in mask_prob_list:
                 command+='--seed={} \\\n'.format(seed)
                 command+='--mask_tokens="[MASK]" \\\n'
                 command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/cls_net_60000_ckpt.pt" \\\n'
-                command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-60000/mask_embeds_60000_ckpt.pt" \\\n'
+                command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                 # command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
                 # command+='--mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                 command+='--mask_prob={} \\\n'.format(mask_prob)

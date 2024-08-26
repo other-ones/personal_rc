@@ -123,7 +123,7 @@ if __name__=='__main__':
             concept_results=[]
             exps=sorted(exps)[::-1]
             for exp in exps:
-                if args.exclude in exp:
+                if args.exclude is not None and args.exclude in exp:
                     continue
                 exp_path=os.path.join(concept_path,exp)
                 if keywords is not None:
@@ -153,8 +153,6 @@ if __name__=='__main__':
                             if word in caption:
                                 exclude_list.append(fname)
                                 break
-
-
                 else:
                     exclude_list=None
                 # log_path=os.path.join(exp_path,'result.txt')
@@ -198,7 +196,6 @@ if __name__=='__main__':
                     generated_images.append(Image.open(os.path.join(fake_root,item)))
                 if not len(generated_images):
                     continue
-                print('running..')
                 score=dino_eval.img_to_img_similarity(src_images=src_images,generated_images=generated_images)
                 result_line='{}\t{}'.format(exp,score)
                 print(result_line)
