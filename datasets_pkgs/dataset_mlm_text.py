@@ -117,9 +117,9 @@ class MLMDataset(Dataset):
         self.captions=[]
         # self.captions=open(caption_path).readlines()
         self.nouns=[]
-        cap_types=os.listdir(aug_root)
-        self.aug_captions={}
         self.num_instance=0
+        # cap_types=os.listdir(aug_root)
+        # self.aug_captions={}
         # for cap_type in cap_types:
         #     if 'analysis' ==cap_type:
         #         continue
