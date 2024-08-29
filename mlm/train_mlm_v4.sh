@@ -51,9 +51,9 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
   --whole_word_mask=0 \
-  --checkpoints_total_limit=10 \
-  --report_to="wandb" \
-  --project_name='ContextNetV4 Train' 
+  --checkpoints_total_limit=10 
+  # --report_to="wandb" \
+  # --project_name='ContextNetV4 Train' 
 
 
 
