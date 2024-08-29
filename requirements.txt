@@ -12,7 +12,7 @@ annotated-types==0.7.0
 appdirs==1.4.4
 async-timeout==4.0.3
 attrs==23.2.0
-autofaiss==2.17.0
+# autofaiss==2.17.0
 beautifulsoup4==4.12.3
 blinker==1.8.2
 blis==0.7.11
@@ -62,7 +62,7 @@ flask-restful==0.3.10
 fonttools==4.53.1
 freetype-py==2.4.0
 frozenlist==1.4.1
-fsspec==2024.6.1
+# fsspec==2024.6.1
 ftfy==6.2.0
 gitdb==4.0.11
 gitpython==3.1.43
