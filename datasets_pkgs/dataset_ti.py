@@ -17,7 +17,7 @@ from PIL import Image,ImageDraw
 import string
 import albumentations as A
 from packaging import version
-
+torch.use_deterministic_algorithms(True)
 # Added
 
 # Added

@@ -55,6 +55,9 @@ from diffusers.utils import is_wandb_available
 from data_utils import cycle, create_wbd
 from torch import nn
 from utils import render_caption
+# torch.set_default_device('cuda')
+torch.autograd.set_detect_anomaly(True)
+torch.use_deterministic_algorithms(True)
 # ADDED
 if is_wandb_available():
     import wandb
@@ -68,76 +71,262 @@ if is_wandb_available():
 
 logger = get_logger(__name__)
 
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    print(worker_seed,'worker_seed')
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
-
-def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
+def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,generator):
     
     # create pipeline (note: unet and vae are loaded again in float32)
     
 
     # run inference
-    generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
+    
     # dog
     if args.include_prior_concept:
-        placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
+        if args.rev:
+            placeholder='{} {}'.format(args.prior_concept1,args.placeholder_token1)
+        else:
+            placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
 
-    if args.prompt_type=='pet':
-        validation_prompts=[
-            "a picture of {} swimming in a pool".format(placeholder),
-            "a picture of {} with the Great Wall of China in the background".format(placeholder),
-            "a picture of {} in times square".format(placeholder),
-            "{} on a boat in the sea".format(placeholder),
-            "{} in a purple wizard outfit".format(placeholder),
-            "{} playing with a ball".format(placeholder),
-            "{} wearing sunglasses".format(placeholder),
-            ]
-    # vase
-    
-    elif args.prompt_type in ['nonliving']:
+    if args.eval_prompt_type=='dog':
         validation_prompts = [
-            'a {0} in the jungle'.format(placeholder),
-            'a {0} in the snow'.format(placeholder),
-            'a {0} with a blue house in the background'.format(placeholder),
-            'a {0} with the Eiffel Tower in the background'.format(placeholder),
-            'a purple {0}'.format(placeholder),
-            'a wet {0}'.format(placeholder),
-            'a cube shaped {0}'.format(placeholder)
+            # "Photo of a {}.".format(placeholder),
+            "{} at a beach with a view of the seashore.".format(placeholder), # bg
+            "{} in times square.".format(placeholder), # bg
+            
+            "{} is in a construction outfit.".format(placeholder), # outfit
+            # "{} is wearing sunglasses.".format(placeholder), # outfit
+            # "{} is wearing a sombrero.".format(placeholder), # outfit
+            "{} is wearing headphones.".format(placeholder), # outfit
+            # "a {} is acting in a play wearing a costume.".format(placeholder), # outfit
+            # "a {} in chef outfit.".format(placeholder),# outfit
+
+            # "{} oil painting ghibli inspired.".format(placeholder), #style
+            # "Painting of {} at a beach by artist claude monet.".format(placeholder), # style
+            # "{} digital painting 3d render geometric style.".format(placeholder), # style
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),# style
+
+            "{} swimming in a pool.".format(placeholder), #activity
+            "{} is playing with a ball.".format(placeholder), # activity
+            # "A {} is reading a book.".format(placeholder), # activity
+
+            "a sculpture of {}.".format(placeholder), # attr
+            # "a barking {}.".format(placeholder), # attr
+            # "a sleeping {}.".format(placeholder), # attr
+            # "a sad {}.".format(placeholder), # attr
             ]
-    elif args.prompt_type in ['building']:
+    elif args.eval_prompt_type=='cat':
         validation_prompts = [
-            '{} in snowy ice.'.format(placeholder),
-            '{} at a beach with a view of the seashore.'.format(placeholder),
-            'Photo of the {} with the sun rising in the sky.'.format(placeholder),
-            'cat sitting in front of {} in snowy ice.'.format(placeholder),
-            '{} digital painting 3d render geometric style.'.format(placeholder),
-            'painting of {} in the style of van gogh.'.format(placeholder),
-            'Top view of the {}. '.format(placeholder)
+            # "Photo of a {}.".format(placeholder),
+        # "{} swimming in a pool.".format(placeholder),
+        # "{} at a beach with a view of the seashore.".format(placeholder),
+        "{} sitting on a window.".format(placeholder),
+        "{} in times square.".format(placeholder),
+        # "{} is wearing sunglasses.".format(placeholder),
+        "{} wearing a construction outfit.".format(placeholder),
+        "{} is playing with a ball.".format(placeholder),
+        "{} is wearing headphones.".format(placeholder),
+        # "{} oil painting ghibli inspired.".format(placeholder),
+        # "Painting of {} at a beach by artist claude monet.".format(placeholder),
+        # "{} digital painting 3d render geometric style.".format(placeholder),
+        # "Georgia O'Keeffe style {} painting.".format(placeholder),
+        # "a {} in chef outfit.".format(placeholder),
+        # "A {} is reading a book.".format(placeholder),
+        "a {} is acting in a play wearing a costume.".format(placeholder),
+        "a screaming {}.".format(placeholder),
+        # "a sleeping {}.".format(placeholder),
+        # "a sad {}.".format(placeholder),
+        "a sculpture of the {}.".format(placeholder),
             ]
-    elif args.prompt_type in ['sunglasses']:
+    elif args.eval_prompt_type=='vase':
+        validation_prompts = [
+            "Photo of a {}.".format(placeholder),
+            "{} in grand canyon.".format(placeholder),
+            # "{} with mountains and sunset in the background.".format(placeholder),
+            "{} floating in a pool.".format(placeholder),
+            "A wide shot of {} in times square.".format(placeholder),
+            "{} and chocolate cake on a table.".format(placeholder),
+            "{} made of stone.".format(placeholder),
+            "A handbag in the style of {}.".format(placeholder),
+            "A coffee cup in the style of the {} on a table.".format(placeholder),
+            # "Rose flowers in the {} on a table.".format(placeholder),
+            # "Marigold flowers in the {}.".format(placeholder),
+            # "The {} at the entrance to a medieval castle.".format(placeholder),
+            # "{} with pens in it.".format(placeholder),
+            # "{} oil painting ghibli inspired.".format(placeholder),
+            # "{} painting by artist claude monet.".format(placeholder),
+            # "A watercolor painting of {}.".format(placeholder),
+            # "A digital illustration of the {}.".format(placeholder),
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),
+            # "A teapot in the style of {}.".format(placeholder),
+            # "A pair of {} on a study table.".format(placeholder),
+            ]
+    elif args.eval_prompt_type=='chair':
         validation_prompts=[
-            'photo of a {}'.format(placeholder),
-            'close shot of {} on the sandy beach with a view of the seashore'.format(placeholder),
-            'A scientist wearing {} examines a test tube'.format(placeholder),
-            'A dog wearing {} on the porch'.format(placeholder),
-            'A giraffe wearing {}'.format(placeholder),
-            '{} painted in the style of andy warhol'.format(placeholder),
-            'digital painting of a turtle wearing {}'.format(placeholder),
-            '{} digital 3d render'.format(placeholder),
-        ]
-    elif args.prompt_type in ['flower']:
+            "Photo of a {}.".format(placeholder),
+            # "{} near a pool.".format(placeholder),
+            "{} at a beach with a view of the seashore.".format(placeholder),
+            # "{} in a garden.".format(placeholder),
+            "{} in grand canyon.".format(placeholder),
+            "{} in front of a medieval castle.".format(placeholder),
+            # "{} and a coffee table.".format(placeholder),
+            "floor lamp on the side of {}.".format(placeholder),
+            "{} and an orange sofa.".format(placeholder),
+            "{} and a table with chocolate cake on it.".format(placeholder),
+            # "{} oil painting ghibli inspired.".format(placeholder),
+            # "{} painting by artist claude monet.".format(placeholder),
+            # "a watercolor painting of {} in a forest.".format(placeholder),
+            # "A digital illustration of the {}.".format(placeholder),
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),
+            "An orange {}.".format(placeholder),
+            # "A pink {}.".format(placeholder),
+            # "A red color {}.".format(placeholder),
+            # "{} crochet.".format(placeholder),
+            "An egg chair in the style of {}.".format(placeholder),
+            ]
+    elif args.eval_prompt_type=='barn':
         validation_prompts=[
-            "Photo of {}".format(placeholder),
-            "{} growing in the desert".format(placeholder),
-            "{} at a beach with a view of the seashore".format(placeholder),
-            "a bouquet of {}".format(placeholder),
-            "{} in a violet vase on a table".format(placeholder),
-            "a vase filled with {} on a table".format(placeholder),
-            "{} and a chocolate cake on the table".format(placeholder),
-            "a sky blue color {}".format(placeholder),
-            "Dried up {}".format(placeholder),
+            # "photo of a {}.".format(placeholder),
+            "{} in snowy ice.".format(placeholder),
+            "{} in the fall season with leaves all around.".format(placeholder),
+            "{} at a beach with a view of the seashore.".format(placeholder),
+            # "Photo of the {} with the sun rising in the sky.".format(placeholder),
+            "{} with forest in the background.".format(placeholder),
+            # "puppy in front of the {}.".format(placeholder),
+            # "cat sitting in front of the {}.".format(placeholder),
+            "cat sitting in front of {} in snowy ice.".format(placeholder),
+            "squirrel in front of the {}.".format(placeholder),
+            # "{} oil painting ghibli inspired.".format(placeholder),
+            # "{} painting by artist claude monet.".format(placeholder),
+            # "{} digital painting 3d render geometric style.".format(placeholder),
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),
+            # "a watercolor painting of the {}.".format(placeholder),
+            # "painting of {} in the style of van gogh.".format(placeholder),
+            "A futuristic {}.".format(placeholder),
+            # "A surreal landscape, {}.".format(placeholder),
+            # "A close up shot of the {}.".format(placeholder),
+            "Top view of the {}.".format(placeholder),
+            ]
+    elif args.eval_prompt_type=='toy':
+        validation_prompts=[
+            # "photo of a {}.".format(placeholder),
+            "{} in grand canyon.".format(placeholder),
+            # "{} with mountains and sunset in the background.".format(placeholder),
+            # "{} floating in a pool.".format(placeholder),
+            "A wide shot of {} in times square.".format(placeholder),
+            # "{} and a clock on a sofa.".format(placeholder),
+            "A {} and a laptop on a study table.".format(placeholder),
+            # "A rusty {} in a post-apocalyptic landscape.".format(placeholder),
+            "A {} and lego bricks lying on a rug.".format(placeholder),
+            "An old {} lying on the sidewalk.".format(placeholder),
+            # "{} oil painting ghibli inspired.".format(placeholder),
+            "{} painting by artist claude monet.".format(placeholder),
+            # "A watercolor painting of {}.".format(placeholder),
+            # "A digital illustration of {}.".format(placeholder),
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),
+            "{} made of black stone.".format(placeholder),
+            # "A pair of {} on a study table.".format(placeholder),
+            # "A {} made of colorful crystals and glass.".format(placeholder),
+            "A house in the style of {}.".format(placeholder),
+            "a backpack in the style of {}.".format(placeholder),
+            ]
+    elif args.eval_prompt_type=='flower':
+        validation_prompts=[
+            # "Photo of a {}.".format(placeholder),
+            "{} growing in the desert.".format(placeholder),
+            # "{} at a beach with a view of the seashore.".format(placeholder),
+            "{} on top of a mountain with sunrise in the background.".format(placeholder),
+            "A bouquet of {}.".format(placeholder),
+            "A garden of {}.".format(placeholder),
+            # "{} in a violet vase on a table.".format(placeholder),
+            "a vase filled with {} on a table.".format(placeholder),
+            # "Bouquet of {} and roses.".format(placeholder),
+            # "{} and a chocolate cake on the table.".format(placeholder),
+            # "{} oil painting ghibli inspired.".format(placeholder),
+            # "{} painting by artist claude monet.".format(placeholder),
+            # "A digital illustration of {}.".format(placeholder),
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),
+            # "a watercolor painting of {} and a teapot on the table.".format(placeholder),
+            # "{} with violet color petals.".format(placeholder),
+            "a sky blue color {}.".format(placeholder),
+            # "a beige colored {}.".format(placeholder),
+            "A dried up {} in between a book.".format(placeholder),
+            "a {} made of crystal.".format(placeholder),
+            ]
+    elif args.eval_prompt_type=='sunglasses':
+        validation_prompts=[
+        "photo of a {}.".format(placeholder),
+        "{} on top of a vintage car in the countryside.".format(placeholder),
+        # "A pair of {} rest on a bookshelf.".format(placeholder),
+        "{} lying on a study table.".format(placeholder),
+        # "close shot of {} on the sandy beach with a view of the seashore.".format(placeholder),
+        "A futuristic robot wearing {}.".format(placeholder),
+        "A person wearing {}.".format(placeholder),
+        # "A chef wearing {} prepares a gourmet meal.".format(placeholder),
+        "A scientist wearing {} examines a test tube.".format(placeholder),
+        "A dog wearing {} on the porch.".format(placeholder),
+        # "A giraffe wearing {}.".format(placeholder),
+        # "{} painted in the style of andy warhol.".format(placeholder),
+        # "painting of {} by artist claude monet.".format(placeholder),
+        # "A digital illustration of {}.".format(placeholder),
+        # "a modern art piece of {}.".format(placeholder),
+        # "a watercolor painting of {}.".format(placeholder),
+        "cool neon party cat in {}.".format(placeholder),
+        # "digital painting of a turtle wearing {}.".format(placeholder),
+        # "smart hedgehog in {}.".format(placeholder),
+        # "{} digital 3d render.".format(placeholder),
         ]
+    elif args.eval_prompt_type=='wooden_pot':
+        validation_prompts=[
+            # "Photo of a {}.".format(placeholder),
+            "{} in grand canyon.".format(placeholder),
+            # "{} with mountains and sunset in the background.".format(placeholder),
+            "{} floating in a pool.".format(placeholder),
+            "A wide shot of {} in times square.".format(placeholder),
+            "{} and chocolate cake on a table.".format(placeholder),
+            "Rose flowers in {} on a table.".format(placeholder),
+            # "Marigold flowers in the {}.".format(placeholder),
+            "The {} at the entrance to a medieval castle.".format(placeholder),
+            "{} with pens in it.".format(placeholder),
+            # "{} oil painting ghibli inspired.".format(placeholder),
+            # "{} painting by artist claude monet.".format(placeholder),
+            # "A watercolor painting of {}.".format(placeholder),
+            # "A digital illustration of the {}.".format(placeholder),
+            # "Georgia O'Keeffe style {} painting.".format(placeholder),
+            "A handbag in the style of {}.".format(placeholder),
+            # "A teapot in the style of {}.".format(placeholder),
+            "{} made of stone.".format(placeholder),
+            # "A pair of {} on a study table.".format(placeholder),
+            # "A coffee cup in the style of {} on a table.".format(placeholder),
+            ]
+    elif args.eval_prompt_type=='teddybear':
+        validation_prompts=[
+            "Photo of a {}.".format(placeholder),
+            "{} in grand canyon.".format(placeholder),
+            "{} swimming in a pool.".format(placeholder),
+            "{} sitting at the beach with a view of the sea.".format(placeholder),
+            "{} in times square.".format(placeholder),
+            "{} wearing sunglasses.".format(placeholder),
+            "{} working on the laptop.".format(placeholder),
+            "{} on a boat in the sea.".format(placeholder),
+            "{} wearing headphones.".format(placeholder),
+            "{} in a construction outfit.".format(placeholder),
+            "{} oil painting ghibli inspired.".format(placeholder),
+            "{} painting by artist claude monet.".format(placeholder),
+            "A digital illustration of {}.".format(placeholder),
+            "Georgia O'Keeffe style {} painting.".format(placeholder),
+            "a watercolor painting of {} on top of a mountain.".format(placeholder),
+            "A koala in the style of {}.".format(placeholder),
+            "a backpack in the style of {}.".format(placeholder),
+            "{} made of crochet.".format(placeholder),
+            "A blanket in the style of {}.".format(placeholder),
+            "a screaming {}.".format(placeholder),
+            ]
     else:
         assert False
     # print(validation_prompts[0],'validation_prompts')
@@ -172,9 +361,11 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step):
     with autocast_ctx:
         images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
                           silent=args.silent,
+                        #   add_pe=args.add_pe,
                           inj_embeddings1=target_emb,
                         #   width=512, height=512, 
-                          is_keyword_tokens1=is_keyword_tokens_list1).images
+                          is_keyword_tokens1=is_keyword_tokens_list1,
+                          ).images
     print('Generated')
 
 
@@ -225,7 +416,19 @@ def main():
 
     # If passed along, set the training seed now.
     if args.seed is not None:
-        set_seed(args.seed)
+        print('set seed',args.seed)
+        # random.seed(args.seed)
+        # np.random.seed(args.seed)
+        # torch.manual_seed(args.seed)
+        # torch.cuda.manual_seed_all(args.seed)
+        # set_seed(args.seed)
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)  # if use multi-GPU
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        np.random.seed(args.seed)
+        random.seed(args.seed)
 
     # Handle the repository creation
     if accelerator.is_main_process:
@@ -235,9 +438,13 @@ def main():
         if os.path.exists(codepath) and 'tmp' not in codepath:
             assert False
         os.makedirs(codepath,exist_ok=True)
+        os.makedirs(codepath+'/captions',exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
+        os.system('cp ../datasets_pkgs {} -R'.format(codepath))
+        os.system('cp ../datasets_pkgs/captions/{} {} -R'.format(args.prompt_type,codepath+'/captions'))
         os.system('cp packages {} -R'.format(codepath))
+        caption_log_path=os.path.join(codepath,'log_captions.txt')
+        caption_log_file=open(caption_log_path,'w')
         # copy clip
         os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
         target = os.readlink('clip_src/modeling_clip.py')
@@ -305,20 +512,25 @@ def main():
     # mask_embeds=token_embeds[mask_token_ids]
     if args.mask_embed_path is not None:
         mask_embeds=torch.load(args.mask_embed_path)[args.mask_tokens].to(accelerator.device)
-        mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
+        if args.normalize_mask_embeds:
+            mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
+        with torch.no_grad():
+            for token_id in mask_token_ids:
+                token_embeds[token_id] = mask_embeds
     
     # HERE
     # # # # # # # # # # 
-    from contextnet_v3 import ContextNetV3
+    from contextnet import ContextNet
     if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-        cls_net=ContextNetV3(1024, len(token_embeds)-1) #-1 for placeholder
+        cls_net=ContextNet(1024, len(token_embeds)-1) #-1 for placeholder
         cls_output_dim=len(token_embeds)-1
     elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
         if 'mlm_contextnet_' in args.cls_net_path:
-            cls_net=ContextNetV3(768, len(token_embeds)) # -1 for placeholder
+            cls_net=ContextNet(768, len(token_embeds)) # -1 for placeholder
+            cls_output_dim=len(token_embeds)
         else:
-            cls_net=ContextNetV3(768, len(token_embeds)-1) # -1 for placeholder
-        cls_output_dim=len(token_embeds)-1
+            cls_net=ContextNet(768, len(token_embeds)-1) # -1 for placeholder
+            cls_output_dim=len(token_embeds)-1
     else:
         assert False,'undefined sd version'
 
@@ -364,6 +576,10 @@ def main():
 
     # Dataset and DataLoaders creation:
     print(mask_token_ids,'mask_token_ids')
+    if args.exclude_cap_types is not None:
+        exclude_cap_types=args.exclude_cap_types.split('-')
+    else:
+        exclude_cap_types=None
     train_dataset = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
@@ -377,9 +593,12 @@ def main():
         mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
         get_images=True,
-        prompt_type=args.prompt_type,
+        prompt_type=args.train_prompt_type,
         mask_prob=args.mask_prob,
         caption_root=args.caption_root,
+        rev=args.rev,
+        seed=args.seed,
+        exclude_cap_types=exclude_cap_types,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -394,9 +613,12 @@ def main():
         mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
         get_images=False,
-        prompt_type=args.prompt_type,
+        prompt_type=args.train_prompt_type,
         mask_prob=args.mask_prob,
         caption_root=args.caption_root,
+        rev=args.rev,
+        seed=args.seed,
+        exclude_cap_types=exclude_cap_types,
     )
     
     def collate_fn(examples):
@@ -416,11 +638,15 @@ def main():
             # 2. input ids
             is_keyword_tokens = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
             is_keyword_tokens = torch.stack(is_keyword_tokens)
+            raw_captions_ti = [example["raw_caption_ti"] for example in examples]
+            raw_captions_mlm = []
         else:
             pixel_values=[]
             input_ids=[]
             is_keyword_tokens=[]
             masks=[]
+            raw_captions_mlm = [example["raw_caption_mlm"] for example in examples]
+            raw_captions_ti = []
 
        
         # 5. For MLM 
@@ -440,6 +666,8 @@ def main():
 
 
         batch = {
+            "raw_captions_ti": raw_captions_ti,
+            "raw_captions_mlm": raw_captions_mlm,
             "pixel_values": pixel_values,
             "input_ids": input_ids, # for reconstruction
             "input_ids_masked": input_ids_masked, # for mlm
@@ -452,16 +680,30 @@ def main():
             "masks": masks,
         }
         return batch
+
+    generator = torch.Generator(device='cpu').manual_seed(args.seed)
+    generator_cuda = torch.Generator(device=accelerator.device).manual_seed(args.seed)
     train_dataloader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.train_batch_size, shuffle=True, num_workers=args.dataloader_num_workers,
+        train_dataset, 
+        batch_size=args.train_batch_size, 
+        shuffle=True, 
+        num_workers=args.dataloader_num_workers,
+        # num_workers=0,#args.dataloader_num_workers,
         collate_fn=collate_fn,
+        generator=generator,
+        worker_init_fn=seed_worker,
+        pin_memory=True,
     )
     mlm_loader = torch.utils.data.DataLoader(
             train_dataset_mlm,
             batch_size=args.mlm_batch_size,
             shuffle=True,
             collate_fn=collate_fn,
-            num_workers=4,
+            num_workers=args.dataloader_num_workers,
+            # num_workers=0,
+            generator=generator,
+            worker_init_fn=seed_worker,
+            pin_memory=True,
         )
     mlm_loader = cycle(mlm_loader)
     def load_mlm_batch(mlm_loader):
@@ -603,16 +845,19 @@ def main():
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     import time
     prior_embed=prior_embed.to(accelerator.device)
+    
+
     for epoch in range(first_epoch, args.num_train_epochs):
         text_encoder.train()
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(text_encoder):
                 # 1. Load Batch
-                pixel_values=batch["pixel_values"]# B,77 list of booleans (tensor)
+                pixel_values=batch["pixel_values"] # B,77 list of booleans (tensor)
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
                 is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
+                raw_captions_ti=batch["raw_captions_ti"] # B,77 list of booleans (tensor)
                 # for MLM
                 batch_mlm=load_mlm_batch(mlm_loader)
                 is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
@@ -620,6 +865,7 @@ def main():
                 mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
                 non_special_idxs=batch_mlm["non_special_idxs"]
                 input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
+                raw_captions_mlm=batch_mlm["raw_captions_mlm"] # B,77 list of booleans (tensor)
                 input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                 # input_ids_non_mask=batch_mlm["input_ids_non_mask"]
                 # 1. Load Batch
@@ -638,8 +884,9 @@ def main():
                 else:
                     target_emb=learned_embeds
                 encoder_hidden_states = text_encoder(input_ids,
-                                                     is_keyword_tokens1=is_keyword_tokens,
-                                                     inj_embeddings1=target_emb
+                                                    #  is_keyword_tokens1=is_keyword_tokens,
+                                                    #  inj_embeddings1=target_emb,
+                                                    #  add_pe=args.add_pe,
                                                      )[0].to(dtype=weight_dtype)
                 
                 # Predict the noise residual
@@ -661,10 +908,11 @@ def main():
                 loss_mlm=None
                 if args.lambda_mlm:
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                                            mask_embedding=mask_embeds.unsqueeze(0),
-                                                            mask_idxs=masked_idxs,
-                                                            is_keyword_tokens1=is_keyword_tokens_mlm,
-                                                            inj_embeddings1=target_emb,
+                                                            # mask_embedding=mask_embeds.unsqueeze(0),
+                                                            # mask_idxs=masked_idxs,
+                                                            # is_keyword_tokens1=is_keyword_tokens_mlm,
+                                                            # inj_embeddings1=target_emb,
+                                                            # add_pe=args.add_pe,
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
                     masked_idxs_flat=masked_idxs.view(-1)
@@ -717,7 +965,7 @@ def main():
                             for removing_checkpoint in removing_checkpoints:
                                 removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
                                 shutil.rmtree(removing_checkpoint)
-                    
+                    learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
                     learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
                     weight_name = f"learned_embeds_s{global_step}.pt"
                     # weight_name_augmenter = f"augmenter_s{global_step}.pt"
@@ -725,6 +973,21 @@ def main():
                     # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
                     torch.save(learned_embeds_dict, save_path)
                     # torch.save(augmenter.state_dict(), save_path_augmenter)
+                if ((global_step % args.log_steps == 0)) and args.lambda_mlm and accelerator.is_main_process:
+                    caption_log_file=open(caption_log_path,'a')
+                    for raw_caption_ti in raw_captions_ti:
+                        caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
+                        caption_log_file.flush()
+                    caption_log_file.write('\n')
+                    caption_log_file.flush()
+                    if args.lambda_mlm:
+                        for raw_caption_mlm in raw_captions_mlm:
+                            caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_mlm))
+                            caption_log_file.flush()
+                        caption_log_file.write('\n')
+                    caption_log_file.write('\n')
+                    caption_log_file.flush()
+                    caption_log_file.close()
                 if ((global_step % args.validation_steps == 0)):
                     # visualize input
                     input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
@@ -734,7 +997,7 @@ def main():
                     input_image=input_image.astype(np.uint8)
                     input_image=Image.fromarray(input_image)
                     input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
-                    if args.lambda_mlm:
+                    if args.lambda_mlm and accelerator.is_main_process:
                         # 1. MLM Result Logging
                         viz_idx=0
                         masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
@@ -795,7 +1058,8 @@ def main():
                                 accelerator=accelerator, 
                                 target_emb=target_emb,
                                 pipeline=pipeline,
-                                step=global_step
+                                step=global_step,
+                                generator=generator_cuda
                             )
 
                         # save images
@@ -833,12 +1097,15 @@ def main():
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 with torch.no_grad():
                     target_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
+                    mask_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1]
                     # target_embeds_log=target_embeds.detach()
                     # if args.normalize_target1:
                     #     norm_target=torch.norm(learned_embeds_scaled,p=1,dim=-1)
                     # else:
                     norm_target=torch.norm(target_emb,p=1,dim=-1)
+                    norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
                 if loss_mlm is not None:
+                    logs['norm_mask']=norm_mask.item()
                     logs['loss_mlm']=loss_mlm.detach().item()#*args.lambda3
                 logs['norm_target']=norm_target.item()
                 if args.report_to=='wandb' and accelerator.is_main_process:

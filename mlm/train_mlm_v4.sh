@@ -8,7 +8,7 @@ export CUDA_VISIBLE_DEVICES=6,7;
 accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --output_dir="saved_models/mlm_models" \
-  --train_batch_size=128 \
+  --train_batch_size=150 \
   --gradient_accumulation_steps=1 \
   --learning_rate=1e-4 \
   --lr_scheduler="constant" \
@@ -20,7 +20,7 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --seed=7776 \
   --mask_tokens='[MASK]' \
   --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
-  --run_name='sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015' \
+  --run_name='sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
   --whole_word_mask=0 \
@@ -49,7 +49,7 @@ accelerate launch --num_processes=2 --main_process_port=7353 train_mlm_v4.py \
   --seed=7776 \
   --mask_tokens='[MASK]' \
   --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
-  --run_name='sd2_contextnetv4_nonpadding_1e4_unnorm_mprob015' \
+  --run_name='sd2_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch128' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
   --whole_word_mask=0 \

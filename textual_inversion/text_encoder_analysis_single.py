@@ -53,8 +53,9 @@ import torch.nn.functional as F
 # ADDED
 if is_wandb_available():
     import wandb
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from datasets_pkgs.dataset_analysis_single import TextualInversionDatasetSingle
+# from datasets_pkgs.dataset_analysis_single import TextualInversionDatasetSingle
 
 # ------------------------------------------------------------------------------
 
@@ -306,27 +307,44 @@ def main():
     prior_concepts=[args.prior_concept1]
     placeholder_tokens=[args.placeholder_token1]
     placeholder_ids=[placeholder_token_id1[0]]
-    
-    train_dataset_mlm_multi = TextualInversionDatasetSingle(
+    train_dataset_mlm = TextualInversionDatasetSingle(
         include_prior_concept=args.include_prior_concept,
         data_root1=args.train_data_dir1,
-        data_root2=args.train_data_dir2,
         tokenizer=tokenizer,
         size=args.resolution,
-        repeats=args.repeats,
-        learnable_property=args.learnable_property,
+        placeholder_token1=args.placeholder_token1,
+        placeholder_id1=placeholder_token_id1,
         center_crop=args.center_crop,
         flip_p=args.flip_p,
         exclude_suffix=args.exclude_suffix,
+        prior_concept1=args.prior_concept1,
         mask_token_ids=mask_token_ids[0],
         mlm_target=args.mlm_target,
         get_images=False,
         prompt_type=args.prompt_type,
-        placeholder_tokens=placeholder_tokens,
-        placeholder_ids=placeholder_ids,
-        prior_concepts=prior_concepts,
-        make_composition=args.make_composition,
+        mask_prob=args.mask_prob,
+        caption_root=args.caption_root,
     )
+    # train_dataset_mlm = TextualInversionDataset(
+    #     include_prior_concept=args.include_prior_concept,
+    #     data_root1=args.train_data_dir1,
+    #     data_root2=args.train_data_dir2,
+    #     tokenizer=tokenizer,
+    #     size=args.resolution,
+    #     repeats=args.repeats,
+    #     learnable_property=args.learnable_property,
+    #     center_crop=args.center_crop,
+    #     flip_p=args.flip_p,
+    #     exclude_suffix=args.exclude_suffix,
+    #     mask_token_ids=mask_token_ids[0],
+    #     mlm_target=args.mlm_target,
+    #     get_images=False,
+    #     prompt_type=args.prompt_type,
+    #     placeholder_tokens=placeholder_tokens,
+    #     placeholder_ids=placeholder_ids,
+    #     prior_concepts=prior_concepts,
+    #     make_composition=args.make_composition,
+    # )
    
     
     def collate_fn(examples):
@@ -361,8 +379,8 @@ def main():
         }
         return batch
         
-    train_dataloader_mlm_multi = torch.utils.data.DataLoader(
-        train_dataset_mlm_multi, 
+    train_dataloader_mlm = torch.utils.data.DataLoader(
+        train_dataset_mlm, 
         batch_size=args.mlm_batch_size, 
         shuffle=True, num_workers=args.dataloader_num_workers,
         collate_fn=collate_fn,
@@ -375,7 +393,7 @@ def main():
 
     # Scheduler and math around the number of training steps.
     overrode_max_train_steps = False
-    num_update_steps_per_epoch = math.ceil(len(train_dataloader_mlm_multi) / args.gradient_accumulation_steps)
+    num_update_steps_per_epoch = math.ceil(len(train_dataloader_mlm) / args.gradient_accumulation_steps)
     if args.max_train_steps is None:
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
         overrode_max_train_steps = True
@@ -391,8 +409,8 @@ def main():
     text_encoder.train()
     # Prepare everything with our `accelerator`.
     
-    text_encoder, optimizer, lr_scheduler,train_dataloader_mlm_multi = accelerator.prepare(
-        text_encoder, optimizer, lr_scheduler,train_dataloader_mlm_multi
+    text_encoder, optimizer, lr_scheduler,train_dataloader_mlm = accelerator.prepare(
+        text_encoder, optimizer, lr_scheduler,train_dataloader_mlm
     )
     
 
@@ -409,7 +427,7 @@ def main():
     vae.to(accelerator.device, dtype=weight_dtype)
 
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
-    num_update_steps_per_epoch = math.ceil(len(train_dataloader_mlm_multi) / args.gradient_accumulation_steps)
+    num_update_steps_per_epoch = math.ceil(len(train_dataloader_mlm) / args.gradient_accumulation_steps)
     if overrode_max_train_steps:
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
     # Afterwards we recalculate our number of training epochs
@@ -424,7 +442,7 @@ def main():
     total_batch_size = args.train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
     logger.info("***** Running training *****")
-    logger.info(f"  Num examples = {len(train_dataloader_mlm_multi)}")
+    logger.info(f"  Num examples = {len(train_dataloader_mlm)}")
     logger.info(f"  Num Epochs = {args.num_train_epochs}")
     logger.info(f"  Instantaneous batch size per device = {args.train_batch_size}")
     logger.info(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
@@ -463,7 +481,7 @@ def main():
     contrastive_criterion=SupervisedContrastiveLoss()
     import time
     text_encoder.train()
-    for step, batch_text_multi in enumerate(train_dataloader_mlm_multi):
+    for step, batch_text_multi in enumerate(train_dataloader_mlm):
         with accelerator.accumulate(text_encoder):
             # for multi MLM
             is_prior1=batch_text_multi["is_prior1"].to(accelerator.device)
@@ -535,7 +553,52 @@ def main():
                     'calibrate_kneg1':args.calibrate_kneg1,
                     'calibrate_kneg2':args.calibrate_kneg2,
                 }
-                out = text_encoder(input_ids_pos,
+                
+                                
+                
+
+
+                # without attention calibration
+                out_nomod = text_encoder(input_ids_pos,
+                                    is_keyword_tokens1=is_keyword_tokens1,
+                                    is_prior1=is_prior1,
+                                    inj_embeddings1=target_emb1,
+                                    output_attentions=True,
+                                    non_keyword_idxs=non_keyword_idxs,
+                                    attn_mod_params=None
+                                    )
+                attention_per_layers_nomod=out_nomod.attentions #[num_layers,bsz,num_heads,num_tokens,num_tokens] [12,400,12,77,77]
+                k1_p1_attn_list_nomod=[]
+                p1_k1_attn_list_nomod=[]
+                for layer_idx in range(len(attention_per_layers_nomod)):
+                    layer_attentions=attention_per_layers_nomod[layer_idx] # [bsz,num_heads,num_tokens,num_tokens] [400,12,77,77]
+                    layer_attentions=torch.mean(layer_attentions,dim=1) # 400,12,77,77 -> 400,77,77
+
+                    # 1) key-> prior attentions
+                    key1_attentions=layer_attentions[is_keyword_tokens1] # 400,77
+                    key1_prior1_attentions=key1_attentions[is_prior1] # 400
+                    k1_p1_attn_list_nomod.append(key1_prior1_attentions)
+
+                    # 2) prior -> key attentions
+                    prior1_attentions=layer_attentions[is_prior1] # 400,77
+                    prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
+                    p1_k1_attn_list_nomod.append(prior1_key1_attentions)
+                    
+                k1_p1_attn_list_nomod=torch.stack(k1_p1_attn_list_nomod)# [num_layers,bsz] [12,400]
+                k1_p1_attn_list_nomod=k1_p1_attn_list_nomod.permute(1,0).detach().cpu().numpy() # 400,12
+                p1_k1_attn_list_nomod=torch.stack(p1_k1_attn_list_nomod)# [num_layers,bsz] [12,400]
+                p1_k1_attn_list_nomod=p1_k1_attn_list_nomod.permute(1,0).detach().cpu().numpy() # 400,12
+                xpoints=np.arange(12)
+                print(p1_k1_attn_list_nomod.shape,'p1_k1_attn_list_nomod.shape')
+                print(k1_p1_attn_list_nomod.shape,'k1_p1_attn_list_nomod.shape')
+                
+
+
+
+
+
+                # WITH attention calibration
+                out_mod = text_encoder(input_ids_pos,
                                     is_keyword_tokens1=is_keyword_tokens1,
                                     is_prior1=is_prior1,
                                     inj_embeddings1=target_emb1,
@@ -543,38 +606,45 @@ def main():
                                     non_keyword_idxs=non_keyword_idxs,
                                     attn_mod_params=attn_mod_params
                                     )
-                attention_per_layers=out.attentions #[12,400,12,77,77]
-                k1_p1_attn_list=[]
-                p1_k1_attn_list=[]
-                print(len(attention_per_layers),'len(attention_per_layers)')
-                for layer_idx in range(len(attention_per_layers)):
-                    layer_attentions=attention_per_layers[layer_idx] # 400,12,77,77
+                attention_per_layers_mod=out_mod.attentions #[num_layers,bsz,num_heads,num_tokens,num_tokens] [12,400,12,77,77]
+                k1_p1_attn_list_mod=[]
+                p1_k1_attn_list_mod=[]
+                for layer_idx in range(len(attention_per_layers_mod)):
+                    layer_attentions=attention_per_layers_mod[layer_idx] # [bsz,num_heads,num_tokens,num_tokens] [400,12,77,77]
                     layer_attentions=torch.mean(layer_attentions,dim=1) # 400,12,77,77 -> 400,77,77
+
+                    # 1) key-> prior attentions
                     key1_attentions=layer_attentions[is_keyword_tokens1] # 400,77
-                    prior1_attentions=layer_attentions[is_prior1] # 400,77
                     key1_prior1_attentions=key1_attentions[is_prior1] # 400
+                    k1_p1_attn_list_mod.append(key1_prior1_attentions)
+
+                    # 2) prior -> key attentions
+                    prior1_attentions=layer_attentions[is_prior1] # 400,77
                     prior1_key1_attentions=prior1_attentions[is_keyword_tokens1] # 400
-                    # print(key1_attentions.sum(dim=-1),'key1_attentions.sum')
-                    # print(prior1_attentions.sum(dim=-1),'prior1_attentions.sum')
-                    # print(key1_prior1_attentions.shape,'key1_prior1_attentions.shape')
-                    # print(prior1_key1_attentions.shape,'prior1_key1_attentions.shape')
-                    k1_p1_attn_list.append(key1_prior1_attentions)
-                    p1_k1_attn_list.append(prior1_key1_attentions)
+                    p1_k1_attn_list_mod.append(prior1_key1_attentions)
                     
-                k1_p1_attn_list=torch.stack(k1_p1_attn_list)#13,400
-                k1_p1_attn_list=k1_p1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
-                p1_k1_attn_list=torch.stack(p1_k1_attn_list)#13,400
-                p1_k1_attn_list=p1_k1_attn_list.permute(1,0).detach().cpu().numpy() # 400,12
+                k1_p1_attn_list_mod=torch.stack(k1_p1_attn_list_mod)# [num_layers,bsz] [12,400]
+                k1_p1_attn_list_mod=k1_p1_attn_list_mod.permute(1,0).detach().cpu().numpy() # 400,12
+                p1_k1_attn_list_mod=torch.stack(p1_k1_attn_list_mod)# [num_layers,bsz] [12,400]
+                p1_k1_attn_list_mod=p1_k1_attn_list_mod.permute(1,0).detach().cpu().numpy() # 400,12
                 xpoints=np.arange(12)
-                print(k1_p1_attn_list.shape,'k1_p1_attn_list.shape')
-                print(p1_k1_attn_list.shape,'p1_k1_attn_list.shape')
-                for k1_p1_attns,p1_k1_attns in zip(k1_p1_attn_list,p1_k1_attn_list):
-                    plt.plot(xpoints,k1_p1_attns, 'b',linewidth=0.2)
-                    # print(k1_p1_attns,'k1_p1_attns')
-                    # plt.plot(xpoints,p1_k1_attns, 'r',linewidth=0.2)
-                    # print(k1_p1_attns[-1],p1_k1_attns[-1])
+                print(p1_k1_attn_list_mod.shape,'p1_k1_attn_list_mod.shape')
+                print(k1_p1_attn_list_mod.shape,'k1_p1_attn_list_mod.shape')
+                # for k1_p1_attns,p1_k1_attns in zip(k1_p1_attn_list,p1_k1_attn_list):
+                # for k1_p1_attns in k1_p1_attn_list:
+                # for k1_p1_attns in k1_p1_attn_list_mod:
+                #     print(np.sum(k1_p1_attns),'k1_p1_attns')
+                #     plt.plot(xpoints,k1_p1_attns, 'b',linewidth=0.2)
+                #     count+=1
+                # plt.savefig('k2p_attn_curve_mod.jpg'.format(args.calibrate_kpos1,args.calibrate_ppos1),dpi=500)
+                # plt.cla()
+
+                for p1_k1_attns_mod,p1_k1_attns_nomod in zip(p1_k1_attn_list_mod,p1_k1_attn_list_nomod):
+                    # print(np.sum(p1_k1_attns),'p1_k1_attns')
+                    plt.plot(xpoints,p1_k1_attns_mod, 'b',linewidth=0.2,color='red')
+                    plt.plot(xpoints,p1_k1_attns_nomod, 'b',linewidth=0.2,color='blue')
                     count+=1
-                plt.savefig('attn_curve_kpos{}_ppos{}.jpg'.format(args.calibrate_kpos1,args.calibrate_ppos1),dpi=500)
+                plt.savefig('p2k_attn_curve_ppos{}.jpg'.format(args.calibrate_ppos1),dpi=500)
                 break
             break
     # Create the pipeline using the trained modules and save it.

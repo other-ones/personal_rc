@@ -8,7 +8,7 @@ import shutil
 
 
 if __name__=='__main__':
-    dst_root='../../captions/v0/pet'
+    dst_root='../../captions/v0_simple/pet'
     if os.path.exists(dst_root):
         shutil.rmtree(dst_root)
         print(dst_root,'deleted')
@@ -50,16 +50,16 @@ if __name__=='__main__':
 
     # background=np.random.choice(backgrounds)
     # if np.random.rand()<0.5:
-    #     prompt=f"<new> with the {background} in the background"
+    #     prompt=f"<new1> with the {background} in the background"
     # else:
-    #     prompt=f"A view of the <new> at {background}"
+    #     prompt=f"A view of the <new1> at {background}"
 
     # 3. BACKGROUNDS
     captions_pet_backgrounds=[]
     for background in BACKGROUNDS:
-        prompt=f"<new> with the {background} in the background"
+        prompt=f"<new1> with the {background} in the background"
         captions_pet_backgrounds.append(prompt)
-        prompt=f"<new> at {background}"
+        prompt=f"<new1> at {background}"
         captions_pet_backgrounds.append(prompt)
 
     # 4. generate_styles_caption
@@ -68,7 +68,7 @@ if __name__=='__main__':
     captions_pet_styles=[]
     for fmt in ['captured','depicted','rendered']:
         for style in STYLES:
-            prompt=f"<new> {fmt} in the {style} style"
+            prompt=f"<new1> {fmt} in the {style} style"
             captions_pet_styles.append(prompt)
 
     

@@ -4,6 +4,13 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--normalize_mask_embeds',type=int,default=0)
+    parser.add_argument('--add_pe',type=int,default=1)
+    parser.add_argument('--eval_prompt_type',type=str)
+    parser.add_argument('--train_prompt_type',type=str)
+    parser.add_argument('--exclude_cap_types',type=str)
+    parser.add_argument('--log_steps',type=int,default=10)
+    parser.add_argument('--rev',type=int,default=0)
     parser.add_argument('--caption_root',type=str,default='../datasets_pkgs/captions')
     parser.add_argument('--initialize_token',type=int,default=1)
     parser.add_argument('--calibrate_ppos1',type=float,default=0)
@@ -184,7 +191,7 @@ def parse_args():
     parser.add_argument(
         "--dataloader_num_workers",
         type=int,
-        default=0,
+        default=4,
         help=(
             "Number of subprocesses to use for data loading. 0 means that the data will be loaded in the main process."
         ),

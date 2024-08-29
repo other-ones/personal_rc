@@ -21,7 +21,7 @@ info_map_03={
     # 'cat_statue': ('toy','toy'),
     # 'rc_car':('toy','toy'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
-    'flower1':('flower','flower'),
+    # 'flower1':('flower','flower'),
 }
 info_map_01={
     # 'backpack':('backpack','nonliving'),
@@ -79,18 +79,18 @@ delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
 mlm_batch_list=[25,50]
-
+rep_id=2
 
 if include_prior:
-    dir_name='singlev3_prior_seed{}_rep1'.format(seed)
+    dir_name='singlev4s30kunnorm_noprior_seed{}_rep{}'.format(seed,rep_id)
 else:
-    dir_name='singlev3_noprior_seed{}_rep1'.format(seed)
+    dir_name='singlev4s30kunnorm_noprior_seed{}_rep{}'.format(seed,rep_id)
 train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
 os.makedirs(train_log_dir,exist_ok=True) 
-train_steps=1e6
+train_steps=3001
 for mlm_batch in mlm_batch_list:
     for rev in rev_list:
         for mask_prob in mask_prob_list:
@@ -102,7 +102,7 @@ for mlm_batch in mlm_batch_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    prefix='tiv3_'
+                    prefix='tiv4s30k_'
                     if include_prior:
                         prefix+='prior'
                     else:
@@ -119,6 +119,7 @@ for mlm_batch in mlm_batch_list:
                     if os.path.exists(exp_path):
                         print(exp_path,'exists')
                         continue
+                    
                     while True:
                         stats=get_gpu_memory()
                         found=False
@@ -145,17 +146,18 @@ for mlm_batch in mlm_batch_list:
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=4 \\\n'
-                    # command+='--max_train_steps={} \\\n'.format(train_steps)
+                    command+='--max_train_steps={} \\\n'.format(train_steps)
                     command+='--learning_rate=5e-4 \\\n'
                     command+='--lr_scheduler="constant" \\\n'
+                    command+='--normalize_mask_embeds=0 \\\n'
                     # command+='--add_pe={} \\\n'.format(add_pe)
                     command+='--lr_warmup_steps=0 \\\n'
                     command+='--output_dir="{}" \\\n'.format(output_dir)
                     command+='--seed={} \\\n'.format(seed)
                     command+='--mask_tokens="[MASK]" \\\n'
                     command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv2_nonpadding_1e4/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015/checkpoints/checkpoint-30000/cls_net_30000_ckpt.pt" \\\n'
+                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015/checkpoints/checkpoint-30000/mask_embeds_30000_ckpt.pt" \\\n'
                     # command+='--cls_net_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/cls_net_99000_ckpt.pt" \\\n'
                     # command+='--mask_embed_path="saved_models/mlm_models/mlm_contextnet_nonpad_lr1e4/checkpoints/mask_embeds_99000_ckpt.pt" \\\n'
                     command+='--mask_prob={} \\\n'.format(mask_prob)
@@ -169,7 +171,7 @@ for mlm_batch in mlm_batch_list:
                     if exclude_cap_types is not None:
                         command+='--exclude_cap_types={} \\\n'.format(exclude_cap_types)
                     command+='--normalize_target1=0 \\\n'
-                    command+='--caption_root="../datasets_pkgs/captions/v3" \\\n'
+                    command+='--caption_root="../datasets_pkgs/captions/v0_simple" \\\n'
                     command+='--run_name="{}" \\\n'.format(run_name)
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="TI MLM SINGLE" \\\n'

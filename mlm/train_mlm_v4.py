@@ -100,7 +100,10 @@ def main():
         viz_dir = os.path.join(exp_dir,'viz')
         os.makedirs(viz_dir, exist_ok=True)
         codepath=os.path.join(exp_dir,'src')
+        if os.path.exists(codepath) and 'tmp' not in codepath:
+            assert False,'code exists'
         os.makedirs(codepath,exist_ok=True)
+        
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
@@ -417,11 +420,11 @@ def main():
     ce_criterion = torch.nn.CrossEntropyLoss()
     cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     import time
-    text_encoder.eval()
     inference_noise=None
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     print('start')
     for epoch in range(first_epoch, args.num_train_epochs):
+        # text_encoder.train()
         for step, batch in enumerate(train_dataloader):
             # Load Batch
             input_ids=batch["input_ids"]
@@ -437,14 +440,14 @@ def main():
 
             # clip-text
             bsz=len(input_ids)
-            mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids]
-            if args.normalize_mask_embeds:
-                mask_embeds_target=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
-            else:
-                mask_embeds_target=mask_embeds
+            # mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids]
+            # if args.normalize_mask_embeds:
+            #     mask_embeds_target=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
+            # else:
+            #     mask_embeds_target=mask_embeds
             clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                            mask_embedding=mask_embeds_target,
-                                            mask_idxs=masked_idxs
+                                            # mask_embedding=mask_embeds,
+                                            # mask_idxs=masked_idxs
                                             )[0].to(accelerator.device, dtype=weight_dtype)
             # clip_text_embedding_masked = text_encoder(input_ids_masked,
             #                             normalizing_scale=avg_norm,
@@ -551,9 +554,9 @@ def main():
                     
                         
 
-                if (global_step) % (args.save_steps) == 0:
+                if (global_step) % (args.save_steps) == 0 or global_step==100:
                     if accelerator.is_main_process:
-                        mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
+                        mask_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
                         if global_step>-1 and (not args.debug):
                             if args.checkpoints_total_limit >0:
                                 checkpoints = os.listdir(ckpt_dir)
@@ -579,20 +582,22 @@ def main():
                             print(args.checkpoints_total_limit,'checkpoints_total_limit')
                             print(f"save weights {save_path_cls_net}")
                             torch.save(cls_net.state_dict(), save_path_cls_net)
-                            learned_embeds_dict = {args.mask_tokens: mask_embeds.detach().cpu()}
-                            print(f"save mask embeds {save_path_mask_embeds}")
+                            learned_embeds_dict = {args.mask_tokens: mask_embeds_saved.detach().cpu()}
+
+                            print(f"save mask embeds {save_path_mask_embeds}",'cos_sim:{}'.format(cos_sim(mask_embeds_copy,mask_embeds_saved).item()))
                             torch.save(learned_embeds_dict, save_path_mask_embeds)
                             print(f"save optimizer {save_path_optimizer}")
                             torch.save(optimizer.state_dict(), save_path_optimizer)
 
                 logs = {"loss_mlm": loss_mlm.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 with torch.no_grad():
-                    mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
-                    masked_embeds_norm=torch.norm(mask_embeds,p=1).detach()
+                    mask_embeds_log=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids].clone()
+                    # mask_embeds_log=mask_embeds.clone()
+                    masked_embeds_norm=torch.norm(mask_embeds_log,p=1).detach()
                     logs['masked_norm']=masked_embeds_norm.item()
                     # print(mask_embeds_copy.shape,'mask_embeds_copy.shape')
                     # print(mask_embeds.shape,'mask_embeds.shape')
-                    logs['mask_sim']=cos_sim(mask_embeds_copy,mask_embeds).item()
+                    logs['mask_sim']=cos_sim(mask_embeds_copy,mask_embeds_log).item()
                 if args.report_to=='wandb' and accelerator.is_main_process:
                     wandb.log(logs)
                 progress_bar.set_postfix(**logs)

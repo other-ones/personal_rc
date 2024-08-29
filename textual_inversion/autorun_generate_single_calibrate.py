@@ -4,21 +4,21 @@ import os
 from utils import float_to_str
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
-    'dog6': ('dog','dog'),
-    'pet_cat1':('cat','cat'),
-    # 'cat1': ('cat','cat'),
-    # 'backpack':('backpack','backpack'),
-    # 'teddybear':('bear','teddybear'),
-    # 'wooden_pot':('pot','wooden_pot'),
-    # 'vase':('vase','vase'),
-    # 'pet_dog1':('dog','pet'),
-    # 'barn': ('barn','building'),
-    # 'chair1': ('chair','chair'),
-    # 'cat_statue': ('toy','toy'),
-    # 'rc_car':('toy','toy'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'dog3': ('dog','pet'),
-    # 'flower1':('flower','flower'),
+    'cat1': ('cat','cat'),
+    'backpack':('backpack','backpack'),
+    'teddybear':('bear','teddybear'),
+    'wooden_pot':('pot','wooden_pot'),
+    'vase':('vase','vase'),
+    'pet_cat1':('cat','pet'),
+    'pet_dog1':('dog','pet'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','chair'),
+    'cat_statue': ('toy','toy'),
+    'rc_car':('toy','toy'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'dog3': ('dog','pet'),
+    'dog6': ('dog','pet'),
+    'flower1':('flower','flower'),
 
 }
 lambda_mlm=0.001
@@ -45,14 +45,15 @@ idx=0
 # dirs=['multi','single']
 seed=2940
 include_prior_concept=1
+ppos_list=[0.2,0.1,0.3,0.5,1.0]
 
 
 
 
 if include_prior_concept:
-    dir_name='singlev0_prior_seed{}_rep1'.format(seed)
+    dir_name='singlev3_prior_seed{}'.format(seed)
 else:
-    dir_name='singlev0_prior_seed{}_rep1'.format(seed)
+    dir_name='singlev3_noprior_seed{}'.format(seed)
 dir_path=os.path.join('saved_models/ti_models',dir_name)
 log_dir='logs/generate/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)    
@@ -62,29 +63,24 @@ concepts=os.listdir(dir_path)
 
 
 
-# ppos_list=[1.0,0.7,0.5,0.3,0.2,0.1,0]
-ppos_list=[0]
-# target_exp='tiv2_prior_mlm0001_{}_mprob015_mbatch25'
-target_exp=None
-for cidx,concept in enumerate(concepts):
-    if concept not in info_map:
-        continue
-    concept_path=os.path.join(dir_path,concept)
-    exps=os.listdir(concept_path)
-    for exp_idx,exp in enumerate(exps):
-        if target_exp is not None and target_exp.format(concept)!=exp:
+    
+for cidx,concept in enumerate(info_map.keys()):
+    for ppos in ppos_list:
+        ppos_str=float_to_str(ppos)
+        ppos_str=ppos_str.replace('.','P')
+        if concept not in info_map:
             continue
-        if 'nope' in exp:
-            add_pe=0
-        else:
-            add_pe=1
-        for ppos in ppos_list:
-            ppos_str=float_to_str(ppos)
-            ppos_str=ppos_str.replace('.','P')
+        concept_path=os.path.join(dir_path,concept)
+        exps=os.listdir(concept_path)
+        for exp_idx,exp in enumerate(exps):
             if '_rev' in exp:
                 rev=1
             else:
                 rev=0
+            if not 'specific2' in exp:
+                continue
+            # if not ('nomlm' in exp or 'mprob015' in exp):
+            #     continue
             prior,category=info_map[concept]
             learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s3000.pt')
             if not os.path.exists(learned_embed_path1):
@@ -93,9 +89,9 @@ for cidx,concept in enumerate(concepts):
             exp_name=exp
             exp_name+='_s3000'
             exp_name+='_ppos{}'.format(ppos_str)
-            output_dir=os.path.join('results_ti/{}/{}'.format(dir_name,concept))
+
+            output_dir=os.path.join('results/{}/{}'.format(dir_name,concept))
             exp_path=os.path.join(output_dir,exp_name)
-            print(exp_path,'exp_path')
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
                 continue
@@ -110,7 +106,7 @@ for cidx,concept in enumerate(concepts):
                         break
                 if found:
                     break
-                print(exp_name,'sleep')
+                print(exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
                 time.sleep(delay)
             print(exp_name,device_idx)
             log_path=os.path.join(log_dir,exp_name+'.out')
@@ -123,15 +119,14 @@ for cidx,concept in enumerate(concepts):
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
             command+='--dst_exp_path={} \\\n'.format(exp_path)
-            command+='--calibrate_ppos1={} \\\n'.format(ppos)
             command+='--eval_batch_size=15 \\\n'
             command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
+            command+='--rev={} \\\n'.format(rev)
             command+='--output_dir="{}" \\\n'.format(output_dir)
             command+='--seed={} \\\n'.format(seed)
             command+='--mask_tokens="[MASK]" \\\n'
             command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-            command+='--add_pe={} \\\n'.format(add_pe)
-            command+='--rev={} \\\n'.format(rev)
+            command+='--calibrate_ppos1="{}" \\\n'.format(ppos)
             command+='--prompt_type="{}" \\\n'.format(category)
             command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior_concept,log_path)
             os.system(command)
