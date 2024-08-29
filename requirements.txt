@@ -242,4 +242,3 @@ yacs==0.1.8
 yapf==0.40.2
 yarl==1.9.4
 zipp==3.19.2
-prefix: /home/twkim/anaconda3/envs/context
