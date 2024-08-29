@@ -54,8 +54,8 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --whole_word_mask=0 \
   --normalize_mask_embeds=0 \
   --checkpoints_total_limit=10 
-  # --report_to="wandb" \
-  # --project_name='ContextNetV4 Train' 
+  --report_to="wandb" \
+  --project_name='ContextNetV4 Train' 
 
 
 
