@@ -90,11 +90,10 @@ else:
         "nearest": PIL.Image.NEAREST,
     }
 
-class TextualInversionDataset(Dataset):
+class TextualInversionDatasetSingle(Dataset):
     def __init__(
         self,
         data_root1,
-        data_root2,
         tokenizer,
         include_prior_concept,
         learnable_property="object",  # [object, style]
@@ -105,20 +104,20 @@ class TextualInversionDataset(Dataset):
         center_crop=False,
         exclude_suffix=True,
         mlm_target='all',
-        mask_prob=0.15,
+        mask_prob=0.25,
         mask_token_ids=None,
         get_images=True,
         prompt_type=None,
-        placeholder_tokens=[],
-        placeholder_ids=[],
-        prior_concept=None,
+        placeholder_token1=None,
+        placeholder_id1=None,
+        prior_concept1=None,
         caption_root=None,
 
     ):
         self.include_prior_concept=include_prior_concept
-        self.placeholder_ids = placeholder_ids
-        self.placeholder_tokens = placeholder_tokens
-        self.prior_concept = prior_concept
+        self.placeholder_id1 = placeholder_id1
+        self.placeholder_token1 = placeholder_token1
+        self.prior_concept1 = prior_concept1
         caption_dir_path=os.path.join(caption_root,prompt_type)
         self.prompt_type=prompt_type
         self.captions={}
@@ -139,14 +138,14 @@ class TextualInversionDataset(Dataset):
         self.mask_prob = mask_prob
         self.mlm_target = mlm_target
         self.exclude_suffix = exclude_suffix
-        self.data_roots = [data_root1,data_root2]
+        self.data_root1 = data_root1
         self.tokenizer = tokenizer
-        # self.prior_concept_id=tokenizer.encode(self.prior_concept,add_special_tokens=False)[0]
+        # self.prior_concept_id=tokenizer.encode(self.prior_concept1,add_special_tokens=False)[0]
         self.learnable_property = learnable_property
         self.size = size
         self.center_crop = center_crop
         self.flip_p = flip_p
-        self.image_paths1 = [os.path.join(self.data_roots[0], file_path) for file_path in os.listdir(self.data_roots[0])]
+        self.image_paths1 = [os.path.join(self.data_root1, file_path) for file_path in os.listdir(self.data_root1)]
         self.image_paths=[self.image_paths1]
         self.num_images = len(self.image_paths1)
         self.interpolation = {
@@ -163,20 +162,18 @@ class TextualInversionDataset(Dataset):
     
     def __getitem__(self, index):
         example = {}
+        sampled_type=np.random.choice(self.caption_types)
+        sampled_caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
         # 3. MLM
-        caption=self.prompt_generator.generate_caption()
-
-        sampled_junction=np.random.choice(self.junctions)
-        caption=caption.replace('[JUNCTION]',sampled_junction)
         if self.include_prior_concept:
-            placeholder1='{} {}'.format(self.placeholder_tokens[0],self.prior_concepts[0])
+            placeholder1='{} {}'.format(self.placeholder_token1,self.prior_concept1)
         else:
-            placeholder1='{}'.format(self.placeholder_tokens[0])
+            placeholder1='{}'.format(self.placeholder_token1)
         
-        caption=caption.format(placeholder1)
-        example['raw_caption']=caption
+        sampled_caption=sampled_caption.replace('<new1>',placeholder1)
+        example['raw_caption']=sampled_caption
         input_ids_pos = self.tokenizer(
-                caption,
+                sampled_caption,
                 padding="max_length",
                 truncation=True,
                 max_length=self.tokenizer.model_max_length,
@@ -190,7 +187,7 @@ class TextualInversionDataset(Dataset):
         
         is_prior1=[False]
         is_keyword_tokens1=[False] # first token for <startoftext>
-        words_split=caption.split()
+        words_split=sampled_caption.split()
         non_special_idxs=[False]
         non_keyword_idxs=[False]
         for word_idx in range(len(words_split)):
@@ -201,8 +198,8 @@ class TextualInversionDataset(Dataset):
             for tok_id in word_token_ids:
                 tok_decoded=self.tokenizer.decode(tok_id)
                 # 2) keyword indices and labels for MLM.
-                if tok_id in self.placeholder_ids:
-                    if tok_id == self.placeholder_ids[0]:
+                if tok_id in self.placeholder_id1:
+                    if tok_id == self.placeholder_id1[0]:
                         assert num_tokens==1
                         is_keyword_tokens1.append(True)
                     else:
@@ -212,7 +209,7 @@ class TextualInversionDataset(Dataset):
                     non_keyword_idxs.append(True)
                     is_keyword_tokens1.append(False)
                 # prior1
-                if tok_decoded==self.prior_concepts[0]:
+                if tok_decoded==self.prior_concept1:
                     is_prior1.append(True)
                 else:
                     is_prior1.append(False)

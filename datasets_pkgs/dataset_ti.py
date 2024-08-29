@@ -19,7 +19,10 @@ import albumentations as A
 from packaging import version
 
 # Added
+
 # Added
+
+
 Image.MAX_IMAGE_PIXELS = 1000000000
 alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95
 alphabet_dic = {}
@@ -73,6 +76,21 @@ prefixes=[
     "a photo of a small {}",
 ]
 
+mlm_prefixes=[
+    "a photo of a {}",
+    "a rendering of a {}",
+    "a cropped photo of the {}",
+    "the photo of a {}",
+    "a photo of my {}",
+    "a close-up photo of a {}",
+    "a cropped photo of a {}",
+    "a photo of the {}",
+    "a photo of one {}",
+    "a close-up photo of the {}",
+    "a rendition of the {}",
+    "a rendition of a {}",
+]
+
 if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
     PIL_INTERPOLATION = {
         "linear": PIL.Image.Resampling.BILINEAR,
@@ -105,26 +123,54 @@ class TextualInversionDataset(Dataset):
         mask_prob=0.25,
         mask_token_ids=None,
         get_images=True,
-        prompt_type=None,
         prior_concept=None,
         placeholder_token=None,
         caption_root=None,
-    ):
-        self.prompt_type=prompt_type
+        rev=None,
+        seed=None,
+        exclude_cap_types=None,
+        prompt_type=None,
+    ):  
+
+        # randomness
+        if seed:
+            torch.manual_seed(seed)
+            np.random.seed(seed)
+            random.seed(seed)
+
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)  # if use multi-GPU
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+            print('seeded')
+        # randomness
+        self.rev=rev
         self.include_prior_concept=include_prior_concept
         caption_dir_path=os.path.join(caption_root,prompt_type)
         cap_file_list=os.listdir(caption_dir_path)
         self.captions={}
         max_length=0
+        invalid_counts=0
         for cap_file in cap_file_list:
             fname=cap_file.split('.')[0]
-            if prompt_type is not None and prompt_type not in fname:
+            valid=True
+            if exclude_cap_types is not None:
+                for ect in exclude_cap_types:
+                    if ect in fname:
+                        valid=False
+                        invalid_counts+=1
+            if not valid:
                 continue
+                
             cap_file_path=os.path.join(caption_dir_path,cap_file)
-            self.captions[fname]=open(cap_file_path).readlines()
+            self.captions[fname]=sorted(list(set(open(cap_file_path).readlines())))
             print('{}\t{}'.format(fname,len(self.captions[fname])))
             if max_length<len(self.captions[fname]):
                 max_length=len(self.captions[fname])
+        if exclude_cap_types is not None:
+            if len(exclude_cap_types)!=invalid_counts:
+                print(invalid_counts,'invalid_counts',exclude_cap_types,'exclude_cap_types')
+            assert len(exclude_cap_types)==invalid_counts,'len(exclude_cap_types)==invalid_counts'
         self._length=max_length
         self.caption_types=list(self.captions.keys())
         
@@ -158,6 +204,15 @@ class TextualInversionDataset(Dataset):
     def __getitem__(self, index):
         example = {}
         # 1. Image
+        if self.include_prior_concept:
+            if self.rev:
+                # dog <dog6>
+                placeholder='{} {}'.format(self.prior_concept,self.placeholder_token)
+            else:
+                # <dog6> dog
+                placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
+        else:
+            placeholder=self.placeholder_token
         if self.get_images:
             img_path=self.image_paths[index % (len(self.image_paths))]
             mask_path=img_path.replace('/images/','/masks/')
@@ -196,11 +251,12 @@ class TextualInversionDataset(Dataset):
             example["masks"] = mask_tensor
 
             # 2. Caption for TI
-            placeholder_string = self.placeholder_token
-            if self.include_prior_concept:
-                text = random.choice(prefixes).format(placeholder_string)+' {}'.format(self.prior_concept)
-            else:
-                text = random.choice(prefixes).format(placeholder_string)
+            
+
+                
+            text = random.choice(prefixes).format(placeholder)
+            example["raw_caption_ti"]=text
+
             example["input_ids"] = self.tokenizer(
                 text,
                 padding="max_length",
@@ -230,11 +286,12 @@ class TextualInversionDataset(Dataset):
         # mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
         sampled_type=np.random.choice(self.caption_types)
         mlm_caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
-        if self.include_prior_concept:
-            placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
-        else:
-            placeholder='{}'.format(self.placeholder_token)
+        mlm_caption=mlm_caption.strip()
+        # print(index,'index',sampled_type,'sampled_type',mlm_caption,'mlm_caption')
         mlm_caption=mlm_caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
+        mlm_prefix=np.random.choice(mlm_prefixes)
+        mlm_caption=mlm_prefix.format(mlm_caption)
+        example["raw_caption_mlm"]=mlm_caption
         example["input_ids_pos"] = self.tokenizer(
                 mlm_caption,
                 padding="max_length",
@@ -243,7 +300,6 @@ class TextualInversionDataset(Dataset):
                 return_tensors="pt",
             ).input_ids[0]
         
-        example["raw_caption"]=mlm_caption
 
 
         words_mlm=mlm_caption.split()
@@ -282,6 +338,9 @@ class TextualInversionDataset(Dataset):
         for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
             is_keyword_tokens_mlm.append(False)
         assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
+        if sum(is_keyword_tokens_mlm)!=1:
+            print(mlm_caption,'mlm_caption')
+            print(sum(is_keyword_tokens_mlm),'sum(is_keyword_tokens_mlm)')
         assert sum(is_keyword_tokens_mlm)==1
         example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
 

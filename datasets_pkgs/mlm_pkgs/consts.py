@@ -1,4 +1,35 @@
 LOCATIONS=[
+    "in the city", "on the mountain", "by the blue house", "under the tree with autumn leaves", "by the river", 
+    "on the beach", "in the forest", "in the desert", "by the waterfall", "in a field of flowers", 
+    "in the snowy landscape", "at sunset", "at sunrise", "in the garden", "on the bridge", 
+    "by the lake", "in the meadow", "under the rainbow", "on a starry night", "at the castle", 
+    "by the windmill", "near the lighthouse", "on a bustling street", "under the skyline", 
+    "in the foggy morning", "in the canyon", "in the village", "on the farm", "in the valley", 
+    "in the jungle", "by the waterfall", "on the rocky shore", "in the harbor", "at the dock",
+    "in the vineyard", "in the mountain range", "on the glacier", "on the cliff", "at the temple",
+    "by the clock tower", "under the skyscraper", "at the tower", "on the pier", "on the forest path",
+    "on the mountain peak", "by the train track", "in the tunnel", "on the riverbank", 
+    "in a field of wheat", "by the snow-covered tree", "on a moonlit night", "on the distant island",
+    "on the cobblestone street", "on the desert dune", "on the grassy hill", "at the quaint cottage",
+    "by the fishing boat", "at the pagoda", "by the volcano", "in the rainforest", "in the sunflower field",
+    "on top of a dirt road", "at the Great Wall of China", "at Times Square", "in the Sahara Desert",
+    "on a coral reef", "at the Mount Everest base", "in the Amazon rainforest", "on the Venetian canal",
+    "in a Paris cafe", "in a modern art museum", "at an Egyptian pyramid", "in a medieval castle",
+    "under the Tokyo skyline", "on the Antarctic ice field", "on a Caribbean beach", "at the international space station",
+    "in a fairy tale castle", "in a Renaissance chapel", "at the Roman Colosseum", "in the Grand Canyon",
+    "at the Eiffel Tower", "on the Las Vegas Strip", "in the Australian Outback", "at the North Pole",
+    "on a luxury Mediterranean yacht", "in a lively street market", "in a Scandinavian minimalist kitchen",
+    "in a grand opera house", "on a sunset beach", "on a seaside boardwalk", "in a lush vineyard",
+    "in a craft brewery", "in a sleek modern office", "in a packed football stadium", "at a central train station",
+    "on an urban chic rooftop", "on a steep mountain pass", "in a serene city park", "at an electric rock concert",
+    "on a historic city bridge", "in a vibrant digital world", "in a futuristic neon-lit city", "in a submarine under the Arctic",
+    "in a large airplane hangar", "on an idyllic Pacific island", "on a vast African savannah", "in a majestic European cathedral",
+    "on iconic Hollywood Boulevard", "in a Victorian Gothic manor", "on a swashbuckling pirate ship", "on the nomadic Mongolian steppe",
+    "on the top of a modern skyscraper", "in the wild Scottish highlands", "in an active volcanic crater", "in a colorful Indian spice market",
+    "in a high-powered corporate office", "on a high-speed car racing track", "in a sun-drenched California vineyard",
+    "on an old European cobblestone street", "under a modern Singapore skyline", "in an isolated Icelandic hot spring",
+    "at an energetic Brazilian carnival", "in a picturesque Swiss mountain town", "on majestic Mount Olympus",
+    "on an isolated desert highway", "at enigmatic Stonehenge", "at a vibrant Rio de Janeiro carnival"
     "on top of a dirt road",
     "in the jungle","at mountain","on Mars","on the Moon","in a forest", "in the snow",
     "at Great Wall of China", "at Times Square", "in the botanic garden",
@@ -48,14 +79,47 @@ LOCATIONS=[
     "on an isolated desert highway", "in an opulent Monaco casino", "at a historic Pilgrim landing site",
     "on a San Francisco cable car", "at enigmatic Stonehenge", "at a vibrant Rio de Janeiro carnival"
 ]
-BUILDING_LOCATIONS=[
+# BUILDING_LOCATIONS=[
 
-]
+# ]
 
-BUILDING_LOCATIONS=list(set(BUILDING_LOCATIONS))
+LOCATIONS=list(set(LOCATIONS))
 
 
 BACKGROUNDS = [
+    "city", "mountain", "blue house", "river", 
+    "beach", "forest", "desert", "waterfall", "field of flowers", 
+    "snowy landscape", "sunset", "sunrise", "garden", "bridge", 
+    "lake", "meadow", "rainbow", "starry night", "castle", 
+    "windmill", "lighthouse", "bustling street", "skyline", 
+    "foggy morning", "canyon", "village", "farm", "valley", 
+    "jungle", "rocky shore", "harbor", "dock",
+    "vineyard", "mountain range", "glacier", "cliff", "temple",
+    "clock tower", "skyscraper", "tower", "pier", "forest path",
+    "mountain peak", "train track", "tunnel", "riverbank", 
+    "field of wheat", "snow-covered tree", "moonlit night", "distant island",
+    "cobblestone street", "desert dune", "grassy hill", "quaint cottage",
+    "fishing boat", "pagoda", "volcano", "rainforest", "sunflower field",
+
+    "Great Wall of China", "Times Square", "Sahara Desert",
+    "Mount Everest base", "Amazon rainforest", "Venetian canal", "Paris cafe",
+    "modern art museum", "Egyptian pyramid", "medieval castle", 
+    "Tokyo skyline", "Antarctic ice field", "Caribbean beach", "international space station",
+    "fairy tale castle", "Renaissance chapel", "Roman Colosseum", "Grand Canyon",
+    "Eiffel Tower", "Las Vegas Strip", "Australian Outback", "North Pole",
+    "luxury Mediterranean yacht", "rural farm", "lively street market",
+    "ancient Greek agora", "Scandinavian minimalist kitchen", "grand opera house",
+    "sunset beach", "seaside boardwalk", "sleek modern office",
+    "packed football stadium", "central train station", "historic city bridge",
+    "futuristic neon-lit city", "idyllic Pacific island", "vast African savannah", 
+    "mysterious underground cave", "iconic Hollywood Boulevard", "majestic European cathedral",
+    "Victorian Gothic manor", "swashbuckling pirate ship", "natural Appalachian trail", 
+    "wild Scottish highland", "active volcanic crater", "royal court of Versailles",
+    "ancient Greek temple", "colorful Indian spice market", 
+    "sun-drenched California vineyard", "mysterious Gothic castle", "lively Venice Beach boardwalk", 
+    "quaint French vineyard", "open-air Moroccan market", "modern Singapore skyline",
+    "Isolated Icelandic hot spring", "energetic Brazilian carnival", 
+    "picturesque Swiss mountain town", "majestic Mount Olympus", "enigmatic Stonehenge",
     "city", "mountain", "blue house", "tree and autumn leaves", "river", 
     "beach", "forest", "desert", "waterfall", "field of flowers", 
     "snowy landscape", "sunset", "sunrise", "garden", "bridge", 
@@ -117,7 +181,51 @@ BACKGROUNDS = [
     "isolated desert highway", "opulent Monaco casino", "historic Pilgrim landing site",
     "San Francisco cable car", "enigmatic Stonehenge", "vibrant Rio de Janeiro carnival",
 ]
-BACKGROUNDS.extend(["Mount Fuji", "Niagara Falls", "Yellowstone National Park", "Lake Tahoe", "Great Barrier Reef",
+BACKGROUNDS.extend([
+    "Mount Fuji", "Niagara Falls", "Yellowstone National Park", "Lake Tahoe", "Great Barrier Reef",
+    "Taj Mahal", "Golden Gate Bridge", "Machu Picchu", "Victoria Falls", "Santorini cliffside",
+    "Berlin Wall", "Sydney Opera House", "Uluru", "Petra", "Galapagos Islands", "Athens Acropolis",
+    "Stonehenge", "Dubai Burj Khalifa", "Hong Kong harbor", "Loch Ness", "Mont Saint-Michel",
+    "Mount Kilimanjaro", "Lake Baikal", "Venice Rialto Bridge", "Angkor Wat", "Pompeii ruins",
+    "Kremlin", "Forbidden City", "Louvre", "Florence Duomo", "Neuschwanstein Castle",
+    "Brandenburg Gate", "Cinque Terre", "Tower of London", "Buckingham Palace", 
+    "Notre Dame Cathedral", "Barcelona Sagrada Familia", "Big Ben", "Zion National Park",
+    "Banff National Park", "Redwood National Park", "Yosemite National Park", "Tower Bridge",
+    "Everglades National Park", "Matterhorn", "Norwegian fjord", "Chichen Itza", "Alhambra",
+    "Versailles", "Moai statues", "Mont Blanc", "Blue Lagoon", "Patagonia", "Serengeti",
+    "Rio de Janeiro Christ the Redeemer", "Istanbul Hagia Sophia", "Auschwitz", "Pearl Harbor",
+    "Mayan pyramids", "Pyramids of Giza", "Zambezi River", "Sahara Desert", "Rocky Mountains",
+    "Crater Lake", "Seychelles", "Maldives", "Tahiti", "Corsica", "Black Forest", 
+    "Iguazu Falls", "Sydney Harbor", "Norwegian fjords", "Swiss Alps", "Kruger National Park",
+    "Grand Tetons", "Denali", "Glacier National Park", "Athabasca Glacier", "Tierra del Fuego",
+    "Easter Island", "Amazon River", "Maasai Mara", "Great Ocean Road", "Sydney Bondi Beach",
+    "Petronas Towers", "Machu Picchu", "Death Valley", "Ha Long Bay", "Banff", 
+    "Sierra Nevada", "Bryce Canyon", "Torres del Paine", "Blue Ridge Mountains", 
+    "Acadia National Park", "Fitz Roy", "Galapagos", "Lake Como", "Everest",
+    "Andes", "Pyrenees", "Valley of the Kings", "Bosphorus Strait", "Sundarbans",
+    "Baltic Sea", "Adriatic Sea", "Isle of Skye", "Lake Geneva", "St. Basil's Cathedral",
+    "Mount Rainier", "Lake Victoria", "Yosemite Valley", "Mauna Loa", "Mount Ararat",
+    "Lake Superior", "Pitons", "Victoria Island", "Cape Horn", "Mekong Delta",
+    "Siberian Taiga", "Cappadocia", "Tanzania Ngorongoro Crater", "Aconcagua", 
+    "Montserrat", "Canaima National Park", "Icelandic Highlands", "Mount Meru", 
+    "Tasmania", "Ruins of Persepolis", "Lake Bled", "Matterhorn", "Rock of Gibraltar", 
+    "Atacama Desert", "Great Smoky Mountains", "Himalayan Plateau", "Red Sea", 
+    "Danube Delta", "Rhone Valley", "Grand Canyon", "Bavarian Forest", "Mount Fuji",
+    "Waikiki Beach", "Azores", "Bora Bora", "Svalbard", "El Yunque National Forest",
+    "Santorini", "Kauai", "Antarctica", "Caribbean Sea", "Seychelles", 
+    "Lake Powell", "Bordeaux Vineyards", "Dolomites", "Blue Mountains", 
+    "Lake Louise", "Redwood National Park", "Torres del Paine", "Fjords of Norway", 
+    "Mount Kenya", "Sossusvlei", "Lake Titicaca", "Bagan", "Yangshuo", 
+    "Phong Nha Caves", "Phuket", "Andaman Sea", "Zermatt", "Lake District",
+    "Sicily", "Icelandic Geothermal Fields", "Madeira", "Franz Josef Glacier", 
+    "Mekong River", "Ruins of Angkor", "Serengeti National Park", "Tasman Sea", 
+    "Ha Long Bay", "Spiti Valley", "Karajini National Park", "Fraser Island", 
+    "Great Victoria Desert", "Barossa Valley", "Yarra Valley", "Kangaroo Island", 
+    "Daintree Rainforest", "Tasmania Cradle Mountain", "Great Otway National Park", 
+    "Whitsunday Islands", "Uluru Kata Tjuta", "Atherton Tablelands", "Ningaloo Reef",
+    "Simpson Desert", "Great Sandy Desert", "Shark Bay", "Cape York", 
+    "Torres Strait Islands", "Kimberley Coast", "Broome of Australia"
+    "Mount Fuji", "Niagara Falls", "Yellowstone National Park", "Lake Tahoe", "Great Barrier Reef",
     "Kyoto temple", "Taj Mahal", "Golden Gate Bridge", "Machu Picchu", "Victoria Falls",
     "Santorini cliffside", "Milan fashion district", "Berlin Wall", "Sydney Opera House",
     "Uluru", "Petra", "Galapagos Islands", "Athens Acropolis", "Stonehenge", "Kyoto Bamboo Forest",
@@ -189,7 +297,8 @@ BACKGROUNDS.extend(["Mount Fuji", "Niagara Falls", "Yellowstone National Park", 
     "Horizontal Falls", "Windjana Gorge", "Gibb River Road", "Pentecost River", "Bungle Bungles",
     "King Leopold Ranges", "Prince Regent River", "Kimberley Coast", "Buccaneer Archipelago",
     "Dampier Peninsula", "Broome of Australia", "Derby", "Fitzroy Crossing", "Kununurra", "El Questro",
-    "Ord River", "Lake Argyle", "Victoria River"])
+    "Ord River", "Lake Argyle", "Victoria River"
+    ])
 BACKGROUNDS=list(set(BACKGROUNDS))
 
 STYLES = [
@@ -323,7 +432,8 @@ HUMANS=list(set(HUMANS))
 
 
 
-LIVING_ACTIVITIES = [
+SOLO_ACTIVITIES = [
+    "skateboarding",
     "walking", "sitting", "running", "playing with a ball", "posing for photos",
     "resting", "stretching", "waiting", "enjoying the sun", "observing surroundings",
     "jumping", "lying down", "drinking water", "exploring", "socializing with others",
@@ -332,7 +442,7 @@ LIVING_ACTIVITIES = [
     "watching passersby", "relaxing in the shade", "performing tricks", "staying close to each other", "cooling off",
     "taking deep breaths", "listening to sounds", "basking in the breeze", "giving high-fives", "holding a pose",
     "playing catch", "waiting for someone", "greeting others", "exploring a new spot", "sitting on a bench",
-
+    "having a speech",
     "making a documentary","reading poetry","learning a martial art","doing a cooking demonstration",
     "practicing calligraphy", "building a robot","riding a camel", "filming a vlog","sipping cocktails",
     "doing tai chi","working on a laptop", "having a coffee","stargazing","practicing martial arts","doing a wine tasting",
@@ -386,7 +496,7 @@ LIVING_ACTIVITIES = [
     "drawing quick impressions", "writing a personal reflection", "taking photos from different angles",
     "recording video clips", "writing about the location", "sketching the environment", "recording daily experiences"
 ]
-LIVING_ACTIVITIES=list(set(LIVING_ACTIVITIES))
+SOLO_ACTIVITIES=list(set(SOLO_ACTIVITIES))
 SUNGLASSES_ACTIVITIES = [
     "walks down the street", "relaxes on the beach", "poses for a photo", "drives a car", "rides a bike", 
     "plays fetch", "reads a book", "sunbathes on the beach", "dances at a party", "skateboards in the park", 
@@ -432,9 +542,11 @@ RELATIVES = [
     "in front of", "adjacent to", 
     "above", "below", 
     "alongside", 
-    "to the left of", 
-    "to the right of",
-    "on top of",  
+    "to the left side of", 
+    "on the left side of", 
+    "on the right side of",
+    "to the right side of",
+    # "on top of",  
     # "surrounding",
     # "beneath", 
     # "over", 
@@ -467,14 +579,17 @@ RELATIVES_BUILDING=[
     "surrounded by","in the vicinity of",
     "opposite", "outside", "under the shadow of"
 ]
+RELATIVES_BUILDING=list(set(RELATIVES_BUILDING))
 
 RELATIVES_SUNGLASSES = [
     "beside", "near", "next to", "behind", 
     "in front of", "adjacent to", 
     "above", "below", 
     "alongside", 
-    "to the left of", 
-    "to the right of",
+    "to the left side of", 
+    "on the left side of", 
+    "on the right side of",
+    "to the right side of",
     "on top of",  
     # "surrounding",
     # "beneath", 
@@ -495,9 +610,9 @@ RELATIVES_SUNGLASSES = [
 RELATIVES_SUNGLASSES=list(set(RELATIVES_SUNGLASSES))
 
 LIVING_INTERACTIONS = [
-    "playing with", "talking to", "feeding", "hugging", "walking", "training", "petting", 
+    "playing with", "talking to", "feeding with", "hugging with", "walking with", "training with", 
     "brushing", "cuddling with", "carrying", "photographing", "watching", "dressing up", 
-    "giving a bath to", "cleaning up after", "taking to the vet", "grooming", "teaching tricks to", 
+    "cleaning up after", "taking to the vet", "grooming", "teaching tricks to", 
     "running with", "sleeping beside", "reading to", "celebrating a birthday with", 
     "sharing food with", "taking a selfie with", "protecting", "napping with", "taking for a car ride", 
     "playing fetch with", "riding in a bicycle basket with", "playing in the park with", "resting beside", 
@@ -508,6 +623,7 @@ LIVING_INTERACTIONS = [
     "hiking with", "watching a movie with", "going on an adventure with"
 ]
 LIVING_INTERACTIONS=list(set(LIVING_INTERACTIONS))
+
 NONLIVING_INTERACTIONS=[
     "held by", "used by", "cleaned by", "carried by", "moved by", "examined by",
     "inspected by", "designed by", "created by", "owned by", "filled by", 
@@ -607,52 +723,232 @@ NONLIVING_INTERACTIONS=[
 ]
 NONLIVING_INTERACTIONS=list(set(NONLIVING_INTERACTIONS))
 
-
-
+NONLIVING_INTERACTIONS=[
+    "held by", "used by", "cleaned by", "carried by", "moved by", "examined by",
+    "inspected by", "designed by", "created by", "owned by", "filled by", 
+    "opened by", "closed by", "repaired by", "assembled by", "disassembled by", 
+    "packed by", "unpacked by", "stored by", "displayed by", "organized by", 
+    "sold by", "purchased by", "bought by", "gifted by", "received by", 
+    "signed by", "decorated by", "photographed by", "filmed by", "documented by", 
+    "wrapped by", "unwrapped by", "collected by", "arranged by", "handled by", 
+    "checked by", "observed by", "viewed by", "made by", "presented by", 
+    "stacked by", "tagged by", "labeled by", "marked by", "sealed by", 
+    "unsealed by", "covered by", "uncovered by", "protected by", "displayed by", 
+    "organized by", "sorted by", "grouped by", "transported by", "shipped by", 
+    "packed by", "lifted by", "placed by", "picked up by", "touched by", 
+    "cleaned by", "polished by", "examined by", "analyzed by", "studied by",
+    "observed by", "found by", "examined by", "measured by", "cataloged by",
+    "secured by", "watched by", "monitored by", "checked by", "inspected by",
+    "discovered by", "repaired by", "restored by", "organized by", "collected by",
+    "delivered by", "used by", "received by", "shared by", "brought by",
+    "taken by", "transported by", "moved by", "carried by", "held by",
+    "picked by", "displayed by", "examined by", "studied by", "presented by",
+    "designed by", "crafted by", "produced by", "assembled by", "disassembled by",
+    "painted by", "drawn by", "labeled by", "sealed by", "opened by",
+    "closed by", "stacked by", "arranged by", "organized by", "stored by",
+    "displayed by", "found by", "cleaned by", "packed by", "unpacked by",
+    "moved by", "lifted by", "placed by", "pushed by", "pulled by",
+    "wrapped by", "unwrapped by", "locked by", "unlocked by", "secured by",
+    "tied by", "untied by", "balanced by", "adjusted by", "angled by",
+    "straightened by", "curved by", "twisted by", "rotated by", "turned by",
+    "lifted by", "lowered by", "carried by", "passed by", "grabbed by",
+    "touched by", "pressed by", "pushed by", "pulled by", "squeezed by",
+    "dropped by", "thrown by", "caught by", "held by", "balanced by",
+    "secured by", "unsecured by", "arranged by", "collected by", "displayed by",
+    "shown by", "illustrated by", "demonstrated by", "documented by",
+    "used by", "handled by", "picked up by", "placed down by", "given by",
+    "received by", "passed by", "taken by", "transferred by", "wrapped by",
+    "unwrapped by", "sealed by", "unsealed by", "boxed by", "unboxed by",
+    "stored by", "retrieved by", "carried by", "moved by", "transported by",
+    "delivered by", "sent by", "received by", "packed by", "unpacked by",
+    "loaded by", "unloaded by", "moved by", "shifted by", "rotated by",
+    "twisted by", "turned by", "pushed by", "pulled by", "handled by",
+    "touched by", "cleaned by", "dusted by", "polished by", "wiped by",
+    "scrubbed by", "brushed by", "checked by", "examined by", "studied by",
+    "analyzed by", "measured by", "weighed by", "calibrated by", "set by",
+    "adjusted by", "calculated by", "marked by", "signed by", "engraved by",
+    "etched by", "painted by", "drawn by", "illustrated by", "sketched by",
+    "photographed by", "filmed by", "recorded by", "documented by",
+    "reported by", "noted by", "commented by", "described by", "analyzed by",
+    "measured by", "calculated by", "organized by", "classified by",
+    "indexed by", "tagged by", "cataloged by", "recorded by", "stored by",
+    "filed by", "archived by", "retrieved by", "searched by", "found by",
+    "checked by", "verified by", "certified by", "approved by",
+    "used by", "held by", "moved by", "transported by", "carried by",
+    "picked up by", "put down by", "lifted by", "lowered by", "adjusted by",
+    "straightened by", "twisted by", "turned by", "pushed by", "pulled by",
+    "grabbed by", "touched by", "handled by", "set by", "reset by",
+    "wrapped by", "unwrapped by", "sealed by", "unsealed by", "boxed by",
+    "unboxed by", "packed by", "unpacked by", "sorted by", "organized by",
+    "arranged by", "stacked by", "aligned by", "positioned by",
+    "cleaned by", "polished by", "wiped by", "dusted by", "scrubbed by",
+    "washed by", "dried by", "aired by", "ventilated by", "displayed by",
+    "shown by", "demonstrated by", "examined by", "observed by",
+    "analyzed by", "studied by", "measured by", "calculated by",
+    "weighed by", "checked by", "monitored by", "recorded by",
+    "documented by", "photographed by", "filmed by", "reported by",
+    "cataloged by", "tagged by", "indexed by", "filed by", "stored by",
+    "archived by", "retrieved by", "handled by", "operated by",
+    "controlled by", "guided by", "directed by", "steered by", "adjusted by",
+    "moved by", "shifted by", "rotated by", "turned by", "pressed by",
+    "pushed by", "pulled by", "squeezed by", "gripped by", "held by",
+    "released by", "secured by", "locked by", "unlocked by", "opened by",
+    "closed by", "covered by", "uncovered by", "protected by",
+    "shielded by", "guarded by", "secured by", "fastened by",
+    "unfastened by", "tied by", "untied by", "clipped by",
+    "unclipped by", "hooked by", "unhooked by", "attached by",
+    "detached by", "connected by", "disconnected by", "joined by",
+    "separated by", "linked by", "unlinked by", "fastened by",
+    "unfastened by", "strapped by", "unstrapped by", "adjusted by",
+    "tightened by", "loosened by", "clamped by", "unclamped by",
+    "secured by", "released by", "positioned by", "aligned by",
+    "set by", "reset by", "calibrated by", "measured by",
+    "recorded by", "marked by", "traced by", "outlined by",
+    "highlighted by", "shaded by", "colored by", "painted by",
+    "drawn by", "sketched by", "etched by", "engraved by",
+    "sculpted by", "modeled by", "crafted by", "constructed by",
+    "built by", "assembled by", "disassembled by", "taken apart by",
+    "put together by", "repaired by", "fixed by", "restored by",
+    "maintained by", "adjusted by", "fine-tuned by", "calibrated by",
+    "operated by", "controlled by", "guided by", "steered by",
+    "driven by", "navigated by", "piloted by", "handled by",
+    "maneuvered by", "directed by", "aimed by", "targeted by",
+    "focused by", "zoomed by", "adjusted by", "monitored by",
+    "tracked by", "observed by", "viewed by", "looked at by",
+    "watched by", "seen by", "noticed by", "glanced at by",
+    "examined by", "inspected by", "checked by", "analyzed by",
+    "evaluated by", "assessed by", "measured by", "calculated by",
+    "counted by", "weighed by", "tested by", "experimented by",
+]
 NONLIVING_ATTRIBUTES = [
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
+    # "bronze", "copper", "teal", "ivory", "beige", "cream", "tan", "maroon", "lavender", "navy", "turquoise", "emerald",
+    # "sapphire", "ruby", "amber", "peach", "coral", "magenta", "burgundy", "charcoal", "mint", "olive", "lime", "platinum",
+
+    # Textures
+    "smooth", "rough", "shiny", "matte", "glossy", "textured", "polished", "bumpy", "gritty", "slick", "coarse",
+    "velvety", "grained","embossed","porous", "silky", "leathery", "burnished", "stippled", "perforated", "ridged", "tarnished", 
+
+    # # Materials
+    # "wooden", "metallic", "plastic", "glass", "ceramic", "stone", "concrete", "porcelain", "brass", "bronze", "aluminum",
+    # "stainless steel", "copper", "iron", "marble", "granite", "crystal", "bamboo", "wicker", "rattan", "clay", "terra cotta",
+    # "fiberglass", "resin", "silicone", "plaster", "velvet", "wool", "cotton", "linen", "synthetic", "vinyl", "nylon",
+    # "polyester", "felt", "canvas", "acrylic", "quartz", "jade", "ebony", "mahogany", "oak", "teak", "pine", 
+    # "maple", "ash", "cedar",
+
+    # Shapes
+    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal",  "spherical",
+    "cube-shaped", "pyramid-shaped", "cone-shaped",   "symmetrical", "asymmetrical",
+    "fluted", "curved", "domed", "pear-shaped", "teardrop-shaped", "elliptical",
+    "fan-shaped", "wavy","hollow", "solid", 
+
+    # Additional Attributes
+    "small", "large", "tiny", "huge", "old", "new", "antique", "modern", "ornate", "simple", "heavy", "lightweight", 
+    "transparent", "opaque", "fragile", "sturdy", "decorative",  "handmade", "mass-produced", "vintage",
+    "colorful",  
+     "reusable", "recyclable",  "waterproof", "water-resistant", "heat-resistant", 
+    "cracked", "worn", "weathered", "aged",
+    "polished", "decorated", "adorned", 
+    "stained", "inlaid",  "mosaic",
+     "handcrafted", "eco-friendly", "holographic", "transparent", 
+    
+]
+NONLIVING_ATTRIBUTES=list(set(NONLIVING_ATTRIBUTES))
+VASE_ATTRIBUTES = [
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
     "bronze", "copper", "teal", "ivory", "beige", "cream", "tan", "maroon", "lavender", "navy", "turquoise", "emerald",
     "sapphire", "ruby", "amber", "peach", "coral", "magenta", "burgundy", "charcoal", "mint", "olive", "lime", "platinum",
 
     # Textures
-    "smooth", "rough", "shiny", "matte", "glossy", "textured", "polished", "bumpy", "gritty", "furry", "slick", "coarse",
+    "smooth", "rough", "shiny", "matte", "glossy", "textured", "polished", "bumpy", "gritty", "slick", "coarse",
     "velvety", "grained", "etched", "embossed", "woven", "crinkled", "frosted", "rippled", "dimpled", "satin", "glazed",
     "lacquered", "porous", "silky", "leathery", "burnished", "stippled", "perforated", "ridged", "tarnished", "patinaed",
-    "brushed", "filigreed", "beveled", "chiseled", "carved", "molded", "etched", "plush", "tactile", "fuzzy",
+    "brushed", "filigreed", "beveled", "carved", "molded", "tactile",
 
     # Materials
-    "wooden", "metallic", "plastic", "glass", "ceramic", "stone", "concrete", "cloth", "paper", "rubber", "leather",
-    "porcelain", "brass", "bronze", "aluminum", "stainless steel", "copper", "iron", "marble", "granite", "crystal", 
-    "bamboo", "wicker", "rattan", "clay", "terra cotta", "cardboard", "fiberglass", "resin", "silicone", "plaster",
-    "velvet", "wool", "cotton", "linen", "synthetic", "vinyl", "mesh", "nylon", "polyester", "felt", "canvas", "suede",
-    "cork", "tweed", "tulle", "lace", "denim", "acrylic", "porcelain", "quartz", "jade", "ebony", "mahogany", "oak",
-    "teak", "pine", "walnut", "maple", "ash", "cedar",
+    "wooden", "metallic", "plastic", "glass", "ceramic", "stone", "concrete", "porcelain", "brass", "bronze", "aluminum",
+    "stainless steel", "copper", "iron", "marble", "granite", "crystal", "bamboo", "wicker", "rattan", "clay", "terra cotta",
+    "fiberglass", "resin", "silicone", "plaster", "velvet", "wool", "cotton", "linen", "synthetic", "vinyl", "nylon",
+    "polyester", "felt", "canvas", "acrylic", "quartz", "jade", "ebony", "mahogany", "oak", "teak", "pine", "walnut",
+    "maple", "ash", "cedar",
 
     # Shapes
     "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
-    "cube-shaped", "pyramid-shaped", "cone-shaped", "spiral", "tapered", "arched", "geometric", "symmetrical", "asymmetrical",
+    "cube-shaped", "pyramid-shaped", "cone-shaped", "spiral", "tapered",   "symmetrical", "asymmetrical",
     "fluted", "curved", "angular", "irregular", "flat", "domed", "orb-shaped", "pear-shaped", "teardrop-shaped", "elliptical",
     "fan-shaped", "wavy", "undulating", "scalloped", "gourd-shaped", "hollow", "solid", "tiered", "stepped",
 
     # Additional Attributes
     "small", "large", "tiny", "huge", "old", "new", "antique", "modern", "ornate", "simple", "heavy", "lightweight", 
-    "transparent", "opaque", "fragile", "sturdy", "decorative", "functional", "handmade", "mass-produced", "vintage", "neon",
-    "colorful", "monochrome", "stackable", "collapsible", "foldable", "adjustable", "expandable", "portable", "fixed",
+    "transparent", "opaque", "fragile", "sturdy", "decorative", "functional", "handmade", "mass-produced", "vintage",
+    "colorful", "monochrome", "stackable", "collapsible", "foldable", 
     "disposable", "reusable", "recyclable", "biodegradable", "waterproof", "water-resistant", "heat-resistant", 
-    "fireproof", "shockproof", "scratch-resistant", "dented", "cracked", "worn", "weathered", "distressed", "aged",
+    "fireproof", "shockproof", "scratch-resistant", "dented", "cracked", "worn", "weathered", "aged",
     "refined", "polished", "sleek", "minimalist", "industrial", "rustic", "decorated", "adorned", "embellished",
     "embossed", "engraved", "painted", "dyed", "stained", "inlaid", "marbled", "mosaic", "enameled", "lacquered",
-    "powder-coated", "brushed metal", "handcrafted", "eco-friendly", "holographic", "transparent", "glowing",
+    "powder-coated", "brushed metal", "handcrafted", "eco-friendly", "holographic", "transparent", 
     "iridescent", "luminescent", "translucent", "opalescent", "gemstone-studded", "encrusted"
 ]
+VASE_ATTRIBUTES=list(set(VASE_ATTRIBUTES))
 
-NONLIVING_ATTRIBUTES=list(set(NONLIVING_ATTRIBUTES))
+TEDDYBEAR_ATTRIBUTES = [
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
+    "bronze", "copper", "teal", "ivory", "beige", "cream", "tan", "maroon", "lavender", "navy", "turquoise", "emerald",
+    "sapphire", "ruby", "amber", "peach", "coral", "magenta", "burgundy", "charcoal", "mint", "olive", "lime", "platinum",
+
+    # Textures
+    "smooth", "rough", "shiny", "matte", "glossy", "textured", "bumpy", "furry", "velvety", "woven", "crinkled", "silky",
+    "plush", "tactile", "fuzzy", "soft", "cottony", "fluffy",
+
+    # Materials
+    "cloth", "rubber", "cotton", "synthetic", "nylon", "polyester", "felt", "canvas", "suede", "tweed", "denim", 
+    "acrylic", "plush", "velvet", "wool", "fleece", "fabric",
+
+    # Shapes
+    "circular", "square", "rectangular", "oval", "round", "spherical",  "symmetrical", "asymmetrical", 
+    "curved", "solid", "tiered", "rounded", "soft-edged",
+
+    # Additional Attributes
+    "small", "large", "tiny", "huge", "old", "new", "antique", "modern", "ornate", "simple", "lightweight", 
+    "colorful", "monochrome", "reusable", "biodegradable", "decorative", "handmade", "vintage", "soft", 
+    "huggable", "cuddly", "child-friendly", "cozy", "playful", "adorable", "friendly", "lovely", "cheerful"
+]
+TEDDYBEAR_ATTRIBUTES=list(set(TEDDYBEAR_ATTRIBUTES))
+
+WOODENPOT_ATTRIBUTES = [
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "bronze", 
+    "copper", "ivory", "beige", "cream", "tan", "maroon", "burgundy", "charcoal", "olive",
+
+    # Textures
+    "smooth", "rough", "matte", "polished", "grained", "etched", "embossed", "lacquered", "porous", "burnished", 
+    "stippled", "perforated", "ridged", "patinaed", "brushed", "carved", "molded", "tactile",
+
+    # Materials
+    "wooden", "bamboo", "rattan", "fiberglass", "resin", "oak", "teak", "pine", "walnut", "maple", "ash", "cedar", "mahogany",
+
+    # Shapes
+    "circular", "square", "rectangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical", "tapered", 
+      "symmetrical", "asymmetrical", "fluted", "curved", "angular", "irregular", "flat", "solid", "tiered",
+
+    # Additional Attributes
+    "small", "large", "tiny", "huge", "old", "new", "antique", "modern", "ornate", "simple", "heavy", "lightweight", 
+    "fragile", "sturdy", "decorative", "functional", "handmade", "vintage", "stackable", "fixed", "reusable", "biodegradable", 
+    "weathered",  "aged", "refined", "polished", "sleek", "rustic", "decorated", "adorned", "embellished", 
+    "engraved", "painted", "dyed", "stained", "inlaid", "lacquered", "handcrafted", "eco-friendly"
+]
+WOODENPOT_ATTRIBUTES=list(set(WOODENPOT_ATTRIBUTES))
+
+
+
 BUILDING_ATTRIBUTES=[
     "wooden", "stone", "metal-roofed", "red-painted", "weathered", "large", "small", "rustic", "modern", "two-story",
     "single-story", "gable-roofed", "hipped-roofed", "lofted", "spacious", "compact", "ventilated", "well-lit", "dark",
     "open-sided", "closed-sided", "insulated", "uninsulated", "hay-filled", "tool-lined", "livestock-filled", "grain-storing",
-    "vented", "shuttered", "arched", "elevated", "ground-level", "multi-room", "single-room", "timber-framed", "corrugated metal",
+    "vented", "shuttered",  "elevated", "ground-level", "multi-room", "single-room", "timber-framed", "corrugated metal",
     "brick-walled", "stone-foundation", "concrete-floored", "dirt-floored", "lofted ceiling", "beamed", "fenced-in", "paint-chipped",
     "well-maintained", "dilapidated", "historic", "newly-built", "working", "abandoned", "refurbished", "stained", "traditional",
     "convertible", "rusty", "iron-hinged", "board-and-batten", "cedar-shingled", "quaint", "sprawling", "laddered", "overhang",
@@ -667,63 +963,118 @@ BUILDING_ATTRIBUTES=[
     "tractor-parked"
 ]
 BUILDING_ATTRIBUTES=list(set(BUILDING_ATTRIBUTES))
-PET_ATTRIBUTES = [
+
+
+
+
+
+
+CAT_ATTRIBUTES = [
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
-    "cream", "tan", "chocolate", "beige", "amber", "ivory", "peach", "lavender", "teal", "navy", "maroon", "copper", "bronze",
-    
-    # Shapes
-    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
-    "cube-shaped", "pointy", "angular", "curved", "elongated", "flat", "slender", "broad", "compact", "tapered",
-
-    # Textures
-    "wet", "shiny", "fluffy", "fuzzy", "smooth", "rough", "silky", "coarse", "bristly", "slick", "velvety", "soft", "bushy",
-    "greasy", "matte", "plush", "feathery", "scaly", "hairy", "spiky",
-
-    # Patterns
-    "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "patched", "solid", "brindled", "checked",
-    "zigzag", "paisley", "tartan", "camouflage", "banded", "gradient",
 
     # Sizes
     "small", "large", "tiny", "huge", "giant", "mini", "medium", "massive", "petite", "bulky", "stocky", "slim", "stout",
     "lean", "plump", "pint-sized",
 
     # Other Descriptive Features
-    "short-haired", "long-haired", "curly-haired", "wavy-haired", "hairless", "bald", "tailed", "tailless", "whiskered",
-    "four-legged", "two-legged", "winged", "horned", "clawed", "webbed", "beaked", "snouted", "round-eyed", "bright-eyed",
-    "sharp-toothed", "floppy-eared", "pointy-eared", "droopy-eared", "whiskerless", "thick-coated", "double-coated",
-    "single-coated", "maned", "crested", "spiny", "scaled", "futuristic style"
+    "short-haired", "long-haired", "curly-haired", "wavy-haired", "hairless", "bald", "tailed", "tailless", 
+    "four-legged", "two-legged", "winged", "horned", "clawed", "webbed",  "snouted", "round-eyed", "bright-eyed",
+    "sharp-toothed", "floppy-eared", "pointy-eared", "droopy-eared", "thick-coated", "double-coated",
+    "spiny","puzzled",
+
+    # CAT
+    "sad","screaming","happy","angry","curious","playful","sleepy",
+    "grumpy","mischievous","frightened","surprised","confused","relaxed",
+    "alert","bored","content","annoyed","excited","startled",
+    "curled up","staring","yawning","purring","hissing",
+    "growling","whining","pleading","whisker-twitching","tail-flicking",
+    "meowing","pouncing","stalking","crouching",
+    "stretching","glaring","blinking","licking",
+    "sniffing","napping","sleeping","restless","anxious","curled",
+    "snuggled","leaning","twitching",
+    "hunched","cuddly",
+    "energetic",
+
+    
     ]
-PET_ATTRIBUTES=list(set(PET_ATTRIBUTES))
+CAT_ATTRIBUTES=list(set(CAT_ATTRIBUTES))
+
+DOG_ATTRIBUTES = [
+    # Colors
+    "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
+
+    # Sizes
+    "small", "large", "tiny", "huge", "giant", "mini", "medium", "massive", "petite", "bulky", "stocky", "slim", "stout",
+    "lean", "plump", "pint-sized",
+
+    # Other Descriptive Features
+    "short-haired", "long-haired", "curly-haired", "wavy-haired", "hairless", "bald", "tailed", "tailless", 
+    "four-legged", "clawed", "webbed", "snouted", "round-eyed", "bright-eyed",
+    "sharp-toothed", "floppy-eared", "pointy-eared", "droopy-eared", "thick-coated", "double-coated",
+
+    # Expression
+    "pensive", "disappointed", "frustrated", "impatient", "joyful", "angry", 
+    "curious", "indifferent", "worried", "determined", "relieved", "startled", 
+    "mischievous", "jealous", "contented", "smug", "ashamed", "proud", "embarrassed", "grateful"
+
+    #  DOG-Specific
+    "barking", "tail wagging", "howling", "protective","sleeping",
+    "sniffing around", "chasing", "digging", "fetching", "jumping",
+    "burrowing", "scratching", "bounding", "alert-eared", "droopy-eyed",
+]
+DOG_ATTRIBUTES=list(set(DOG_ATTRIBUTES))
+
+
+
+
 
 FLOWER_ATTRIBUTES = [
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
-    "cream", "tan", "chocolate", "beige", "amber", "ivory", "peach", "lavender", "teal", "navy", "maroon", "copper", "bronze",
-    "turquoise", "mustard", "burgundy", "coral", "mint", "pearl", "rust", "sand", "platinum", "fuchsia",
 
     # Shapes
-    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
-    "cube-shaped", "pointy", "angular", "curved", "elongated", "flat", "slender", "broad", "compact", "tapered",
-    "heart-shaped", "star-shaped", "fan-shaped", "spiral", "petal-shaped", "lobed", "fluted", "crescent", "wave-shaped", "fringed",
-    "bell-shaped", "trumpet-shaped", "tubular", "cup-shaped", "funnel-shaped", "daisy-shaped", "spike-shaped", "disc-shaped", "umbel-shaped", "panicle-shaped",
+    "circular", "oval", "round", "curved", "elongated", "slender", "tapered",
+    "heart-shaped", "star-shaped", "fan-shaped", "spiral", "petal-shaped", "lobed", "fluted", "crescent", 
+    "wave-shaped", "fringed", "bell-shaped", "trumpet-shaped", "tubular",  
+    "daisy-shaped", "spike-shaped", "disc-shaped", "umbel-shaped", "panicle-shaped",
 
     # Textures
     "wet", "shiny", "smooth", "rough", "silky", "coarse", "slick", "velvety", "soft", "matte", 
-    "plush", "feathery", "waxy", "leathery", "papery", "powdery", "crisp", "wrinkled", "glossy", "brittle", 
-    "pitted", "grainy", "velutinous", "glabrous", "lanceolate",
+    "plush", "feathery", "waxy", "leathery", "papery",  "glossy", "brittle", 
+     "velutinous", "glabrous", "lanceolate",
 
-    # Patterns
-    "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "patched", "solid", "brindled", "checked",
-    "zigzag", "paisley", "tartan", "camouflage", "banded", "gradient", "veined", "mottled", "swirled", "flecked",
-    "streaked", "gridded", "honeycombed", "chevron", "plaid", "reticulate", "net-veined", "mosaic", "ringed", "whorled",
+     # Patterns
+    "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "solid", "gradient", "veined", "mottled", 
+    "swirled", "flecked", "streaked", "ringed", "whorled",
 
     # Sizes
-    "small", "large", "tiny", "huge", "giant", "mini", "medium", "massive", "petite", "pint-sized",
-    "colossal", "diminutive", "microscopic", "oversized", "slender", "bulky", "trim", "stocky", "compact", "ample",
-    "dwarf", "mammoth", "gracile", "stout", "towering", "miniature", "robust", "delicate", "gigantic", "teensy"
+    "small", "large", "tiny", "huge", "giant", "mini", "medium-sized", "petite", 
+    "microscopic","delicate", "gigantic", "teensy"
 ]
+FLOWER_ATTRIBUTES=list(set(FLOWER_ATTRIBUTES))
+FLOWER_MATERIALS = [
+    "crystal", "glass", "metal", "paper", "fabric", "wood", "plastic",
+    "porcelain", "clay", "stone", "silk", "leather", "resin", "wax",
+    "ceramic", "bronze", "aluminum", "brass", "copper", "stainless steel", "gold", "silver",
+    "bamboo", "rattan", "jute", "hemp", "felt", "cotton", "linen",
+    "polyester", "nylon", "acrylic", "velvet", "denim", "rubber", "latex",
+    "pewter", "tin", "ivory", "shell", "bone",  "quartz", "marble",
+    "jade", "obsidian", "coral", "amber", "agate", "terracotta", "concrete", "cardboard","crochet",
+]
+FLOWER_MATERIALS=list(set(FLOWER_MATERIALS))
 
+NONLIVING_MATERIALS = [
+    "crystal", "glass", "metal", "paper", "fabric", "wood", "plastic",
+    "porcelain", "clay", "stone", "resin", "wax",
+    "ceramic", "bronze", "aluminum", "brass", "copper", "stainless steel", "gold", "silver",
+    "bamboo", "rattan", "jute", "hemp", "felt", "cotton", "linen",
+    "polyester", "nylon", "acrylic", "rubber","denim",
+    "pewter", "tin", "ivory", "shell", "bone",  "quartz", "marble",
+    "jade", "obsidian", "coral", "amber", "agate", "terracotta", "concrete", "cardboard",
+    "earthenware", "sandstone", "granite", "slate", "onyx", "malachite", "limestone","crochet",
+]
+NONLIVING_MATERIALS=list(set(NONLIVING_MATERIALS))
 
 HUMAN_ATTRIBUTES = [
     "tall", "short", "fat", "skinny", "muscular", "lean", "chubby", "slim", 
@@ -827,16 +1178,17 @@ BUILDING_INTERACTIONS = [
 ]
 BUILDING_INTERACTIONS=list(set(BUILDING_INTERACTIONS))
 
-FLOWER_INTERACTIONS=["picked by", "planted by", "watered by", "arranged by", "gathered by", 
-    "held by", "given by", "received by", "smelled by", "admired by", 
+FLOWER_INTERACTIONS = [
+    "picked by", "planted by", "watered by", "arranged by", "gathered by", 
+    "held by", "received by", "smelled by", "admired by", 
     "examined by", "observed by", "touched by", "carried by", "presented by", 
     "offered by", "collected by", "cut by", "trimmed by", "nurtured by", 
     "cared for by", "grown by", "harvested by", "displayed by", "shown by", 
-    "photographed by", "painted by", "drawn by", "arranged by", "plucked by", 
+    "photographed by", "painted by", "drawn by", "plucked by", 
     "gifted by", "shared by", "placed by", "woven by", "woven into a garland by", 
     "decorated by", "dried by", "pressed by", "wrapped by", "unwrapped by", 
     "sorted by", "tied by", "bundled by", "woven into a wreath by", "pinned by", 
-    "worn by", "carved by", "hung by", "scattered by", "strewn by", 
+    "worn by", "hung by", "scattered by", "strewn by", 
     "thrown by", "collected into a bouquet by", "arranged into a vase by", 
     "dropped by", "planted into a pot by", "transplanted by", "grown in a garden by", 
     "planted in a garden by", "gathered in a field by", "bought by", 
@@ -847,14 +1199,7 @@ FLOWER_INTERACTIONS=["picked by", "planted by", "watered by", "arranged by", "ga
     "arranged into a bouquet by", "dropped into a basket by", "placed into a pot by", 
     "placed into a planter by", "put into a vase by", "trimmed into a shape by", 
     "placed onto a table by", "placed onto a windowsill by", "planted into the ground by", 
-    "picked from a garden by", "picked from a field by", "plucked from a stem by", 
-    "woven into a garland by", "woven into a wreath by", "woven into a headdress by", 
-    "woven into a lei by", "woven into a headpiece by", "woven into a bracelet by", 
-    "woven into an anklet by", "woven into a necklace by", "woven into a garland by", 
-    "woven into a wreath by", "woven into a headpiece by", "woven into a crown by", 
-    "woven into a bouquet by", "woven into a floral arrangement by", "woven into a centerpiece by",
-]
-FLOWER_INTERACTIONS.extend([
+    "picked from a garden by", "picked from a field by", "plucked from a stem by",
     "picked by", "planted by", "watered by", "arranged by", "gathered by", 
     "held by", "given by", "received by", "smelled by", "admired by", 
     "examined by", "observed by", "touched by", "carried by", "presented by", 
@@ -864,7 +1209,7 @@ FLOWER_INTERACTIONS.extend([
     "gifted by", "shared by", "placed by", "woven by", "woven into a garland by", 
     "decorated by", "dried by", "pressed by", "wrapped by", "unwrapped by", 
     "sorted by", "tied by", "bundled by", "woven into a wreath by", "pinned by", 
-    "worn by", "carved by", "hung by", "scattered by", "strewn by", 
+    "worn by", "hung by", "scattered by", "strewn by", 
     "thrown by", "collected into a bouquet by", "arranged into a vase by", 
     "dropped by", "planted into a pot by", "transplanted by", "grown in a garden by", 
     "planted in a garden by", "gathered in a field by", "bought by", 
@@ -884,28 +1229,65 @@ FLOWER_INTERACTIONS.extend([
     "tied into a bouquet by", "dried and preserved by", "pressed into a book by", 
     "pressed into a frame by", "glued onto a card by", "arranged in a basket by",
     "woven into a chain by", "woven into a tiara by", "pinned onto a lapel by", 
-    "tucked into a hair by", "placed in a hair by", "worn behind an ear by", 
+    "tucked into hair by", "placed in hair by", "worn behind an ear by", 
     "placed in a buttonhole by", "woven into a corsage by", "woven into a boutonniere by", 
     "woven into a bridal bouquet by", "woven into a funeral wreath by", 
     "used in a floral display by", "arranged in a centerpiece by", 
     "placed on a gravestone by", "laid on a coffin by", "scattered over a grave by", 
     "woven into a bridal crown by", "woven into a flower crown by", 
-    "woven into a belt by", "woven into a sash by", "woven into a garter by", 
-    "woven into a ribbon by", "woven into a brooch by", "woven into a bracelet by",
-    "woven into an anklet by", "woven into a necklace by", "woven into a garland by", 
-    "woven into a wreath by", "woven into a headpiece by", "woven into a crown by", 
-    "woven into a bouquet by", "woven into a floral arrangement by", "woven into a centerpiece by",
-    "used to decorate a table by", "used to decorate a room by", 
-    "used to decorate a wedding venue by", "used to decorate a ceremony by", 
-    "woven into a garland by", "woven into a crown by", "woven into a floral tiara by",
-    "placed in a basket by", "scattered on a path by", "scattered on the floor by", 
-    "placed on an altar by", "woven into a lei by", "woven into a flower crown by", 
-    "used to mark a special occasion by", "used to celebrate a holiday by", 
-    "used to honor someone by", "used in a ceremony by", "woven into a bracelet by", 
-    "woven into an anklet by", "woven into a necklace by", "woven into a garland by", 
-    "woven into a wreath by", "woven into a headpiece by", "woven into a crown by", 
-    "woven into a bouquet by", "woven into a floral arrangement by", "woven into a centerpiece by"
-])
+]
+# FLOWER_INTERACTIONS.extend([
+#     "picked by", "planted by", "watered by", "arranged by", "gathered by", 
+#     "held by", "given by", "received by", "smelled by", "admired by", 
+#     "examined by", "observed by", "touched by", "carried by", "presented by", 
+#     "offered by", "collected by", "cut by", "trimmed by", "nurtured by", 
+#     "cared for by", "grown by", "harvested by", "displayed by", "shown by", 
+#     "photographed by", "painted by", "drawn by", "arranged by", "plucked by", 
+#     "gifted by", "shared by", "placed by", "woven by", "woven into a garland by", 
+#     "decorated by", "dried by", "pressed by", "wrapped by", "unwrapped by", 
+#     "sorted by", "tied by", "bundled by", "woven into a wreath by", "pinned by", 
+#     "worn by", "carved by", "hung by", "scattered by", "strewn by", 
+#     "thrown by", "collected into a bouquet by", "arranged into a vase by", 
+#     "dropped by", "planted into a pot by", "transplanted by", "grown in a garden by", 
+#     "planted in a garden by", "gathered in a field by", "bought by", 
+#     "sold by", "selected by", "chosen by", "gathered into a bunch by", 
+#     "woven into a crown by", "woven into a lei by", "woven into a bracelet by", 
+#     "woven into an anklet by", "woven into a necklace by", "woven into a headpiece by", 
+#     "decorated into a centerpiece by", "woven into a floral arrangement by", 
+#     "arranged into a bouquet by", "dropped into a basket by", "placed into a pot by", 
+#     "placed into a planter by", "put into a vase by", "trimmed into a shape by", 
+#     "placed onto a table by", "placed onto a windowsill by", "planted into the ground by", 
+#     "picked from a garden by", "picked from a field by", "plucked from a stem by", 
+#     "woven into a garland by", "woven into a wreath by", "woven into a headdress by", 
+#     "woven into a lei by", "woven into a headpiece by", "woven into a bracelet by", 
+#     "woven into an anklet by", "woven into a necklace by", "woven into a garland by", 
+#     "woven into a wreath by", "woven into a headpiece by", "woven into a crown by", 
+#     "woven into a bouquet by", "woven into a floral arrangement by", "woven into a centerpiece by",
+#     "tied into a bouquet by", "dried and preserved by", "pressed into a book by", 
+#     "pressed into a frame by", "glued onto a card by", "arranged in a basket by",
+#     "woven into a chain by", "woven into a tiara by", "pinned onto a lapel by", 
+#     "tucked into a hair by", "placed in a hair by", "worn behind an ear by", 
+#     "placed in a buttonhole by", "woven into a corsage by", "woven into a boutonniere by", 
+#     "woven into a bridal bouquet by", "woven into a funeral wreath by", 
+#     "used in a floral display by", "arranged in a centerpiece by", 
+#     "placed on a gravestone by", "laid on a coffin by", "scattered over a grave by", 
+#     "woven into a bridal crown by", "woven into a flower crown by", 
+#     "woven into a belt by", "woven into a sash by", "woven into a garter by", 
+#     "woven into a ribbon by", "woven into a brooch by", "woven into a bracelet by",
+#     "woven into an anklet by", "woven into a necklace by", "woven into a garland by", 
+#     "woven into a wreath by", "woven into a headpiece by", "woven into a crown by", 
+#     "woven into a bouquet by", "woven into a floral arrangement by", "woven into a centerpiece by",
+#     "used to decorate a table by", "used to decorate a room by", 
+#     "used to decorate a wedding venue by", "used to decorate a ceremony by", 
+#     "woven into a garland by", "woven into a crown by", "woven into a floral tiara by",
+#     "placed in a basket by", "scattered on a path by", "scattered on the floor by", 
+#     "placed on an altar by", "woven into a lei by", "woven into a flower crown by", 
+#     "used to mark a special occasion by", "used to celebrate a holiday by", 
+#     "used to honor someone by", "used in a ceremony by", "woven into a bracelet by", 
+#     "woven into an anklet by", "woven into a necklace by", "woven into a garland by", 
+#     "woven into a wreath by", "woven into a headpiece by", "woven into a crown by", 
+#     "woven into a bouquet by", "woven into a floral arrangement by", "woven into a centerpiece by"
+# ])
 FLOWER_INTERACTIONS=list(set(FLOWER_INTERACTIONS))
 
 FLOWER_ACTIONS = [
@@ -941,22 +1323,22 @@ ANIMALS=list(set(ANIMALS))
 ANIMAL_ATTRIBUTES=[
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
-    "cream", "tan", "chocolate", "beige", "amber", "ivory", "peach", "lavender", "teal", "navy", "maroon", "copper", "bronze",
+    # "cream", "tan", "chocolate", "beige", "amber", "ivory", "peach", "lavender", "teal", "navy", "maroon", "copper", "bronze",
     
-    # Shapes
-    "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
-    "cube-shaped", "pointy", "angular", "curved", "elongated", "flat", "slender", "broad", "compact", "tapered",
+    # # Shapes
+    # "circular", "square", "rectangular", "triangular", "oval", "round", "cylindrical", "hexagonal", "octagonal", "spherical",
+    # "cube-shaped", "pointy", "angular", "curved", "elongated", "flat", "slender", "broad", "compact", "tapered",
 
-    # Textures
-    "wet", "shiny", "fluffy", "fuzzy", "smooth", "rough", "silky", "coarse", "bristly", "slick", "velvety", "soft", "bushy",
-    "greasy", "matte", "plush", "feathery", "scaly", "hairy", "spiky",
+    # # Textures
+    # "wet", "shiny", "fluffy", "fuzzy", "smooth", "rough", "silky", "coarse", "bristly", "slick", "velvety", "soft", "bushy",
+    # "greasy", "matte", "plush", "feathery", "scaly", "hairy", "spiky",
 
     # Patterns
-    "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "patched", "solid", "brindled", "checked",
-    "zigzag", "paisley", "tartan", "camouflage", "banded", "gradient",
+    # "striped", "spotted", "dotted", "speckled", "marbled", "blotched", "patched", "solid", "brindled", "checked",
+    # "zigzag", "paisley", "tartan", "camouflage", "banded", "gradient",
 
     # Sizes
-    "small", "large", "tiny", "huge", "giant", "mini", "medium", "massive", "petite", "bulky", "stocky", "slim", "stout",
+    "small", "large", "tiny", "huge", "giant", "mini", "medium-sized", "massive", "petite", "bulky", "stocky", "slim", "stout",
     "lean", "plump", "pint-sized",
 ]
 ANIMAL_ATTRIBUTES=list(set(ANIMAL_ATTRIBUTES))
@@ -981,7 +1363,7 @@ ARTISTS= [
     "Tintoretto", "Hieronymus Bosch", "Toulouse-Lautrec", "Paul Signac"
 ]
 
-OUTFITS = [
+WEARINGS=[
     "police outfit", "firefighter outfit", "superhero costume", "tuxedo", 
     "sailor outfit", "cowboy outfit", "doctor outfit", "chef outfit", 
     "holiday sweater", "raincoat", "Halloween costume", "Christmas sweater", 
@@ -991,19 +1373,19 @@ OUTFITS = [
     "princess dress", "leather jacket", "lifeguard outfit", "elf costume", 
     "witch costume", "camouflage outfit", "snow boots", "denim jacket", 
     "pajamas", "bow tie", "scarf and hat", "tropical shirt", "hula skirt", 
-    "soccer uniform", "baseball cap", "hoodie", "onesie", "flannel shirt",
+    "soccer uniform", "baseball cap", "onesie", "flannel shirt",
     "rain boots", "aviator jacket", "sheriff outfit", "fairy wings", "clown costume",
     "artist beret", "graduate cap and gown", "magician's cape", "garden overalls",
     "puffer jacket", "floral dress", "tank top", "ski suit", "vampire costume",
     "pumpkin costume", "football helmet", "astronaut suit", "bunny ears",
     "sunglasses and bandana", "swimsuit", "tartan kilt", "dinosaur onesie",
     "rain poncho", "king's robe", "nurse outfit", "medieval armor", "tiger costume",
-    "hooded sweatshirt", "vest", "bandana", "shirt", "jeans", 
-    "t-shirt", "puffer vest", "shorts", "cap", "socks",
+    "hooded sweatshirt", "vest", "bandana", "shirt",
+    "t-shirt", "puffer vest", "shorts", 
     "apron", "cape", "parka", "baseball jersey", "harness",
     "tracksuit", "overalls", "gloves", "turtleneck",
     "zip-up jacket", "peacoat", "snowsuit", "blazer", "sneakers",
-    "overcoat", "long coat", "mittens", "ski mask", "leg warmers",
+    "overcoat", "long coat", 
     "fleece jacket", "winter hat", "earmuffs", "towel wrap", "long sleeve shirt",
     "hoodie with ears", "flannel pajamas", "college sweater", "gym shirt", "fancy dress", 
     "velvet jacket", "swim trunks", "plaid jacket", "Christmas hat", "bandana with a print",
@@ -1013,18 +1395,48 @@ OUTFITS = [
     "fur-lined vest", "ski jacket", "snuggly robe", "hiking boots", 
     "mesh vest", "safari hat", "striped onesie", "pullover",
     "knit hat", "padded jacket", "cape with a hood", "wrap-around coat",
-    "rain boots", "parka", "beanie", "plaid shirt", "beach shirt",
+    "parka", "beanie", "plaid shirt", "beach shirt",
     "fleece-lined jacket", "festival shirt", "hiking vest", "summer shirt", "spring jacket",
     "rainproof jacket", "doggie sunglasses", "puffy jacket", "fall sweater", 
-    "plaid shirt", "sun hat", "turtleneck sweater", "leather vest", "winter jacket",
+    "plaid shirt",  "turtleneck sweater", "leather vest", "winter jacket",
     "light summer hoodie", "zip-up fleece", "sweater with stripes", "gym vest", "sporty jacket", 
     "windbreaker", "knit sweater", "sweatpants", "sporting outfit", "camouflage hoodie",
     "quilted jacket", "vintage coat", "tactical vest", "light raincoat", 
     "high-visibility jacket", "knitted jumper", "doggie boots", "hooded poncho",
-    "overcoat", "short sleeve shirt", "blazer", "doggie slippers", "waterproof jacket"
+    "overcoat", "short sleeve shirt", "blazer", "doggie slippers", "waterproof jacket","sombrero","costume"
+]
+IN_OUTFITS = [
+    "police outfit", "firefighter outfit", "superhero costume", "tuxedo", 
+    "sailor outfit", "cowboy outfit", "doctor outfit", "chef outfit", 
+    "holiday sweater", "raincoat", "Halloween costume", "Christmas sweater", 
+    "pirate costume", "dinosaur costume", "bee costume", "lion costume", 
+    "wizard robe", "knitted sweater", "biker jacket", "sports jersey", 
+    "Santa Claus suit", "ballet tutu", "military uniform", "prince outfit", 
+    "princess dress", "leather jacket", "lifeguard outfit", "elf costume", 
+    "witch costume", "camouflage outfit", "snow boots", "denim jacket", 
+    "pajamas", "tropical shirt", "hula skirt", "soccer uniform","hoodie", "onesie", "flannel shirt",
+    "rain boots", "aviator jacket", "sheriff outfit", "clown costume",
+    "graduate cap and gown", "magician's cape", "garden overalls",
+    "puffer jacket", "floral dress", "tank top", "ski suit", "vampire costume",
+    "pumpkin costume", "astronaut suit","tartan kilt", "dinosaur onesie","rain poncho", "king's robe", "nurse outfit", "medieval armor", "tiger costume",
+    "hooded sweatshirt", "vest", "puffer vest", "cape", "parka", "baseball jersey", "tracksuit", "overalls", 
+    "zip-up jacket", "peacoat", "snowsuit", "overcoat", "long coat", "fleece jacket", "towel wrap", "long sleeve shirt",
+    "hoodie with ears", "flannel pajamas", "college sweater", "gym shirt", "fancy dress", 
+    "velvet jacket", "swim trunks", "plaid jacket", "bandana with a print",
+    "overalls", "striped shirt", "raincoat with hood", "denim overalls", 
+    "striped pajamas", "fur-lined vest", "ski jacket", "snuggly robe", 
+    "padded jacket", "cape with a hood", "wrap-around coat", "rain boots", "parka",
+    "fleece-lined jacket", "festival shirt", "hiking vest", "summer shirt", "spring jacket",
+    "rainproof jacket", "puffy jacket", "fall sweater", 
+    "plaid shirt",  "turtleneck sweater", "leather vest", "winter jacket",
+    "light summer hoodie", "zip-up fleece", "sweater with stripes", "gym vest", "sporty jacket", 
+    "windbreaker", "knit sweater", "sweatpants", "sporting outfit", "camouflage hoodie",
+    "quilted jacket", "vintage coat", "tactical vest", "light raincoat", 
+    "high-visibility jacket", "knitted jumper", "hooded poncho",
+    "overcoat", "waterproof jacket", "construction outfit",
 ]
 
-OUTFITS=list(set(OUTFITS))
+IN_OUTFITS=list(set(IN_OUTFITS))
 
 
 VIEWPOINTS = [
@@ -1051,3 +1463,50 @@ VIEWPOINTS = [
     "a look at the garage door of", "a view of the chimney on", "a look at the roofline of", "a look at the fence around",
     "a view from the patio of", "a view of the landscaping around", "a view of the lighting on", "a view of the address on", "a view of the back yard of"
 ]
+VIEWPOINTS=list(set(VIEWPOINTS))
+
+RC_CAR_INTERACTIONS=[
+    "driving", "controlling", "racing", "adjusting", "charging", 
+    "repairing", "customizing", "testing", "cleaning", "assembling",
+
+    "modifying", "painting", "upgrading", "tuning", "observing", "coloring","running",
+    "maintaining", "calibrating", "maneuvering", "transporting", "programming",
+
+    "starting", "stopping", "inspecting",  
+    "showcasing", "handling", "operating", "navigating", "tracking",
+
+    "troubleshooting", "analyzing", "configuring", 
+    "recovering",  "stabilizing", "steering", "braking",
+    "fixing","breaking",
+]
+RC_CAR_INTERACTIONS=list(set(RC_CAR_INTERACTIONS))
+
+
+CREATIONS=[
+    "sand sculpture of", "chalk drawing of", "chocolate mold of", "fruit carving of", "snow sculpture of", 
+    "pastry decoration of", "pumpkin carving of", "butter sculpture of", "cake topper of", 
+    "iron wrought figure of",
+
+    "porcelain figurine of", "stone inlay of", "mosaic tile of", "jade carving of", "wax model of", 
+    "bronze relief of", "sterling silver charm of", "stained glass depiction of", "woven tapestry of", 
+    "embroidered patch of",
+
+    "ivory carving of", "pewter figurine of", "papier-mâché model of", "clay mold of", 
+    "bronze casting of", "marble bust of", "crystal figurine of", "wood carving of", "glass etching of", 
+    "metal engraving of",
+
+    "ceramic statue of", "3D printed model of", "resin cast of", "sandstone relief of", 
+    "cookie cutter of", "ice sculpture of", "wood burning of", "shadow puppet of", 
+    "garden hedge of", "cupcake topper of","fireworks of",
+
+    "balloon animal of", "sand painting of", "snow angel of", "stained glass of "
+]
+CREATIONS=list(set(CREATIONS))
+CREATION_ATTRIBUTES=[
+    # Attributes
+    "small", "large", "tiny", "huge", "old", "new", "antique", "modern", "ornate", "simple", "heavy", "lightweight", 
+    "fragile", "sturdy", "decorative", "functional", "handmade", "vintage", "stackable", "fixed", "reusable", "biodegradable", 
+    "weathered",  "aged", "refined", "polished", "sleek", "rustic", "decorated", "adorned", "embellished", 
+    "engraved", "painted", "dyed", "stained", "inlaid", "lacquered", "handcrafted", "eco-friendly"
+]
+CREATION_ATTRIBUTES=list(set(CREATION_ATTRIBUTES))

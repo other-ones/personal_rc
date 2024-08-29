@@ -55,7 +55,6 @@ class CaptionGeneratorPet(CaptionGenerator):
         interaction=np.random.choice(LIVING_ACTIVITIES)
         subject=np.random.choice(HUMANS)
         prompt=f"<new> is {interaction} a {subject}"
-
         return prompt
     
     def generate_object_relations_caption(self):

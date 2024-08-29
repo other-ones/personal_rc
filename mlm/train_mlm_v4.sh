@@ -11,7 +11,7 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --train_batch_size=128 \
   --gradient_accumulation_steps=1 \
   --learning_rate=1e-4 \
-  # --lr_scheduler="constant" \
+  --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
   --max_train_steps=100001 \
   --save_steps=10000 \
@@ -53,7 +53,7 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --whole_word_mask=0 \
   --checkpoints_total_limit=10 \
   --report_to="wandb" \
-  --project_name='ContextNetV2 Train' 
+  --project_name='ContextNetV4 Train' 
 
 
 

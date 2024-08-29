@@ -106,7 +106,6 @@ class MLMDataset(Dataset):
             min_length=5,
             mlm_target='non_special',
             whole_word_mask=True,
-            # aug_root='../datasets_pkgs/captions'
     ):
         self.mask_token_ids=mask_token_ids
         self.whole_word_mask=whole_word_mask
@@ -116,11 +115,11 @@ class MLMDataset(Dataset):
         self.tokenizer=tokenizer
         self.fnames=[]
         self.captions=[]
+        # self.captions=open(caption_path).readlines()
         self.nouns=[]
-        # cap_types=os.listdir(aug_root)
+        cap_types=os.listdir(aug_root)
         self.aug_captions={}
         self.num_instance=0
-        self.captions=open(caption_path).readlines()
         # for cap_type in cap_types:
         #     if 'analysis' ==cap_type:
         #         continue
@@ -133,7 +132,7 @@ class MLMDataset(Dataset):
         #             assert '<new1>' in line
         #         aug_cap_file_name=aug_cap_file.split('.')[0]
         #         self.aug_captions[cap_type][aug_cap_file_name]=aug_cap_lines
-        self.num_instance=len(self.captions)
+        #         self.num_instance+=len(aug_cap_lines)
 
 
 
@@ -159,6 +158,7 @@ class MLMDataset(Dataset):
         example = {}
         sampled_caption=self.captions[index%(len(self.captions))]
         # if np.random.rand()<0.5:
+        #     sampled_caption=self.captions[index%(len(self.captions))]
         # else:
         #     sampled_type=np.random.choice(list(self.aug_captions.keys()))
         #     if sampled_type=='pet':
@@ -173,6 +173,7 @@ class MLMDataset(Dataset):
         #         placeholder=np.random.choice(['sunglasses','glasses'])
         #     else:
         #         assert False
+
         #     sampled_aug_cap_file_name=np.random.choice(list(self.aug_captions[sampled_type].keys()))
         #     sampled_caption=self.aug_captions[sampled_type][sampled_aug_cap_file_name][index%(len(self.aug_captions[sampled_type][sampled_aug_cap_file_name]))]
         #     sampled_caption=sampled_caption.replace('<new1>',placeholder)
