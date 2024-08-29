@@ -48,7 +48,7 @@ docker-pycreds==0.4.0
 easydict==1.13
 einops==0.8.0
 embedding-reader==1.7.0
-en-core-web-sm==3.7.1
+# en-core-web-sm==3.7.1
 eval-type-backport==0.2.0
 exifread-nocycle==3.0.1
 fairscale==0.4.4
