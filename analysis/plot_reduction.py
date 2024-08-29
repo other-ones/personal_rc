@@ -46,7 +46,7 @@ def main(args):
     # Create labels for the groups
 
     # Perform t-SNE
-    for _ in range(1):
+    for _ in range(10):
         if args.rs is None:
             rs=np.random.randint(0,9999)
         else:

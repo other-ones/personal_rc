@@ -46,7 +46,7 @@ roi_mask_transforms = transforms.Compose(
 
 
 # Generate captions by combining elements from each list with different formats
-prefixes=[
+prefixes=sorted([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -74,9 +74,9 @@ prefixes=[
     "a photo of the large {}",
     "a photo of a cool {}",
     "a photo of a small {}",
-]
+])
 
-mlm_prefixes=[
+mlm_prefixes=sorted([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -89,7 +89,7 @@ mlm_prefixes=[
     "a close-up photo of the {}",
     "a rendition of the {}",
     "a rendition of a {}",
-]
+])
 
 if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
     PIL_INTERPOLATION = {
@@ -137,7 +137,6 @@ class TextualInversionDataset(Dataset):
             torch.manual_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
-
             torch.cuda.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)  # if use multi-GPU
             torch.backends.cudnn.deterministic = True
@@ -186,7 +185,7 @@ class TextualInversionDataset(Dataset):
         self.size = size
         self.center_crop = center_crop
         self.flip_p = flip_p
-        self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
+        self.image_paths = sorted([os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)])
         self.num_images = len(self.image_paths)
         # self._length = self.num_images * repeats
         self.interpolation = {
