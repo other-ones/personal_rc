@@ -41,7 +41,7 @@ cycler==0.12.1
 cymem==2.0.8
 cython==3.0.11
 dataclasses==0.6
-datasets==2.20.0
+# datasets==2.20.0
 defusedxml==0.7.1
 dill==0.3.8
 docker-pycreds==0.4.0
