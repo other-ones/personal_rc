@@ -214,11 +214,11 @@ tifffile==2024.7.2
 timm==0.4.12
 tokenizers==0.14.1
 tomli==2.0.1
-torch==2.1.1+cu118
-torchaudio==2.1.1+cu118
+# torch==2.1.1+cu118
+# torchaudio==2.1.1+cu118
 torchgeometry==0.1.2
 torchmetrics==1.4.0.post0
-torchvision==0.16.1+cu118
+# torchvision==0.16.1+cu118
 tqdm==4.65.2
 transformers==4.34.0
 trimesh==4.4.4
