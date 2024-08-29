@@ -438,9 +438,12 @@ def main():
             # clip-text
             bsz=len(input_ids)
             mask_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data[mask_token_ids]
-            mask_embeds_normlized=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
+            if args.normalize_mask_embeds:
+                mask_embeds_target=(F.normalize(mask_embeds,p=1,dim=1)*avg_norm).unsqueeze(0).to(accelerator.device)
+            else:
+                mask_embeds_target=mask_embeds
             clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                            mask_embedding=mask_embeds_normlized,
+                                            mask_embedding=mask_embeds_target,
                                             mask_idxs=masked_idxs
                                             )[0].to(accelerator.device, dtype=weight_dtype)
             # clip_text_embedding_masked = text_encoder(input_ids_masked,

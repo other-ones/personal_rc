@@ -9,6 +9,7 @@ def parse_args(input_args=None):
     
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument("--normalize_mask_embeds",type=int,default=0)
     parser.add_argument("--eval_batch_size",type=int,default=4,help="Batch size (per device) for the evaluation dataloader.")
     parser.add_argument("--nsamples",type=int,default=4,help="Batch size (per device) for the evaluation dataloader.")
     parser.add_argument("--trained_keys",type=str)

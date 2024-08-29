@@ -20,12 +20,13 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --seed=7776 \
   --mask_tokens='[MASK]' \
   --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
-  --run_name='sd1_contextnetv4_nonpadding_1e4' \
+  --run_name='sd1_contextnetv4_nonpadding_1e4_unnorm' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
   --whole_word_mask=0 \
   --checkpoints_total_limit=10 \
   --report_to="wandb" \
+  --normalize_mask_embeds=0 \
   --project_name='ContextNetV4 Train' 
 
 
@@ -47,10 +48,11 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v4.py \
   --seed=7776 \
   --mask_tokens='[MASK]' \
   --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
-  --run_name='sd2_contextnetv4_nonpadding_1e4' \
+  --run_name='sd2_contextnetv4_nonpadding_1e4_unnorm' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \
   --whole_word_mask=0 \
+  --normalize_mask_embeds=0 \
   --checkpoints_total_limit=10 
   # --report_to="wandb" \
   # --project_name='ContextNetV4 Train' 
