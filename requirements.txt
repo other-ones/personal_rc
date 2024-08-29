@@ -160,8 +160,8 @@ promise==2.3
 proto-plus==1.24.0
 protobuf==3.20.3
 psutil==6.0.0
-pyarrow==7.0.0
-pyarrow-hotfix==0.6
+# pyarrow==7.0.0
+# pyarrow-hotfix==0.6
 pyasn1==0.6.0
 pyasn1-modules==0.4.0
 pycocoevalcap==1.2
