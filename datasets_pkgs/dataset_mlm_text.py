@@ -18,7 +18,7 @@ import string
 import albumentations as A
 from packaging import version
 Image.MAX_IMAGE_PIXELS = 1000000000
-# alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95
+alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95
 alphabet_dic = {}
 for index, c in enumerate(alphabet):
     alphabet_dic[c] = index + 1 # the index 0 stands for non-character
