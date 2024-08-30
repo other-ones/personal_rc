@@ -59,7 +59,14 @@ if __name__=='__main__':
     for background in BACKGROUNDS:
         prompt=f"<new1> with the {background} in the background"
         captions_pet_backgrounds.append(prompt)
+
         prompt=f"<new1> at {background}"
+        captions_pet_backgrounds.append(prompt)
+
+        prompt=f"<new1> captured with the {background} in the background"
+        captions_pet_backgrounds.append(prompt)
+
+        prompt=f"<new1> viewed with the {background}"
         captions_pet_backgrounds.append(prompt)
 
     # 4. generate_styles_caption
@@ -86,6 +93,7 @@ if __name__=='__main__':
     np.random.shuffle(captions_pet_relations)
     np.random.shuffle(captions_pet_backgrounds)
     np.random.shuffle(captions_pet_styles)
+    np.random.shuffle(captions_pet_wearings)
     print('HUMAN INTERACT:',len(captions_pet_human_interactions))
     for item in captions_pet_human_interactions[:5]:
         print(item)

@@ -77,7 +77,7 @@ seed=2940
 include_prior=1
 delay=25
 mask_prob_list=[0.15]
-rev_list=[0]
+rev_list=[0,1]
 mlm_batch_list=[25,50]
 rep_id=1
 
@@ -171,7 +171,7 @@ for mlm_batch in mlm_batch_list:
                     if exclude_cap_types is not None:
                         command+='--exclude_cap_types={} \\\n'.format(exclude_cap_types)
                     command+='--normalize_target1=0 \\\n'
-                    command+='--caption_root="../datasets_pkgs/captions/v0_simple" \\\n'
+                    command+='--caption_root="../datasets_pkgs/captions/v5_simple" \\\n'
                     command+='--run_name="{}" \\\n'.format(run_name)
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="TI MLM SINGLE" \\\n'

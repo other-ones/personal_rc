@@ -362,9 +362,9 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,genera
         images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
                           silent=args.silent,
                         #   add_pe=args.add_pe,
-                          inj_embeddings1=target_emb,
+                        #   inj_embeddings1=target_emb,
                         #   width=512, height=512, 
-                          is_keyword_tokens1=is_keyword_tokens_list1,
+                        #   is_keyword_tokens1=is_keyword_tokens_list1,
                           ).images
     print('Generated')
 
