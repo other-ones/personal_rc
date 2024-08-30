@@ -1,3 +1,4 @@
+
 # mlm
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR1="/data/twkim/diffusion/personalization/collected/images/dog6"

@@ -1397,13 +1397,13 @@ WEARINGS=[
     "knit hat", "padded jacket", "cape with a hood", "wrap-around coat",
     "parka", "beanie", "plaid shirt", "beach shirt",
     "fleece-lined jacket", "festival shirt", "hiking vest", "summer shirt", "spring jacket",
-    "rainproof jacket", "doggie sunglasses", "puffy jacket", "fall sweater", 
+    "rainproof jacket", "sunglasses", "puffy jacket", "fall sweater", 
     "plaid shirt",  "turtleneck sweater", "leather vest", "winter jacket",
     "light summer hoodie", "zip-up fleece", "sweater with stripes", "gym vest", "sporty jacket", 
     "windbreaker", "knit sweater", "sweatpants", "sporting outfit", "camouflage hoodie",
     "quilted jacket", "vintage coat", "tactical vest", "light raincoat", 
-    "high-visibility jacket", "knitted jumper", "doggie boots", "hooded poncho",
-    "overcoat", "short sleeve shirt", "blazer", "doggie slippers", "waterproof jacket","sombrero","costume"
+    "high-visibility jacket", "knitted jumper", "boots", "hooded poncho",
+    "overcoat", "short sleeve shirt", "blazer", "slippers", "waterproof jacket","sombrero","costume"
 ]
 IN_OUTFITS = [
     "police outfit", "firefighter outfit", "superhero costume", "tuxedo", 

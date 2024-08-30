@@ -5,8 +5,9 @@
 **/output
 **/*.jpg
 **/priors
-datasets_pkgs/captions
 evaluation/dinoscore/grounded_segment
+
+
 # custom_diffusion
 custom_diffusion*/__pycache__
 custom_diffusion*/packages/**/__pycacahe__

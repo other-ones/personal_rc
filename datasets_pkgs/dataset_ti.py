@@ -284,12 +284,14 @@ class TextualInversionDataset(Dataset):
         # 3. MLM
         # mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
         sampled_type=np.random.choice(self.caption_types)
+            
         mlm_caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
         mlm_caption=mlm_caption.strip()
         # print(index,'index',sampled_type,'sampled_type',mlm_caption,'mlm_caption')
         mlm_caption=mlm_caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
-        mlm_prefix=np.random.choice(mlm_prefixes)
-        mlm_caption=mlm_prefix.format(mlm_caption)
+        if 'human_interactions' not in sampled_type:
+            mlm_prefix=np.random.choice(mlm_prefixes)
+            mlm_caption=mlm_prefix.format(mlm_caption)
         example["raw_caption_mlm"]=mlm_caption
         example["input_ids_pos"] = self.tokenizer(
                 mlm_caption,

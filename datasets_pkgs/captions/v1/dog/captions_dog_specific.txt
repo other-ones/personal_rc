@@ -1,0 +1,182 @@
+<new1> is chasing a laser pointer.
+<new1> is chasing after a butterfly.
+<new1> is climbing onto a chair.
+<new1> is climbing up a scratching post.
+<new1> is curled up in a ball on a chair.
+<new1> is curled up in a ball, looking cozy.
+<new1> is curled up in a blanket, looking cozy.
+<new1> is curled up in a cat bed.
+<new1> is curled up in a small box.
+<new1> is curled up on a bed, sleeping peacefully.
+<new1> is curled up on a chair, looking at a toy.
+<new1> is curled up on a chair, looking at a wall.
+<new1> is curled up on a chair, looking at a window.
+<new1> is curled up on a chair, looking at something.
+<new1> is curled up on a chair, looking at the camera.
+<new1> is curled up on a chair, looking at the ceiling.
+<new1> is curled up on a chair, looking content.
+<new1> is curled up on a chair, taking a nap.
+<new1> is curled up on a couch, fast asleep.
+<new1> is curled up on a couch, looking at a door.
+<new1> is curled up on a couch, looking at a toy.
+<new1> is curled up on a couch, looking at a wall.
+<new1> is curled up on a couch, looking at a window.
+<new1> is curled up on a couch, looking at the floor.
+<new1> is curled up on a couch, looking cozy.
+<new1> is curled up on a pillow, eyes closed.
+<new1> is curled up on a pillow, fast asleep.
+<new1> is curled up on a pillow, looking at a ceiling.
+<new1> is curled up on a pillow, looking at a toy.
+<new1> is curled up on a pillow, looking at a wall.
+<new1> is curled up on a pillow, looking at the ceiling.
+<new1> is curled up on a pillow, looking at the door.
+<new1> is curled up on a pillow, looking at the floor.
+<new1> is curled up on a pillow, looking comfortable.
+<new1> is curled up on a pillow, looking peaceful.
+<new1> is curled up on a soft blanket.
+<new1> is exploring a new environment.
+<new1> is hiding inside a cardboard box.
+<new1> is hiding under a bed.
+<new1> is jumping off a table.
+<new1> is licking its paw.
+<new1> is lounging in a hammock.
+<new1> is lying in a patch of sunlight on the floor.
+<new1> is lying in a patch of sunlight.
+<new1> is lying in front of a fireplace.
+<new1> is lying on a bed, looking at a ceiling.
+<new1> is lying on a bed, looking at a door.
+<new1> is lying on a bed, looking at a toy.
+<new1> is lying on a bed, looking at the door.
+<new1> is lying on a bed, looking at the window.
+<new1> is lying on a bed, looking comfortable.
+<new1> is lying on a bed, looking content.
+<new1> is lying on a blanket, eyes half-closed.
+<new1> is lying on a blanket, eyes open.
+<new1> is lying on a blanket, looking at a ceiling.
+<new1> is lying on a blanket, looking at a toy.
+<new1> is lying on a blanket, looking at a wall.
+<new1> is lying on a blanket, looking at a window.
+<new1> is lying on a blanket, looking at the ceiling.
+<new1> is lying on a blanket, looking at the door.
+<new1> is lying on a blanket, looking at the floor.
+<new1> is lying on a blanket, looking at the wall.
+<new1> is lying on a blanket, looking relaxed.
+<new1> is lying on a blanket, purring softly.
+<new1> is lying on a couch, looking relaxed.
+<new1> is lying on a rug, looking at a door.
+<new1> is lying on a rug, looking at a wall.
+<new1> is lying on a rug, looking at a window.
+<new1> is lying on a rug, looking at the door.
+<new1> is lying on a rug, looking relaxed.
+<new1> is lying on a rug, playing with a toy mouse.
+<new1> is lying on a rug, playing with a toy.
+<new1> is lying on a soft rug.
+<new1> is lying on a windowsill, watching the birds.
+<new1> is lying on a windowsill.
+<new1> is lying on its back, paws in the air.
+<new1> is lying on the bed, stretching out.
+<new1> is lying on the floor, basking in the sunlight.
+<new1> is lying on the floor, eyes closed.
+<new1> is lying on the floor, eyes wide open.
+<new1> is lying on the floor, looking at a wall.
+<new1> is lying on the floor, looking at the ceiling.
+<new1> is lying on the floor, looking at the floor.
+<new1> is lying on the floor, looking at the window.
+<new1> is lying on the floor, playing with a toy.
+<new1> is meowing at the door.
+<new1> is napping in a sunny spot.
+<new1> is peeking out from behind a curtain.
+<new1> is perched on a windowsill, observing the world.
+<new1> is perched on a windowsill, watching the sunset.
+<new1> is perched on top of a bookshelf.
+<new1> is playing with a ball of yarn.
+<new1> is playing with a ball on the floor.
+<new1> is playing with a feather toy.
+<new1> is playing with a small stuffed animal.
+<new1> is playing with a string.
+<new1> is playing with a toy fish.
+<new1> is playing with a toy mouse.
+<new1> is resting in a patch of sunlight.
+<new1> is resting in a sunny spot.
+<new1> is resting on a couch cushion.
+<new1> is resting on a couch, eyes half-closed.
+<new1> is resting on a windowsill, eyes closed.
+<new1> is resting on top of a pile of blankets.
+<new1> is rolling over on its back.
+<new1> is rubbing against a person's leg.
+<new1> is sitting in a basket full of toys.
+<new1> is sitting in a chair, watching something.
+<new1> is sitting in a cozy basket.
+<new1> is sitting in front of a computer screen.
+<new1> is sitting next to a bowl of milk.
+<new1> is sitting on a balcony railing.
+<new1> is sitting on a balcony, looking out over the city.
+<new1> is sitting on a bed, eyes half-closed.
+<new1> is sitting on a bed, looking at a book.
+<new1> is sitting on a bed, looking at a ceiling.
+<new1> is sitting on a bed, looking at a toy.
+<new1> is sitting on a bed, looking at a wall.
+<new1> is sitting on a bed, looking at a window.
+<new1> is sitting on a bed, looking at the camera.
+<new1> is sitting on a bed, looking at the door.
+<new1> is sitting on a bed, looking out the window.
+<new1> is sitting on a bed, surrounded by pillows.
+<new1> is sitting on a chair, eyes closed.
+<new1> is sitting on a chair, eyes wide open.
+<new1> is sitting on a chair, looking at a door.
+<new1> is sitting on a chair, looking at a wall.
+<new1> is sitting on a chair, looking at a window.
+<new1> is sitting on a chair, looking at the camera.
+<new1> is sitting on a chair, looking at the ceiling.
+<new1> is sitting on a chair, looking at the door.
+<new1> is sitting on a chair, looking at the floor.
+<new1> is sitting on a chair, looking out over the room.
+<new1> is sitting on a chair, looking out the window.
+<new1> is sitting on a chair, watching something intently.
+<new1> is sitting on a desk, next to a computer.
+<new1> is sitting on a kitchen counter, watching someone cook.
+<new1> is sitting on a newspaper.
+<new1> is sitting on a pillow.
+<new1> is sitting on a porch, watching the world go by.
+<new1> is sitting on a stack of books.
+<new1> is sitting on a table, looking at a book.
+<new1> is sitting on a table, looking at a ceiling.
+<new1> is sitting on a table, looking at a person.
+<new1> is sitting on a table, looking at a toy.
+<new1> is sitting on a table, looking at the ceiling.
+<new1> is sitting on a table, looking at the window.
+<new1> is sitting on a table, looking out the window.
+<new1> is sitting on a table, next to a vase of flowers.
+<new1> is sitting on a table, watching a bird outside.
+<new1> is sitting on a window ledge.
+<new1> is sitting on a windowsill, basking in the sun.
+<new1> is sitting on a windowsill, enjoying the view.
+<new1> is sitting on a windowsill, looking at a ceiling.
+<new1> is sitting on a windowsill, looking at a door.
+<new1> is sitting on a windowsill, looking at a toy.
+<new1> is sitting on a windowsill, looking at a wall.
+<new1> is sitting on a windowsill, looking at the ceiling.
+<new1> is sitting on a windowsill, looking at the door.
+<new1> is sitting on a windowsill, looking at the floor.
+<new1> is sitting on a windowsill, looking at the sky.
+<new1> is sitting on a windowsill, looking at the street.
+<new1> is sitting on a windowsill, looking out at the road.
+<new1> is sitting on a windowsill, looking out at the trees.
+<new1> is sitting on a windowsill, looking outside.
+<new1> is sitting on a windowsill, watching the cars go by.
+<new1> is sitting on a windowsill, watching the rain fall.
+<new1> is sitting on a windowsill, watching the rain.
+<new1> is sitting on a windowsill, watching the world go by.
+<new1> is sitting on a windowsill, watching the world outside.
+<new1> is sitting on the back of a chair, watching the room.
+<new1> is sitting on the back of a couch.
+<new1> is sitting on the floor, looking out the window.
+<new1> is sitting on the floor, looking up at a person.
+<new1> is sitting on the floor, playing with a piece of string.
+<new1> is sitting on the kitchen counter.
+<new1> is sitting on top of a pile of laundry.
+<new1> is sniffing a plant.
+<new1> is staring at a toy mouse.
+<new1> is staring intently at a bird outside.
+<new1> is stretching out on the floor.
+<new1> is watching birds outside the window.

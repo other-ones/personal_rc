@@ -973,7 +973,7 @@ def main():
                     # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
                     torch.save(learned_embeds_dict, save_path)
                     # torch.save(augmenter.state_dict(), save_path_augmenter)
-                if ((global_step % args.log_steps == 0)) and args.lambda_mlm and accelerator.is_main_process:
+                if ((global_step % args.log_steps == 0)) and accelerator.is_main_process:
                     caption_log_file=open(caption_log_path,'a')
                     for raw_caption_ti in raw_captions_ti:
                         caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
