@@ -94,6 +94,11 @@ if __name__=='__main__':
     np.random.shuffle(captions_pet_backgrounds)
     np.random.shuffle(captions_pet_styles)
     np.random.shuffle(captions_pet_wearings)
+    captions_pet_relations=list(set(captions_pet_relations))
+    captions_pet_human_interactions=list(set(captions_pet_human_interactions))
+    captions_pet_backgrounds=list(set(captions_pet_backgrounds))
+    captions_pet_styles=list(set(captions_pet_styles))
+    captions_pet_wearings=list(set(captions_pet_wearings))
     print('HUMAN INTERACT:',len(captions_pet_human_interactions))
     for item in captions_pet_human_interactions[:5]:
         print(item)
@@ -112,7 +117,7 @@ if __name__=='__main__':
         print(item)
     print()
 
-    print('WEARINGS:',len(captions_pet_wearings))
+    print('WEARINGS:',len(set(captions_pet_wearings)))
     for item in captions_pet_wearings[:5]:
         print(item)
     print()

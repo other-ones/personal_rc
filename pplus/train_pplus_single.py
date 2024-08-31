@@ -1,10 +1,10 @@
 import inspect
 
-
-from datasets_pkgs.dataset_pplus import TextualInversionDataset
+sys.path.insert(0, './packages')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+from datasets_pkgs.dataset_pplus import PPlusDataset
 from configs import parse_args
 import sys
-sys.path.insert(0, './packages')
 import argparse
 import logging
 import math
@@ -78,51 +78,31 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,placeh
     # dog
     
 
-    if args.prompt_type=='pet':
+    if args.eval_prompt_type=='living':
         validation_prompts=[
-            "a picture of {} swimming in a pool",
-            "a picture of {} with the Great Wall of China in the background",
-            "a picture of {} in times square",
-            "{} on a boat in the sea",
-            "{} in a purple wizard outfit",
-            "{} playing with a ball",
-            "{} wearing sunglasses",
-            ]
-    # vase
-    
-    elif args.prompt_type in ['nonliving']:
-        validation_prompts = [
-            'a {0} in the jungle',
-            'a {0} in the snow',
-            'a {0} with a blue house in the background',
-            'a {0} with the Eiffel Tower in the background',
-            'a purple {0}',
-            'a wet {0}',
-            'a cube shaped {0}',
-            ]
-    elif args.prompt_type in ['building']:
-        validation_prompts = [
-            '{} in snowy ice.',
-            '{} at a beach with a view of the seashore.',
-            'Photo of the {} with the sun rising in the sky.',
-            'cat sitting in front of {} in snowy ice.',
-            '{} digital painting 3d render geometric style.',
-            'painting of {} in the style of van gogh.',
-            'Top view of the {}.',
-            ]
-    elif args.prompt_type in ['sunglasses']:
-        validation_prompts=[
-            'photo of a {}',
-            'close shot of {} on the sandy beach with a view of the seashore',
-            'A scientist wearing {} examines a test tube',
-            'A dog wearing {} on the porch',
-            'A giraffe wearing {}',
-            '{} painted in the style of andy warhol',
-            'digital painting of a turtle wearing {}',
-            '{} digital 3d render',
+        'a {0} in the jungle'.format(placeholder),
+        'a {0} with a city in the background'.format(placeholder),
+        'a {0} with a mountain in the background'.format(placeholder),
+        'a {0} on top of a purple rug in a forest'.format(placeholder),
+        'a {0} in a chef outfit'.format(placeholder),
+        'a {0} in a police outfit'.format(placeholder),
+        'a cube shaped {0}'.format(placeholder)
         ]
+    elif args.eval_prompt_type =='nonliving':
+        validation_prompts = [
+            'a {0} in the jungle'.format(placeholder),
+            'a {0} with a city in the background'.format(placeholder),
+            'a {0} with a mountain in the background'.format(placeholder),
+            'a {0} with the Eiffel Tower in the background'.format(placeholder),
+            'a {0} floating on top of water'.format(placeholder),
+            'a {0} floating in an ocean of milk'.format(placeholder),
+            'a {0} on top of the sidewalk in a crowded street'.format(placeholder),
+            'a cube shaped {0}'.format(placeholder)
+            ]
     else:
-        assert False
+        assert False, 'undefined eval prompt type'
+
+        
     # print(validation_prompts[0],'validation_prompts')
     # print('Start Inference')
     validation_prompts_list=[]
@@ -234,8 +214,10 @@ def main():
             assert False
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
+        os.system('cp ../datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
+        caption_log_path=os.path.join(codepath,'log_captions.txt')
+        caption_log_file=open(caption_log_path,'w')
         # copy clip
         os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
         target = os.readlink('clip_src/modeling_clip.py')
@@ -309,14 +291,40 @@ def main():
     # mask_embeds=token_embeds[mask_token_ids]
     if args.mask_embed_path is not None:
         mask_embeds=torch.load(args.mask_embed_path)[args.mask_tokens].to(accelerator.device)
-        mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
+        # mask_embeds=F.normalize(mask_embeds,p=1,dim=-1)*args.avg_norm
     
     # HERE
     # # # # # # # # # # 
-    from contextnet import ContextNet
-    # pretrained with one placeholder, one mask_embeds
-    cls_output_dim=len(token_embeds)-args.num_vectors1+1
-    cls_net=ContextNet(768, len(token_embeds)-args.num_vectors1+1)
+    # from contextnet import ContextNet
+    # # pretrained with one placeholder, one mask_embeds
+    # cls_output_dim=len(token_embeds)-args.num_vectors1+1
+    # cls_net=ContextNet(768, len(token_embeds)-args.num_vectors1+1)
+    if 'contextnetv5' in args.cls_net_path:
+        from contextnet_v3 import ContextNetV3
+        if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
+            cls_net=ContextNetV3(1024, len(token_embeds)-args.num_vector) #-1 for placeholder
+            cls_output_dim=len(token_embeds)-args.num_vector
+        elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
+            if 'mlm_contextnet_' in args.cls_net_path:
+                cls_net=ContextNetV3(768, len(token_embeds)-args.num_vector) # -1 for placeholder
+                cls_output_dim=len(token_embeds)
+            else:
+                cls_net=ContextNetV3(768, len(token_embeds)-args.num_vector) # -1 for placeholder
+                cls_output_dim=len(token_embeds)-args.num_vector
+    else:
+        from contextnet import ContextNet
+        if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
+            cls_net=ContextNetV3(1024, len(token_embeds)-args.num_vector) #-1 for placeholder
+            cls_output_dim=len(token_embeds)-args.num_vector
+        elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
+            if 'mlm_contextnet_' in args.cls_net_path:
+                cls_net=ContextNet(768, len(token_embeds)) # -1 for placeholder
+                cls_output_dim=len(token_embeds)
+            else:
+                cls_net=ContextNet(768, len(token_embeds)-args.num_vector) # -1 for placeholder
+                cls_output_dim=len(token_embeds)-args.num_vector
+        else:
+            assert False,'undefined sd version'
 
 
     # Freeze vae and unet
@@ -356,7 +364,7 @@ def main():
     )
 
     # Dataset and DataLoaders creation:
-    train_dataset = TextualInversionDataset(
+    train_dataset = PPlusDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
@@ -371,20 +379,20 @@ def main():
         prompt_type=args.prompt_type,
         placeholder_tokens=placeholder_tokens, #for pplus
     )
-    train_dataset_mlm = TextualInversionDataset(
+    train_dataset_mlm = PPlusDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
         size=args.resolution,
-        repeats=args.repeats,
+        placeholder_tokens=placeholder_tokens, #for pplus
         center_crop=args.center_crop,
         flip_p=args.flip_p,
         prior_concept=args.prior_concept1,
         mask_token_ids=mask_token_ids[0],
+        repeats=args.repeats,
         mlm_target=args.mlm_target,
         get_images=False,
         prompt_type=args.prompt_type,
-        placeholder_tokens=placeholder_tokens, #for pplus
 
     )
     
@@ -597,18 +605,13 @@ def main():
             with accelerator.accumulate(text_encoder):
                 # 1. Load Batch
                 pixel_values=batch["pixel_values"]# B,77 list of booleans (tensor)
+                raw_captions_ti=batch["raw_captions_ti"]# B,77 list of booleans (tensor)
                 input_ids_list=batch["input_ids_list"]# B,77 list of booleans (tensor)
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
                 is_keyword_tokens_list=batch["is_keyword_tokens_list"]# B,77 list of booleans (tensor)
-                # for MLM
-                batch_mlm=load_mlm_batch(mlm_loader)
-                is_keyword_tokens_mlm_list=batch_mlm["is_keyword_tokens_mlm_list"]
-                masked_idxs_list=batch_mlm["masked_idxs_list"]
-                mlm_labels_list=batch_mlm["mlm_labels_list"].to(accelerator.device)
-                non_special_idxs_list=batch_mlm["non_special_idxs_list"]
-                input_ids_masked_list=batch_mlm["input_ids_masked_list"].to(accelerator.device)
-                input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
+
+                
                 
                 # 1. Load Batch
                 
@@ -620,7 +623,7 @@ def main():
                 timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (bsz,), device=latents.device)
                 timesteps = timesteps.long()
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
-                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
+                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1] #9,768
                 # learned_embeds: 9,768
                 if args.normalize_target1:
                     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
@@ -654,25 +657,31 @@ def main():
                 # 3. MLM Loss
                 loss_mlm=None
                 if args.lambda_mlm:
-                    # torch.Size([50, 9, 77]) input_ids_masked_list.shape
-                    # torch.Size([50, 9, 77]) masked_idxs_list.shape
-                    # torch.Size([50, 9, 77]) is_keyword_tokens_mlm_list.shape
-                    # torch.Size([9, 768]) target_emb.shape
+                    # # for MLM
+                    
+                    # load mlm batch
+                    batch_mlm=load_mlm_batch(mlm_loader)
+                    input_ids_masked_list=batch_mlm["input_ids_masked_list"].to(accelerator.device)
+                    is_keyword_tokens_mlm_list=batch_mlm["is_keyword_tokens_mlm_list"]
+                    masked_idxs_list=batch_mlm["masked_idxs_list"]
+                    mlm_labels_list=batch_mlm["mlm_labels_list"].to(accelerator.device)
+                    non_special_idxs_list=batch_mlm["non_special_idxs_list"]
+                    raw_captions_mlm=batch_mlm["raw_captions_mlm"] # B,77 list of booleans (tensor)
+                    input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
+                    # load mlm batch
                     mlm_bsz=len(masked_idxs_list)
                     emb_dim=target_emb.shape[-1]
-                    # input_ids_masked_list=input_ids_masked_list.reshape(-1,num_tokens)
-                    # masked_idxs_list=masked_idxs_list.reshape(-1,num_tokens)
                     is_keyword_tokens_mlm_list=is_keyword_tokens_mlm_list.reshape(-1,num_tokens)
                     clip_text_embedding_masked = text_encoder(input_ids_masked_list.reshape(-1,num_tokens),
-                                                            mask_embedding=mask_embeds.unsqueeze(0),
-                                                            mask_idxs=masked_idxs_list.reshape(-1,num_tokens),
+                                                            mask_embedding=mask_embeds.repeat(mlm_bsz,1),
+                                                            mask_idxs=masked_idxs.reshape(-1,num_tokens),
                                                             is_keyword_tokens1=is_keyword_tokens_mlm_list.reshape(-1,num_tokens),
-                                                            inj_embeddings1=target_emb.repeat(mlm_bsz,1,1).reshape(-1,emb_dim), #9,768 ->9,n,768->9n,768
+                                                            inj_embeddings1=target_emb.repeat(mlm_bsz,1), #9,768 ->9,n,768->9n,768
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     # clip_text_embedding_masked:9*mlm_bsz,77,768
                     # mlm_labels_list:9*mlm_bsz,77,768
                     mlm_logits_list=cls_net(clip_text_embedding_masked)
-                    masked_idxs_flat_list=masked_idxs_list.view(-1)
+                    masked_idxs_flat_list=masked_idxs.view(-1)
                     loss_mlm = F.cross_entropy(
                         mlm_logits_list.view(-1,cls_output_dim),
                         mlm_labels_list.view(-1),
@@ -730,6 +739,21 @@ def main():
                     # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
                     torch.save(learned_embeds_dict, save_path)
                     # torch.save(augmenter.state_dict(), save_path_augmenter)
+                if ((global_step % args.log_steps == 0)) and accelerator.is_main_process:
+                    caption_log_file=open(caption_log_path,'a')
+                    for raw_caption_ti in raw_captions_ti:
+                        caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
+                        caption_log_file.flush()
+                    caption_log_file.write('\n')
+                    caption_log_file.flush()
+                    if args.lambda_mlm:
+                        for raw_caption_mlm in raw_captions_mlm:
+                            caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_mlm))
+                            caption_log_file.flush()
+                        caption_log_file.write('\n')
+                    caption_log_file.write('\n')
+                    caption_log_file.flush()
+                    caption_log_file.close()
                 if ((global_step % args.validation_steps == 0)):
                     # visualize input
                     input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
@@ -745,8 +769,6 @@ def main():
                         viz_batch_idx=0
                         viz_vec_idx=0
                         mlm_logits_list=mlm_logits_list.reshape(mlm_bsz,num_vectors,num_tokens,cls_output_dim)
-
-
                         masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,0] #50*9,77
                         non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,0]
                         mlm_logits=mlm_logits_list[viz_batch_idx:viz_batch_idx+1,0]
@@ -857,9 +879,13 @@ def main():
                     norm_target=torch.norm(target_emb,p=1,dim=-1)
                 if loss_mlm is not None:
                     logs['loss_mlm']=loss_mlm.detach().item()#*args.lambda3
-                logs['norm_target{}'.format(0)]=norm_target[0].item()
-                logs['norm_target{}'.format(4)]=norm_target[4].item()
-                logs['norm_target{}'.format(8)]=norm_target[8].item()
+                for nti in range(9):
+                    logs['norm_target{}'.format(nti)]=norm_target[nti].item()
+                    # logs['norm_target{}'.format(1)]=norm_target[0].item()
+                    # logs['norm_target{}'.format(2)]=norm_target[2].item()
+                    # logs['norm_target{}'.format(3)]=norm_target[3].item()
+                    # logs['norm_target{}'.format(4)]=norm_target[4].item()
+                    # logs['norm_target{}'.format(8)]=norm_target[8].item()
                 if args.report_to=='wandb' and accelerator.is_main_process:
                     wandb.log(logs)
                 if args.silent:

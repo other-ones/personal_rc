@@ -10,7 +10,7 @@ HUMAN_INTERACTIONS = [
     "making a video with", "having a picnic with", "watching TV with", "doing yoga with", 
     "playing a game with", "taking a walk in the rain with", "going for a swim with", 
     "enjoying a sunset with", "having breakfast with", "dancing with", "skateboarding with", 
-    "hiking with", "watching a movie with", "going on an adventure with"
+    "hiking with", "watching a movie with", "going on an adventure with", "swimming with"
 ]
 
 HUMANS = [
@@ -46,23 +46,11 @@ NONLIVINGS = [
 
 RELATIVES = [
     "beside", "near", "next to", "behind", "in front of", "adjacent to", 
-    "above", "below", 
-    "alongside", 
-    "atop", 
-    "against", 
-    "surrounding",
-    "beneath", "over", 
-    "under", 
-    "to the left of", 
-    "to the right of",
-    "on top of",  
-    "encircled by", "interspersed with", "between", "flanked by",
-    "aligned with", 
-    "sprawled in front of", 
-    "nestled among", 
-    "perched on", 
-    "suspended above", 
-    "arrayed around"
+    "above", "below", "alongside", "atop", "against", "surrounding",
+    "beneath", "over", "under", "to the left of", "to the right of",
+    "on top of",  "encircled by", "interspersed with", "between", "flanked by",
+    "aligned with", "sprawled in front of", "nestled among", "perched on", 
+    "suspended above", "arrayed around"
     ]
 
 BACKGROUNDS = [

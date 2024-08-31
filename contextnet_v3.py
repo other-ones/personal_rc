@@ -75,27 +75,27 @@ class ContextNetV3(nn.Module):
         # for layer in self.ca_layers:
         #     x, _ = layer(x, x, x)
         out,_=self.multi_head_attention1(x, x, x)
-        x+=out
+        x=x+out
         x = self.layer_norm1(x) # add residual connection + layer_norm
         x=self.feed_forward1(x)
 
         out,_=self.multi_head_attention2(x, x, x)
-        x+=out
+        x=x+out
         x = self.layer_norm2(x) # add residual connection + layer_norm
         x=self.feed_forward2(x)
 
         out,_=self.multi_head_attention3(x, x, x)
-        x+=out
+        x=x+out
         x = self.layer_norm3(x) # add residual connection + layer_norm
         x=self.feed_forward3(x)
 
         out,_=self.multi_head_attention4(x, x, x)
-        x+=out
+        x=x+out
         x = self.layer_norm4(x) # add residual connection + layer_norm
         x = self.final(x)
         return x
 
 if __name__ == '__main__':
-    net = ContextNet(768, 40393).cuda()
+    net = ContextNetV3(768, 40393).cuda()
     data = torch.randn(10, 77, 768).cuda()
     print(net(data).shape)
