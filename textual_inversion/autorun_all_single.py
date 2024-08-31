@@ -10,8 +10,8 @@ info_map_03={
     # prior/train_prompt_type/eval_prompt_type
     'red_cartoon':('cartoon','pet','living'),
     'teapot':('teapot','nonliving','nonliving'),
-    'can':('can','nonliving','nonliving'),
-    'candle':('candle','nonliving','nonliving'),
+    # 'can':('can','nonliving','nonliving'),
+    # 'candle':('candle','nonliving','nonliving'),
     'duck_toy':('duck','nonliving','nonliving'),
     'dog6': ('dog','pet','living'),
     'pet_cat1':('cat','pet','living'),

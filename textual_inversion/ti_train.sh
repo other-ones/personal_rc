@@ -1,12 +1,12 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
-export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1"
+export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/red_cartoon"
 export CUDA_VISIBLE_DEVICES=2;
 accelerate launch --main_process_port 4230  ti_train.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
   --learnable_property="object" \
-  --placeholder_token1="<pet_dog1>" \
-  --prior_concept1="dog" \
+  --placeholder_token1="<red_cartoon>" \
+  --prior_concept1="character" \
   --resolution=512 \
   --train_batch_size=1 \
   --gradient_accumulation_steps=4 \
@@ -27,7 +27,7 @@ accelerate launch --main_process_port 4230  ti_train.py \
   --train_prompt_type='pet' \
   --eval_prompt_type='living' \
   --include_prior_concept=1 \
-  --caption_root='../datasets_pkgs/captions/v6'
+  --caption_root='../datasets_pkgs/captions/v7'
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1"

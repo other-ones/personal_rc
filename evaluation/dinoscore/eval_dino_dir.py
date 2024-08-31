@@ -104,9 +104,7 @@ if __name__=='__main__':
         keywords=args.keywords.split('-')
     else:
         keywords=None
-    dirs=os.listdir(result_root)
     dino_eval=DINOEvaluator(device='cuda:0')
-    dirs=sorted(dirs)
     results=[]
     concepts=os.listdir(dir_path)
     for concept in concepts:
