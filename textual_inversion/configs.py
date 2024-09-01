@@ -4,6 +4,8 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--train_prior_concept1',type=str)
+    parser.add_argument('--eval_prior_concept1',type=str)
     parser.add_argument('--normalize_mask_embeds',type=int,default=0)
     parser.add_argument('--add_pe',type=int,default=1)
     parser.add_argument('--benchmark_path',type=str)
@@ -56,8 +58,8 @@ def parse_args():
     parser.add_argument("--train_data_dir2", type=str, default=None, required=False, help="A folder containing the training data.")
     parser.add_argument("--placeholder_token1",type=str,default=None,required=False,help="A token to use as a placeholder for the concept.")
     parser.add_argument("--placeholder_token2",type=str,default=None,required=False,help="A token to use as a placeholder for the concept.")
-    parser.add_argument('--prior_concept1',type=str)
-    parser.add_argument('--prior_concept2',type=str)
+    # parser.add_argument('--prior_concept1',type=str)
+    # parser.add_argument('--prior_concept2',type=str)
     parser.add_argument('--masked_loss',type=int,default=0)
     parser.add_argument('--augmenter_path1',type=str)
     parser.add_argument('--augmenter_path2',type=str)

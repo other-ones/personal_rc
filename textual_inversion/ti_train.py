@@ -87,9 +87,9 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,genera
     
     if args.include_prior_concept:
         if args.rev:
-            placeholder='{} {}'.format(args.prior_concept1,args.placeholder_token1)
+            placeholder='{} {}'.format(args.train_prior_concept1,args.placeholder_token1)
         else:
-            placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
+            placeholder='{} {}'.format(args.placeholder_token1,args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
     # eval_prompt_path=os.path.join('../datasets_pkgs/eval_prompts',args.benchmark)
@@ -293,7 +293,8 @@ def main():
     else:
         mask_token_ids=None
     placeholder_token_ids = tokenizer.convert_tokens_to_ids(placeholder_tokens)
-    initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
+    initializer_token_ids = tokenizer.encode(args.train_prior_concept1, add_special_tokens=False)
+    assert len(initializer_token_ids)==1,args.train_prior_concept1
     initializer_token_id = initializer_token_ids[0]
     text_encoder.resize_token_embeddings(len(tokenizer))
     token_embeds = text_encoder.get_input_embeddings().weight.data
@@ -400,7 +401,7 @@ def main():
         center_crop=args.center_crop,
         flip_p=args.flip_p,
         exclude_suffix=args.exclude_suffix,
-        prior_concept=args.prior_concept1,
+        train_prior_concept1=args.train_prior_concept1,
         mask_token_ids=mask_token_ids,
         mlm_target=args.mlm_target,
         get_images=True,
@@ -419,7 +420,7 @@ def main():
         placeholder_token=(" ".join(tokenizer.convert_ids_to_tokens(placeholder_token_ids))),
         center_crop=args.center_crop,
         flip_p=args.flip_p,
-        prior_concept=args.prior_concept1,
+        train_prior_concept1=args.train_prior_concept1,
         mask_token_ids=mask_token_ids,
         mlm_target=args.mlm_target,
         get_images=False,

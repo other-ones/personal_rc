@@ -1,12 +1,13 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/red_cartoon"
-export CUDA_VISIBLE_DEVICES=2;
+export CUDA_VISIBLE_DEVICES=3;
 accelerate launch --main_process_port 4230  ti_train.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
   --learnable_property="object" \
   --placeholder_token1="<red_cartoon>" \
-  --prior_concept1="character" \
+  --train_prior_concept1="character" \
+  --eval_prior_concept1="cartoon character" \
   --resolution=512 \
   --train_batch_size=1 \
   --gradient_accumulation_steps=4 \

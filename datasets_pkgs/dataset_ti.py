@@ -123,7 +123,7 @@ class TextualInversionDataset(Dataset):
         mask_prob=0.25,
         mask_token_ids=None,
         get_images=True,
-        prior_concept=None,
+        train_prior_concept1=None,
         placeholder_token=None,
         caption_root=None,
         rev=None,
@@ -184,7 +184,7 @@ class TextualInversionDataset(Dataset):
         self.exclude_suffix = exclude_suffix
         self.data_root = data_root
         self.tokenizer = tokenizer
-        self.prior_concept = prior_concept
+        self.train_prior_concept1 = train_prior_concept1
         self.placeholder_token = placeholder_token
         self.size = size
         self.center_crop = center_crop
@@ -210,10 +210,10 @@ class TextualInversionDataset(Dataset):
         if self.include_prior_concept:
             if self.rev:
                 # dog <dog6>
-                placeholder='{} {}'.format(self.prior_concept,self.placeholder_token)
+                placeholder='{} {}'.format(self.train_prior_concept1,self.placeholder_token)
             else:
                 # <dog6> dog
-                placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
+                placeholder='{} {}'.format(self.placeholder_token,self.train_prior_concept1)
         else:
             placeholder=self.placeholder_token
         if self.get_images:
@@ -328,7 +328,7 @@ class TextualInversionDataset(Dataset):
                 for tok_id in word_token_ids:
                     # 1) input ids and indices for mask token
                     tok_decoded=self.tokenizer.decode(tok_id)
-                    if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.prior_concept): 
+                    if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
                         masked_idxs.append(True)
                         input_ids_masked.append(self.mask_token_ids)
                     else:

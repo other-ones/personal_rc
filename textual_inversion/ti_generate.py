@@ -189,9 +189,9 @@ def main(args):
     print(token_embeds.shape,'token_embeds.shape')
     learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token1]
     learned_embed1=learned_embed1[args.placeholder_token1]
-    initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
-    initializer_token_id = initializer_token_ids[0]
-    prior_embed=token_embeds[initializer_token_id].detach().clone()
+    # initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
+    # initializer_token_id = initializer_token_ids[0]
+    # prior_embed=token_embeds[initializer_token_id].detach().clone()
     with torch.no_grad():
         token_embeds[placeholder_token_id1] = learned_embed1 #
         # token_embeds[placeholder_token_id2] = learned_embed2 #token_embeds[initializer_token_id].clone()
@@ -278,9 +278,9 @@ def main(args):
         )
     if args.include_prior_concept:
         if args.rev:
-            placeholder='{} {}'.format(args.prior_concept1, args.placeholder_token1)
+            placeholder='{} {}'.format(args.train_prior_concept1, args.placeholder_token1)
         else:
-            placeholder='{} {}'.format(args.placeholder_token1, args.prior_concept1)
+            placeholder='{} {}'.format(args.placeholder_token1, args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
     print(args.benchmark_path,'args.benchmark_path')
@@ -298,7 +298,7 @@ def main(args):
     caption_data={}
     # print(learned_embed1.shape,'learned_embed1.shape')
     # print(prior_embed.shape,'prior_embed.shape')
-    prior_embed=prior_embed.to(accelerator.device)
+    # prior_embed=prior_embed.to(accelerator.device)
     learned_embed1=learned_embed1.to(accelerator.device)
     
     attn_mod_params={
@@ -341,7 +341,7 @@ def main(args):
                         else:
                             is_keyword_tokens.append(False)
                         # prior1
-                        if tok_decoded==args.prior_concept1:
+                        if tok_decoded==args.train_prior_concept1:
                             is_prior1.append(True)
                         else:
                             is_prior1.append(False)
@@ -354,10 +354,10 @@ def main(args):
                 if sum(is_keyword_tokens)!=1:
                     print(prompt,'prompt')
                     print(args.placeholder_token1,'placeholder_token1')
-                    print(args.prior_concept1,'prior_concept1')
+                    print(args.train_prior_concept1,'train_prior_concept1')
                     print(sum(is_keyword_tokens),'sum(is_keyword_tokens)')
                 assert sum(is_keyword_tokens)==1
-                assert sum(is_prior1)==1
+                assert sum(is_prior1)==len(args.train_prior_concept1.split())
                 is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
                 is_prior1=torch.BoolTensor(is_prior1)
                 is_keyword_tokens_list.append(is_keyword_tokens)
@@ -390,7 +390,7 @@ def main(args):
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
                 image_name='{:04d}'.format(count+1)
                 img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
-                prompt_saved=prompt.replace(placeholder,args.prior_concept1)
+                prompt_saved=prompt.replace(placeholder,args.eval_prior_concept1)
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)

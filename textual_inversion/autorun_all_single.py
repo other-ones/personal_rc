@@ -7,44 +7,55 @@ hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
-    # prior/train_prompt_type/eval_prompt_type
-    'red_cartoon':('cartoon','pet','living'),
-    'teapot':('teapot','nonliving','nonliving'),
-    # 'can':('can','nonliving','nonliving'),
-    # 'candle':('candle','nonliving','nonliving'),
-    'duck_toy':('duck','nonliving','nonliving'),
-    'dog6': ('dog','pet','living'),
-    'pet_cat1':('cat','pet','living'),
-    # 'cat1': ('cat','pet','living'),
-    # 'dog3':  ('dog','pet','living'),
-    # 'pet_dog1':('dog','pet','living'),
-    # 'backpack':('backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','nonliving''nonliving'),
-    # 'rc_car':('toy','nonliving''nonliving'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'chair1': ('chair','nonliving''nonliving'),
+    # train_prior/eval_prior/train_prompt_type/eval_prompt_type
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
 
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+
+    # 'red_cartoon':('character','cartoon character','pet','living'),
+    # 'candle':('candle','candle','nonliving','nonliving'),
+    # 'can':('can','can','nonliving','nonliving'),
     # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'barn': ('barn','barn'),
     # 'flower1':('flower','flower'),
 }
 info_map_01={
-    # 'backpack':('backpack','nonliving'),
-    # 'pet_cat1':('cat','pet'),
-    # 'pet_dog1':('dog','pet'),
-    # 'vase':('vase','nonliving'),
-    'teddybear':('bear','nonliving'),
-    'dog6': ('dog','pet'),
-    # 'cat1': ('cat','pet'),
-    # 'wooden_pot':('pot','nonliving'),
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'barn': ('barn','building'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    # 'red_cartoon':('character','cartoon character','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'pink_sunglasses': ('sunglasses','sunglasses','nonliving','nonliving'),
+    'dog7': ('dog','dog','pet','living'),
+    # 'candle':('candle','candle','nonliving','nonliving'),
+    # 'can':('can','can','nonliving','nonliving'),
+    # 'barn': ('barn','barn'),
     # 'flower1':('flower','flower'),
 }
 if '03' in hostname:
@@ -54,12 +65,13 @@ elif 'ubuntu' in hostname:
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
+            0.0001,
             0.001,
             0,
             # 0.005,
             # 0.01,
             # 0.0005,
-            # 0.0002,x
+            # 0.0002,
             ]
 target_norms=[0]
 
@@ -85,7 +97,7 @@ delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
 mlm_batch_list=[25]
-rep_id=1
+rep_id=2
 benchmark='dreambooth'
 
 if include_prior:
@@ -108,7 +120,7 @@ for mlm_batch in mlm_batch_list:
                 for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
-                    prior,train_prompt_type,eval_prompt_type=info_map[concept]
+                    train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
                     prefix='ti_cnetv4'
                     if include_prior:
                         prefix+='_prior'
@@ -150,7 +162,8 @@ for mlm_batch in mlm_batch_list:
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     command+='--learnable_property="object" \\\n'
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-                    command+='--prior_concept1="{}" \\\n'.format(prior)
+                    command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
+                    command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=4 \\\n'
@@ -223,7 +236,7 @@ for cidx,concept in enumerate(concepts):
                 rev=1
             else:
                 rev=0
-            prior,train_prompt_type,eval_prompt_type=info_map[concept]
+            train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
             learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(target_step))
             if not os.path.exists(learned_embed_path1):
                 print(learned_embed_path1,'does not exist')
@@ -231,7 +244,7 @@ for cidx,concept in enumerate(concepts):
             exp_name=exp
             exp_name+='_s{}'.format(target_step)
             exp_name+='_ppos{}'.format(ppos_str)
-            output_dir=os.path.join('results_ti/{}/{}'.format(dir_name,concept))
+            output_dir=os.path.join('results/ti_results/{}/{}'.format(dir_name,concept))
             exp_path=os.path.join(output_dir,exp_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -257,7 +270,8 @@ for cidx,concept in enumerate(concepts):
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-            command+='--prior_concept1="{}" \\\n'.format(prior)
+            command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
+            command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
             command+='--resolution=512 \\\n'
             command+='--dst_exp_path={} \\\n'.format(exp_path)
             command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
