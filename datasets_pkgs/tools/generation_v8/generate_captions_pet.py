@@ -3,8 +3,8 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from consts_v8 import HUMAN_INTERACTIONS,NONLIVINGS,COLORS,HUMANS,RELATIVES,STYLES,BACKGROUNDS
-from consts_v8 import OUTFITS,WEARINGS
-from consts_v8 import NONVLIVING_INTERACTIONS_ACTIVE,SHAPES,CREATIVES
+from consts_v8 import OUTFITS,WEARINGS,SOLO_ACTIVITIES
+from consts_v8 import NONVLIVING_INTERACTIONS_ACTIVE,SHAPES,CREATIVES,LOCATIONS,ARTISTS
 import shutil
 
 
@@ -37,35 +37,37 @@ if __name__=='__main__':
                 prompt=f"<new1> {rel} a {color} {other_obj}"
                 captions_pet_relations.append(prompt)
 
-    # background=np.random.choice(backgrounds)
-    # if np.random.rand()<0.5:
-    #     prompt=f"<new1> with the {background} in the background"
-    # else:
-    #     prompt=f"A view of the <new1> at {background}"
 
     # 3. BACKGROUNDS
-    captions_pet_backgrounds=[]
-    for background in BACKGROUNDS:
-        prompt=f"<new1> with the {background} in the background"
-        captions_pet_backgrounds.append(prompt)
+    # captions_pet_backgrounds=[]
+    # for background in BACKGROUNDS:
+    #     prompt=f"<new1> with the {background} in the background"
+    #     captions_pet_backgrounds.append(prompt)
 
-        prompt=f"<new1> at {background}"
-        captions_pet_backgrounds.append(prompt)
+    #     prompt=f"<new1> at {background}"
+    #     captions_pet_backgrounds.append(prompt)
 
-        prompt=f"<new1> captured with the {background} in the background"
-        captions_pet_backgrounds.append(prompt)
+    #     prompt=f"<new1> captured with the {background} in the background"
+    #     captions_pet_backgrounds.append(prompt)
 
-        prompt=f"<new1> viewed with the {background}"
-        captions_pet_backgrounds.append(prompt)
+    #     prompt=f"<new1> viewed with the {background}"
+    #     captions_pet_backgrounds.append(prompt)
 
-    # 4. generate_styles_caption
-    # fmt=np.random.choice(['captured','depicted','rendered'])
-    # style=np.random.choice(styles)
+    captions_pet_backgrounds_act=[]
+    for solo_act in SOLO_ACTIVITIES:
+        for location in LOCATIONS:
+            prompt=f"<new1> {solo_act} {location}"
+            captions_pet_backgrounds_act.append(prompt)
+
+    # 4. captions_pet_styles
     captions_pet_styles=[]
-    for fmt in ['captured','depicted','rendered']:
+    for fmt in ['captured','depicted','rendered','painted']:
         for style in STYLES:
             prompt=f"<new1> {fmt} in the {style} style"
             captions_pet_styles.append(prompt)
+    for artist in ARTISTS:
+        prompt=f"<new1> painted by {artist}"
+        captions_pet_styles.append(prompt)
 
     # 5. WEARINGS
     captions_pet_wearings=[]
@@ -79,32 +81,38 @@ if __name__=='__main__':
             captions_pet_wearings.append(prompt)
             prompt=f"<new1> dressed in a {color} {outfit}"
             captions_pet_wearings.append(prompt)
+    
     # CREATIVES
-    captions_pet_creatives=[]
+    captions_pet_attr=[]
     for creative in CREATIVES:
-        prompt=f"a {creative} <new1>"
-        captions_pet_creatives.append(prompt)
+        for location in LOCATIONS:
+            prompt=f"a {creative} <new1> {location}"
+            captions_pet_attr.append(prompt)
     for color in COLORS:
-        prompt1=f"a {creative} <new1>"
-        prompt2=f"a {creative} colored <new1>"
-        captions_pet_creatives.append(prompt1)
-        captions_pet_creatives.append(prompt2)
+        for location in LOCATIONS:
+            prompt1=f"a {creative} <new1> {location}"
+            prompt2=f"a {creative} colored <new1> {location}"
+            captions_pet_attr.append(prompt1)
+            captions_pet_attr.append(prompt2)
     for shape in SHAPES:
-        prompt1=f"a {shape} shaped <new1>"
-        prompt2=f"a <new1> in a  {shape}"
-        captions_pet_creatives.append(prompt1)
-        captions_pet_creatives.append(prompt2)
+        for location in LOCATIONS:
+            prompt1=f"a {shape} shaped <new1> {location}"
+            prompt2=f"a <new1> in a {shape} {location}"
+            captions_pet_attr.append(prompt1)
+            captions_pet_attr.append(prompt2)
 
     np.random.shuffle(captions_pet_human_interactions)
     np.random.shuffle(captions_pet_relations)
-    np.random.shuffle(captions_pet_backgrounds)
+    # np.random.shuffle(captions_pet_backgrounds)
     np.random.shuffle(captions_pet_styles)
     np.random.shuffle(captions_pet_wearings)
+    np.random.shuffle(captions_pet_attr)
     captions_pet_relations=list(set(captions_pet_relations))
     captions_pet_human_interactions=list(set(captions_pet_human_interactions))
-    captions_pet_backgrounds=list(set(captions_pet_backgrounds))
+    # captions_pet_backgrounds=list(set(captions_pet_backgrounds))
     captions_pet_styles=list(set(captions_pet_styles))
     captions_pet_wearings=list(set(captions_pet_wearings))
+    captions_pet_attr=list(set(captions_pet_attr))
     print('HUMAN INTERACT:',len(captions_pet_human_interactions))
     for item in captions_pet_human_interactions[:5]:
         print(item)
@@ -114,8 +122,14 @@ if __name__=='__main__':
     for item in captions_pet_relations[:5]:
         print(item)
     print()
-    print('BACKGROUNDS:',len(captions_pet_backgrounds))
-    for item in captions_pet_backgrounds[:5]:
+
+    # print('BACKGROUNDS:',len(captions_pet_backgrounds))
+    # for item in captions_pet_backgrounds[:5]:
+    #     print(item)
+    # print()
+
+    print('BACKGROUNDS+ACT:',len(captions_pet_backgrounds_act))
+    for item in captions_pet_backgrounds_act[:5]:
         print(item)
     print()
 
@@ -129,8 +143,8 @@ if __name__=='__main__':
         print(item)
     print()
 
-    print('CREATIVES:',len(set(captions_pet_creatives)))
-    for item in captions_pet_creatives[:5]:
+    print('ATTR:',len(set(captions_pet_attr)))
+    for item in captions_pet_attr[:5]:
         print(item)
     print()
 
@@ -150,11 +164,19 @@ if __name__=='__main__':
     for caption in captions_pet_relations:
         dst_file.write("{}\n".format(caption))
 
-    dst_path=os.path.join(dst_root,'captions_pet_backgrounds.txt')
+    # dst_path=os.path.join(dst_root,'captions_pet_backgrounds.txt')
+    # dst_file=open(dst_path,'w')
+    # captions_pet_backgrounds=list(set(captions_pet_backgrounds))
+    # captions_pet_backgrounds=sorted(captions_pet_backgrounds)
+    # for caption in captions_pet_backgrounds:
+    #     dst_file.write("{}\n".format(caption))
+
+
+    dst_path=os.path.join(dst_root,'captions_pet_backgrounds_act.txt')
     dst_file=open(dst_path,'w')
-    captions_pet_backgrounds=list(set(captions_pet_backgrounds))
-    captions_pet_backgrounds=sorted(captions_pet_backgrounds)
-    for caption in captions_pet_backgrounds:
+    captions_pet_backgrounds_act=list(set(captions_pet_backgrounds_act))
+    captions_pet_backgrounds_act=sorted(captions_pet_backgrounds_act)
+    for caption in captions_pet_backgrounds_act:
         dst_file.write("{}\n".format(caption))
 
     dst_path=os.path.join(dst_root,'captions_pet_styles.txt')
@@ -172,11 +194,11 @@ if __name__=='__main__':
         dst_file.write("{}\n".format(caption))
 
 
-    dst_path=os.path.join(dst_root,'captions_pet_creatives.txt')
+    dst_path=os.path.join(dst_root,'captions_pet_attr.txt')
     dst_file=open(dst_path,'w')
-    captions_pet_creatives=list(set(captions_pet_creatives))
-    captions_pet_creatives=sorted(captions_pet_wearings)
-    for caption in captions_pet_creatives:
+    captions_pet_attr=list(set(captions_pet_attr))
+    captions_pet_attr=sorted(captions_pet_attr)
+    for caption in captions_pet_attr:
         dst_file.write("{}\n".format(caption))
 
 

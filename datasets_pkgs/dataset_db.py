@@ -158,7 +158,7 @@ class DreamboothDataset(Dataset):
                 self.num_class_images = min(len(self.class_images_path), class_num)
             else:
                 self.num_class_images = len(self.class_images_path)
-            self._length = max(self.num_class_images, self.num_instance_images)
+            # self._length = max(self.num_class_images, self.num_instance_images)
             self.class_prompt = class_prompt
         else:
             self.class_prompt = None
@@ -294,7 +294,6 @@ class DreamboothDataset(Dataset):
                 )
                 example["class_prompt_ids"] = class_text_inputs.input_ids[0]
                 is_keyword_tokens_prior=[False]
-                # print(self.class_prompt,'self.class_prompt')
                 text_words_prior=self.class_prompt.split()
                 for word_idx in range(len(text_words_prior)):
                     cap_word=text_words_prior[word_idx]
@@ -361,6 +360,7 @@ class DreamboothDataset(Dataset):
             # mlm_pos,mlm_neg=self.prompt_generator.generate_triplet()
             sampled_type=np.random.choice(self.caption_types)
             mlm_caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
+            mlm_caption=mlm_caption.strip()
             mlm_caption=mlm_caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
             if 'interactions' not in sampled_type and 'creatives' not in sampled_type:
                 mlm_prefix=np.random.choice(mlm_prefixes)

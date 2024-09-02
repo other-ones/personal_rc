@@ -5,6 +5,10 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--initializer_token',type=str)
+    parser.add_argument('--calibrate_ppos1',type=float,default=0)
+    parser.add_argument('--dst_exp_path',type=str)
+    parser.add_argument('--benchmark_path',type=str)
     parser.add_argument('--log_steps',type=int,default=10)
     parser.add_argument('--exclude_cap_types',type=str)
     parser.add_argument('--train_prior_concept1',type=str)
@@ -13,12 +17,7 @@ def parse_args(input_args=None):
     parser.add_argument('--train_prompt_type',type=str)
     parser.add_argument('--caption_root',type=str)
     parser.add_argument('--mask_prob',type=float,default=0.15)
-    parser.add_argument('--initialize_token',type=int,default=1)
     parser.add_argument('--break_num',type=int,default=0)
-    parser.add_argument('--calibrate_kneg',type=float,default=0)
-    parser.add_argument('--calibrate_kpos',type=float,default=0)
-    parser.add_argument('--calibrate_pneg',type=float,default=0)
-    parser.add_argument('--calibrate_ppos',type=float,default=0)
     parser.add_argument('--sim_margin',type=float)
     parser.add_argument('--dissim_layers',type=str,default='1to12')
     parser.add_argument('--make_composition',type=int,required=False)
@@ -240,7 +239,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--dataloader_num_workers",
         type=int,
-        default=0,
+        default=4,
         help=(
             "Number of subprocesses to use for data loading. 0 means that the data will be loaded in the main process."
         ),
@@ -278,7 +277,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--report_to",
         type=str,
-        default="tensorboard",
+        # default="tensorboard",
         help=(
             'The integration to report the results and logs to. Supported platforms are `"tensorboard"`'
             ' (default), `"wandb"` and `"comet_ml"`. Use `"all"` to report to all integrations.'

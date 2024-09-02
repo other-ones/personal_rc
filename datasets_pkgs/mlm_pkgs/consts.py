@@ -181,6 +181,7 @@ BACKGROUNDS = [
     "isolated desert highway", "opulent Monaco casino", "historic Pilgrim landing site",
     "San Francisco cable car", "enigmatic Stonehenge", "vibrant Rio de Janeiro carnival",
 ]
+
 BACKGROUNDS.extend([
     "Mount Fuji", "Niagara Falls", "Yellowstone National Park", "Lake Tahoe", "Great Barrier Reef",
     "Taj Mahal", "Golden Gate Bridge", "Machu Picchu", "Victoria Falls", "Santorini cliffside",
@@ -820,6 +821,7 @@ NONLIVING_INTERACTIONS=[
     "evaluated by", "assessed by", "measured by", "calculated by",
     "counted by", "weighed by", "tested by", "experimented by",
 ]
+
 NONLIVING_ATTRIBUTES = [
     # Colors
     "red", "blue", "green", "yellow", "brown", "white", "black", "gray", "orange", "purple", "pink", "golden", "silver",
@@ -995,8 +997,6 @@ CAT_ATTRIBUTES = [
     "snuggled","leaning","twitching",
     "hunched","cuddly",
     "energetic",
-
-    
     ]
 CAT_ATTRIBUTES=list(set(CAT_ATTRIBUTES))
 

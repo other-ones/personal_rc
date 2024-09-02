@@ -1,6 +1,6 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/red_cartoon"
-export CUDA_VISIBLE_DEVICES=3;
+export CUDA_VISIBLE_DEVICES=0;
 accelerate launch --main_process_port 4230  ti_train.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \

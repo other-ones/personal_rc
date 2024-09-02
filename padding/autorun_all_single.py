@@ -122,7 +122,6 @@ while True:
     print('waiting..')
     time.sleep(delay)
 
-
 print('Start Training')
 for mlm_batch in mlm_batch_list:
     for rev in rev_list:

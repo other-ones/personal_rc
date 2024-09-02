@@ -13,18 +13,18 @@ info_map_03={
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -37,23 +37,25 @@ info_map_03={
 info_map_01={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'teapot':('teapot','teapot','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'pet_cat1':('cat','cat','pet','living'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
 
+
+    # UNUSED
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
@@ -68,13 +70,13 @@ elif 'ubuntu' in hostname:
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0.0001,
-            0.0002,
-            0.001,
             0,
+            0.001,
+            0.0001,
+            # 0.0002,
             # 0.005,
             # 0.01,
-            0.0005,
+            # 0.0005,
             # 0.0002,
             ]
 target_norms=[0]
@@ -101,13 +103,13 @@ delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
 mlm_batch_list=[25]
-rep_id=3
+rep_id=1
 benchmark='dreambooth'
 
 if include_prior:
-    dir_name='single_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_capv8_prior_seed{}_rep{}'.format(seed,rep_id)
 else:
-    dir_name='single_capv7_noprior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_capv8_noprior_seed{}_rep{}'.format(seed,rep_id)
 train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
@@ -196,7 +198,7 @@ for mlm_batch in mlm_batch_list:
                     if exclude_cap_types is not None:
                         command+='--exclude_cap_types={} \\\n'.format(exclude_cap_types)
                     command+='--normalize_target1=0 \\\n'
-                    command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
+                    command+='--caption_root="../datasets_pkgs/captions/v8" \\\n'
                     command+='--run_name="{}" \\\n'.format(run_name)
                     command+='--report_to="wandb" \\\n'
                     command+='--project_name="TI MLM SINGLE" \\\n'

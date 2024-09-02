@@ -311,6 +311,9 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
         prompt_embeds: Optional[torch.FloatTensor] = None,
         negative_prompt_embeds: Optional[torch.FloatTensor] = None,
         lora_scale: Optional[float] = None,
+            is_keyword_tokens1=None,
+            inj_embeddings1=None,
+
     ):
         r"""
         Encodes the prompt into text encoder hidden states.
@@ -383,6 +386,8 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
             prompt_embeds = self.text_encoder(
                 text_input_ids.to(device),
                 attention_mask=attention_mask,
+                is_keyword_tokens1=is_keyword_tokens1,
+                inj_embeddings1=inj_embeddings1,
             )
             prompt_embeds = prompt_embeds[0]
 
@@ -585,6 +590,8 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         guidance_rescale: float = 0.0,
         verbose=True,
+        inj_embeddings1=True,
+        is_keyword_tokens1=True,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -694,8 +701,10 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
             num_images_per_prompt,
             do_classifier_free_guidance,
             negative_prompt,
-            prompt_embeds=prompt_embeds,
-            negative_prompt_embeds=negative_prompt_embeds,
+            # prompt_embeds=prompt_embeds,
+            # negative_prompt_embeds=negative_prompt_embeds,
+            is_keyword_tokens1=is_keyword_tokens1,
+            inj_embeddings1=inj_embeddings1,
             lora_scale=text_encoder_lora_scale,
         )
         # pdb.set_trace() 

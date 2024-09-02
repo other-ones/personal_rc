@@ -288,6 +288,8 @@ def main(args):
     eval_prompts=[item.format(placeholder) for item in eval_prompts]
     eval_prompts=eval_prompts*args.num_images_per_prompt
     batch_size=args.eval_batch_size
+
+    
     num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
 
     # validation_files=os.listdir(args.train_data_dir1)

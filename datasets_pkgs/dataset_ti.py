@@ -140,8 +140,6 @@ class TextualInversionDataset(Dataset):
             random.seed(seed)
             torch.cuda.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)  # if use multi-GPU
-
-
             # if use_det_alg:
             #     torch.use_deterministic_algorithms(True)
             # else:
@@ -371,7 +369,7 @@ class TextualInversionDataset(Dataset):
                 input_ids_masked.append(self.tokenizer.pad_token_id)
             input_ids_masked=torch.LongTensor(input_ids_masked)
             example["input_ids_masked"]=input_ids_masked
-            
+
             # 5) mlm_labels
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
             if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token

@@ -5,20 +5,6 @@ import inspect
 from contextlib import nullcontext
 from configs import parse_args
 from utils import render_caption
-#!/usr/bin/env python
-# coding=utf-8
-# Copyright 2024 The HuggingFace Inc. team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 sys.path.insert(0, './packages')
@@ -79,51 +65,12 @@ torch.use_deterministic_algorithms(True)
 # check_min_version("0.29.0.dev0")
 
 logger = get_logger(__name__)
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    print(worker_seed,'worker_seed')
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 print(torch.cuda.is_available(),'avail')
-# logger = get_logger(__name__, log_level="DEBUG")
-
-# def save_model_card(
-#     repo_id: str,
-#     images: list = None,
-#     base_model: str = None,
-#     train_text_encoder=False,
-#     prompt: str = None,
-#     repo_folder: str = None,
-#     pipeline: DiffusionPipeline = None,
-# ):
-#     img_str = ""
-#     if images is not None:
-#         for i, image in enumerate(images):
-#             image.save(os.path.join(repo_folder, f"image_{i}.png"))
-#             img_str += f"![img_{i}](./image_{i}.png)\n"
-
-#     model_description = f"""
-# # DreamBooth - {repo_id}
-
-# This is a dreambooth model derived from {base_model}. The weights were trained on {prompt} using [DreamBooth](https://dreambooth.github.io/).
-# You can find some example images in the following. \n
-# {img_str}
-
-# DreamBooth for the text encoder was enabled: {train_text_encoder}.
-# """
-#     model_card = load_or_create_model_card(
-#         repo_id_or_path=repo_id,
-#         from_training=True,
-#         license="creativeml-openrail-m",
-#         base_model=base_model,
-#         prompt=prompt,
-#         model_description=model_description,
-#         inference=True,
-#     )
-
-#     tags = ["text-to-image", "dreambooth", "diffusers-training"]
-#     if isinstance(pipeline, StableDiffusionPipeline):
-#         tags.extend(["stable-diffusion", "stable-diffusion-diffusers"])
-#     else:
-#         tags.extend(["if", "if-diffusers"])
-#     model_card = populate_model_card(model_card, tags=tags)
-
-#     model_card.save(os.path.join(repo_folder, "README.md"))
 
 
 def log_validation(
@@ -135,8 +82,9 @@ def log_validation(
     accelerator,
     weight_dtype,
     global_step,
-    prompt_embeds,
-    negative_prompt_embeds,
+    target_emb,
+    generator,
+    pipeline,
 ):
     
     if args.include_prior_concept:
@@ -170,59 +118,26 @@ def log_validation(
         assert False, 'undefined eval prompt type'
 
     
-    
-    # if args.prompt_type=='pet':
-    #     validation_prompts=[
-    #         # "a picture of {} swimming in a pool".format(placeholder),
-    #         "a picture of {} with the Great Wall of China in the background".format(placeholder),
-    #         "a picture of {} in times square".format(placeholder),
-    #         # "{} on a boat in the sea".format(placeholder),
-    #         # "{} in a purple wizard outfit".format(placeholder),
-    #         "{} playing with a ball".format(placeholder),
-    #         # "{} wearing sunglasses".format(placeholder),
-    #         ]
-    # # vase
-    
-    # elif args.prompt_type in ['nonliving']:
-    #     validation_prompts = [
-    #         # 'a {0} in the jungle'.format(placeholder),
-    #         # 'a {0} in the snow'.format(placeholder),
-    #         'a {0} with a blue house in the background'.format(placeholder),
-    #         'a {0} with the Eiffel Tower in the background'.format(placeholder),
-    #         # 'a purple {0}'.format(placeholder),
-    #         # 'a wet {0}'.format(placeholder),
-    #         'a cube shaped {0}'.format(placeholder)
-    #         ]
-    # elif args.prompt_type in ['building']:
-    #     validation_prompts = [
-    #         # '{} in snowy ice.'.format(placeholder),
-    #         '{} at a beach with a view of the seashore.'.format(placeholder),
-    #         # 'Photo of the {} with the sun rising in the sky.'.format(placeholder),
-    #         # 'cat sitting in front of {} in snowy ice.'.format(placeholder),
-    #         # '{} digital painting 3d render geometric style.'.format(placeholder),
-    #         'painting of {} in the style of van gogh.'.format(placeholder),
-    #         'Top view of the {}. '.format(placeholder)
-    #         ]
-    # elif args.prompt_type in ['sunglasses']:
-    #     validation_prompts=[
-    #         # 'photo of a {}'.format(placeholder),
-    #         # 'close shot of {} on the sandy beach with a view of the seashore'.format(placeholder),
-    #         'A scientist wearing {} examines a test tube'.format(placeholder),
-    #         # 'A dog wearing {} on the porch'.format(placeholder),
-    #         'A giraffe wearing {}'.format(placeholder),
-    #         # '{} painted in the style of andy warhol'.format(placeholder),
-    #         # 'digital painting of a turtle wearing {}'.format(placeholder),
-    #         '{} digital 3d render'.format(placeholder),
-    #     ]
-    # elif args.prompt_type in ['flower']:
-    #     validation_prompts=[
-    #         "{} growing in the desert".format(placeholder),
-    #         "a bouquet of {}".format(placeholder),
-    #         "Dried up {}".format(placeholder),
-    #     ]
-    # else:
-    #     assert False
-
+    is_keyword_tokens_list1=[]
+    for prompt in validation_prompts:
+        is_keyword_tokens1=[False]
+        text_words=prompt.split()
+        for word_idx in range(len(text_words)):
+            cap_word=text_words[word_idx]
+            word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
+            num_tokens=len(word_token_ids)
+            for tok_id in word_token_ids:
+                tok_decoded=tokenizer.decode(tok_id)
+                if args.placeholder_token1 == tok_decoded:
+                    is_keyword_tokens1.append(True)
+                else:
+                    is_keyword_tokens1.append(False)
+        for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
+            is_keyword_tokens1.append(False)
+        assert len(is_keyword_tokens1)==tokenizer.model_max_length
+        is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
+        is_keyword_tokens_list1.append(is_keyword_tokens1)
+    is_keyword_tokens_list1=torch.stack(is_keyword_tokens_list1)
 
 
     logger.info(
@@ -230,25 +145,23 @@ def log_validation(
         '\t'.join(validation_prompts)
     )
 
-    pipeline_args = {}
-
-    if vae is not None:
-        pipeline_args["vae"] = vae
-
+    # pipeline_args = {}
+    # if vae is not None:
+    #     pipeline_args["vae"] = vae
     # create pipeline (note: unet and vae are loaded again in float32)
-    pipeline = DiffusionPipeline.from_pretrained(
-        args.pretrained_model_name_or_path,
-        tokenizer=tokenizer,
-        text_encoder=text_encoder,
-        unet=unet,
-        revision=args.revision,
-        variant=args.variant,
-        feature_extractor=None,
-        safety_checker=None,
-        requires_safety_checker=False,
-        torch_dtype=weight_dtype,
-        **pipeline_args,
-    )
+    # pipeline = DiffusionPipeline.from_pretrained(
+    #     args.pretrained_model_name_or_path,
+    #     tokenizer=tokenizer,
+    #     text_encoder=text_encoder,
+    #     unet=unet,
+    #     revision=args.revision,
+    #     variant=args.variant,
+    #     feature_extractor=None,
+    #     safety_checker=None,
+    #     requires_safety_checker=False,
+    #     torch_dtype=weight_dtype,
+    #     **pipeline_args,
+    # )
     # noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
     # accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
     #     inspect.signature(
@@ -273,32 +186,25 @@ def log_validation(
     #     )
 
     # We train on the simplified learning objective. If we were previously predicting a variance, we need the scheduler to ignore it
-    scheduler_args = {}
-
-    if "variance_type" in pipeline.scheduler.config:
-        variance_type = pipeline.scheduler.config.variance_type
-
-        if variance_type in ["learned", "learned_range"]:
-            variance_type = "fixed_small"
-
-        scheduler_args["variance_type"] = variance_type
-
-    module = importlib.import_module("diffusers")
-    scheduler_class = getattr(module, args.validation_scheduler)
-    pipeline.scheduler = scheduler_class.from_config(pipeline.scheduler.config, **scheduler_args)
-    pipeline = pipeline.to(accelerator.device)
-    pipeline.set_progress_bar_config(disable=True)
-
-    if args.pre_compute_text_embeddings:
-        pipeline_args = {
-            "prompt_embeds": prompt_embeds,
-            "negative_prompt_embeds": negative_prompt_embeds,
-        }
-    else:
-        pipeline_args = {"prompt": args.validation_prompt}
-
+    # scheduler_args = {}
+    # if "variance_type" in pipeline.scheduler.config:
+    #     variance_type = pipeline.scheduler.config.variance_type
+    #     if variance_type in ["learned", "learned_range"]:
+    #         variance_type = "fixed_small"
+    #     scheduler_args["variance_type"] = variance_type
+    # module = importlib.import_module("diffusers")
+    # scheduler_class = getattr(module, args.validation_scheduler)
+    # pipeline.scheduler = scheduler_class.from_config(pipeline.scheduler.config, **scheduler_args)
+    # pipeline = pipeline.to(accelerator.device)
+    # pipeline.set_progress_bar_config(disable=True)
+    # pipeline_args = {"prompt": args.validation_prompt}
+    
+    
+    
+    
+    
     # run inference
-    generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
+    # generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
     images = []
     # if args.validation_images is None:
     #     with torch.autocast("cuda"):
@@ -317,10 +223,13 @@ def log_validation(
         autocast_ctx = torch.autocast(accelerator.device.type)
     with autocast_ctx:
         with torch.no_grad():
-            torch.cuda.empty_cache()
-            images = pipeline(validation_prompts, 
+            images = pipeline(
+                        validation_prompts, 
                             num_inference_steps=25, 
                             generator=generator,
+                            verbose=True,
+                            inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
+                            is_keyword_tokens1=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     for tracker in accelerator.trackers:
@@ -512,8 +421,8 @@ def main(args):
             " Please use `huggingface-cli login` to authenticate with the Hub."
         )
 
-    logging_dir = Path(args.output_dir, args.logging_dir)
-    accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
+    # logging_dir = Path(args.output_dir, args.logging_dir)
+    accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=None)
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
@@ -571,54 +480,7 @@ def main(args):
         random.seed(args.seed)
 
 
-    # Generate class images if prior preservation is enabled.
-    if args.with_prior_preservation:
-        class_images_dir = Path(args.class_data_dir1)
-        if not class_images_dir.exists():
-            class_images_dir.mkdir(parents=True)
-        cur_class_images = len(list(class_images_dir.iterdir()))
-
-        if cur_class_images < args.num_class_images:
-            torch_dtype = torch.float16 if accelerator.device.type == "cuda" else torch.float32
-            if args.prior_generation_precision == "fp32":
-                torch_dtype = torch.float32
-            elif args.prior_generation_precision == "fp16":
-                torch_dtype = torch.float16
-            elif args.prior_generation_precision == "bf16":
-                torch_dtype = torch.bfloat16
-            pipeline = DiffusionPipeline.from_pretrained(
-                args.pretrained_model_name_or_path,
-                torch_dtype=torch_dtype,
-                safety_checker=None,
-                revision=args.revision,
-                variant=args.variant,
-                feature_extractor=None,
-                requires_safety_checker=False,
-            )
-            pipeline.set_progress_bar_config(disable=True)
-
-            num_new_images = args.num_class_images - cur_class_images
-            logger.info(f"Number of class images to sample: {num_new_images}.")
-
-            sample_dataset = PromptDataset(args.class_prompt1, num_new_images)
-            sample_dataloader = torch.utils.data.DataLoader(sample_dataset, batch_size=args.sample_batch_size)
-
-            sample_dataloader = accelerator.prepare(sample_dataloader)
-            pipeline.to(accelerator.device)
-
-            for example in tqdm(
-                sample_dataloader, desc="Generating class images", disable=not accelerator.is_local_main_process
-            ):
-                images = pipeline(example["prompt"]).images
-
-                for i, image in enumerate(images):
-                    hash_image = insecure_hashlib.sha1(image.tobytes()).hexdigest()
-                    image_filename = class_images_dir / f"{example['index'][i] + cur_class_images}-{hash_image}.jpg"
-                    image.save(image_filename)
-
-            del pipeline
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+    
 
     # Handle the repository creation
     if accelerator.is_main_process:
@@ -713,24 +575,28 @@ def main(args):
     # mask_embeds=token_embeds[mask_token_ids]
     if args.lambda_mlm and args.mask_embed_path is not None:
         mask_embeds=torch.load(args.mask_embed_path)[args.mask_tokens].to(accelerator.device)
+        mask_embeds_initial=mask_embeds.clone().detach()
         with torch.no_grad():
             for token_id in mask_token_ids:
                 token_embeds[token_id] = mask_embeds
-
-    if args.initialize_token:
-        initializer_token_ids = tokenizer.encode(args.train_prior_concept1, add_special_tokens=False)
-        initializer_token_id = initializer_token_ids[0]
-        prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
-        for token_id in placeholder_token_id1:
-            token_embeds[token_id] = token_embeds[initializer_token_id].clone()
-    # Add learned concept
-    if args.learned_embed_path1:
-        learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
-        print('load ti embeddings')
-        learned_embed1=learned_embed1[args.placeholder_token1]
+    
+    if args.initializer_token and args.resume_unet_path is None:
+        initializer_token_ids = tokenizer.encode(args.initializer_token, add_special_tokens=False)
+        initial_embed=token_embeds[initializer_token_ids].clone().to(accelerator.device)
         with torch.no_grad():
-            token_embeds[placeholder_token_id1] = learned_embed1.clone()
-        del learned_embed1
+            for token_id in placeholder_token_id1:
+                token_embeds[token_id] = initial_embed.clone()
+        print(args.initializer_token,'initializer_token')
+        print(initial_embed.shape,'initial_embed.shape')
+    # Add learned concept
+    # if args.learned_embed_path1:
+    #     learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
+    #     print('load ti embeddings')
+    #     learned_embed1=learned_embed1[args.placeholder_token1]
+    #     # initial_embed=learned_embed1.clone().detach()
+    #     with torch.no_grad():
+    #         token_embeds[placeholder_token_id1] = learned_embed1.clone()
+    #     del learned_embed1
     if args.lambda_mlm:
         if 'contextnetv5' in args.cls_net_path:
             from contextnet_v3 import ContextNetV3
@@ -798,7 +664,15 @@ def main(args):
         vae.requires_grad_(False)
 
     if not args.train_text_encoder:
-        text_encoder.requires_grad_(False)
+        # assert args.learned_embed_path1,args.learned_embed_path1
+        # text_encoder.requires_grad_(False)
+        text_encoder.text_model.encoder.requires_grad_(False)
+        text_encoder.text_model.final_layer_norm.requires_grad_(False)
+        text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    for key, val in text_encoder.named_parameters():
+        print(val.requires_grad,key,'text_encoder requires_grad')
+        if 'token_embedding' in key:
+            assert val.requires_grad
 
     if args.enable_xformers_memory_efficient_attention:
         if is_xformers_available():
@@ -818,6 +692,7 @@ def main(args):
         unet.enable_gradient_checkpointing()
         if args.train_text_encoder:
             text_encoder.gradient_checkpointing_enable()
+        
 
     # Check that all trainable models are in full precision
     low_precision_error_string = (
@@ -857,14 +732,22 @@ def main(args):
         optimizer_class = torch.optim.AdamW
 
     # Optimizer creation
-    if args.train_text_encoder:
+    if args.resume_unet_path is not None:
         params_to_optimize = [
-            {"params": text_encoder.parameters(), "lr": args.learning_rate},
-            ]
+                {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
+                ]
     else:
-        params_to_optimize = [
-            {"params": unet.parameters(), "lr": args.learning_rate},
-            ]
+        if args.train_text_encoder:
+            params_to_optimize = [
+                {"params": text_encoder.parameters(), "lr": args.learning_rate},
+                {"params": unet.parameters(), "lr": args.learning_rate},
+                # {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
+                ]
+        else:
+            params_to_optimize = [
+                {"params": unet.parameters(), "lr": args.learning_rate},
+                {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
+                ]
     optimizer = optimizer_class(
         params_to_optimize,
         lr=args.learning_rate,
@@ -872,45 +755,8 @@ def main(args):
         weight_decay=args.adam_weight_decay,
         eps=args.adam_epsilon,
     )
-    for key, val in text_encoder.named_parameters():
-        if val.requires_grad:
-            print(key,'text_encoder')
-    if args.pre_compute_text_embeddings:
-        def compute_text_embeddings(prompt):
-            with torch.no_grad():
-                text_inputs = tokenize_prompt(tokenizer, prompt, tokenizer_max_length=args.tokenizer_max_length)
-                prompt_embeds = encode_prompt(
-                    text_encoder,
-                    text_inputs.input_ids,
-                    text_inputs.attention_mask,
-                    text_encoder_use_attention_mask=args.text_encoder_use_attention_mask,
-                )
-
-            return prompt_embeds
-
-        pre_computed_encoder_hidden_states = compute_text_embeddings(args.instance_prompt)
-        validation_prompt_negative_prompt_embeds = compute_text_embeddings("")
-
-        if args.validation_prompt is not None:
-            validation_prompt_encoder_hidden_states = compute_text_embeddings(args.validation_prompt)
-        else:
-            validation_prompt_encoder_hidden_states = None
-
-        if args.class_prompt1 is not None:
-            pre_computed_class_prompt_encoder_hidden_states = compute_text_embeddings(args.class_prompt1)
-        else:
-            pre_computed_class_prompt_encoder_hidden_states = None
-
-        text_encoder = None
-        tokenizer = None
-
-        gc.collect()
-        torch.cuda.empty_cache()
-    else:
-        pre_computed_encoder_hidden_states = None
-        validation_prompt_encoder_hidden_states = None
-        validation_prompt_negative_prompt_embeds = None
-        pre_computed_class_prompt_encoder_hidden_states = None
+    
+    
 
     
     print(mask_token_ids,'mask_token_ids')
@@ -953,16 +799,20 @@ def main(args):
         mlm_target=args.mlm_target,
         get_images=False,
         prompt_type=args.train_prompt_type,
+        mask_prob=args.mask_prob,
         simple_caption=args.simple_caption,
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
         caption_root=args.caption_root,
     )
-
+    generator = torch.Generator(device='cpu').manual_seed(args.seed)
+    generator_cuda = torch.Generator(device=accelerator.device).manual_seed(args.seed)
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.train_batch_size, 
         shuffle=True, num_workers=args.dataloader_num_workers,
         collate_fn=lambda examples: collate_fn(examples, args.with_prior_preservation),
+        generator=generator,
+        worker_init_fn=seed_worker,
     )
     # HERE
     mlm_loader = torch.utils.data.DataLoader(
@@ -970,7 +820,9 @@ def main(args):
             batch_size=args.mlm_batch_size,
             shuffle=True,
             collate_fn=lambda examples: collate_fn(examples, args.with_prior_preservation),
-            num_workers=4,
+            num_workers=args.dataloader_num_workers,
+            generator=generator,
+            worker_init_fn=seed_worker,
         )
     mlm_loader = cycle(mlm_loader)
     def load_mlm_batch(mlm_loader):
@@ -1001,8 +853,8 @@ def main(args):
                 unet, text_encoder, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader
             )
         else:
-            unet, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader = accelerator.prepare(
-                unet, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader
+            unet, optimizer, text_encoder,train_dataloader, lr_scheduler,cls_net,mlm_loader = accelerator.prepare(
+                unet, optimizer, text_encoder,train_dataloader, lr_scheduler,cls_net,mlm_loader
             )
     else:
         if args.train_text_encoder:
@@ -1010,8 +862,8 @@ def main(args):
                 unet, text_encoder, optimizer, train_dataloader, lr_scheduler
             )
         else:
-            unet, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
-                unet, optimizer, train_dataloader, lr_scheduler
+            unet, text_encoder, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
+                unet, text_encoder, optimizer, train_dataloader, lr_scheduler
             )
     # ADDED
     if args.lambda_mlm and args.cls_net_path is not None:
@@ -1031,6 +883,23 @@ def main(args):
             new_state_dict[new_key]=saved_state_dict[saved_key]
         cls_net.load_state_dict(new_state_dict,strict=True)
     # ADDED
+    if args.resume_unet_path and args.resume_unet_path!='None':
+        state_dict = torch.load(args.resume_unet_path, map_location=torch.device('cpu'))
+        # if not isinstance(state_dict,OrderedDict):
+        #     state_dict=state_dict()
+        unet.load_state_dict(state_dict,strict=True)
+        print('unet parameters loaded')
+        del state_dict
+    if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
+        state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
+        # if not isinstance(state_dict,OrderedDict):
+        #     state_dict=state_dict()
+        text_encoder.load_state_dict(state_dict,strict=True)
+        initial_embed=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone().detach()
+        print('text_encoder parameters loaded')
+        del state_dict
+
+
 
     # For mixed precision training we cast all non-trainable weights (vae, non-lora text_encoder and non-lora unet) to half-precision
     # as these weights are only used for inference, keeping weights in full precision is not required.
@@ -1044,8 +913,8 @@ def main(args):
     if vae is not None:
         vae.to(accelerator.device, dtype=weight_dtype)
 
-    if not args.train_text_encoder and text_encoder is not None:
-        text_encoder.to(accelerator.device, dtype=weight_dtype)
+    # if not args.train_text_encoder and text_encoder is not None:
+    #     text_encoder.to(accelerator.device, dtype=weight_dtype)
 
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
     num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
@@ -1074,6 +943,31 @@ def main(args):
     logger.info(f"  Total optimization steps = {args.max_train_steps}")
     global_step = 0
     first_epoch = 0
+    accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
+                            inspect.signature(
+                                accelerator.unwrap_model
+                            ).parameters.keys()
+                        )
+    extra_args = (
+        {"keep_fp32_wrapper": True}
+        if accepts_keep_fp32_wrapper
+        else {}
+    )
+    print(accepts_keep_fp32_wrapper,'accepts_keep_fp32_wrapper')
+    print(extra_args,'extra_args')
+    pipeline = StableDiffusionPipeline(
+            vae=accelerator.unwrap_model(vae, **extra_args),
+            unet=accelerator.unwrap_model(unet, **extra_args),
+            text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
+            tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
+            scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
+            feature_extractor=None,
+            safety_checker=None,
+            requires_safety_checker=False,
+        )
+    # pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
+    pipeline = pipeline.to(accelerator.device)
+    pipeline.set_progress_bar_config(disable=False)
 
     # Potentially load in the weights and states from a previous save
     if args.resume_from_checkpoint:
@@ -1110,6 +1004,7 @@ def main(args):
         disable=not accelerator.is_local_main_process,
     )
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
+    cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
         if args.train_text_encoder:
@@ -1122,11 +1017,9 @@ def main(args):
                 is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 raw_captions_ti=batch["raw_captions_ti"]
-
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
                 
                 # Load Batch
-
                 model_input = vae.encode(pixel_values.to(dtype=weight_dtype)).latent_dist.sample()
                 model_input = model_input * vae.config.scaling_factor
                 noise = torch.randn_like(model_input)
@@ -1136,15 +1029,19 @@ def main(args):
                 )
                 timesteps = timesteps.long()
                 noisy_model_input = noise_scheduler.add_noise(model_input, noise, timesteps)
-                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                num_keywords=torch.sum(is_keyword_tokens.detach())
+                # learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                num_keywords=torch.sum(is_keyword_tokens.clone())
+                if args.with_prior_preservation:
+                    assert num_keywords==(bsz//2) #//2 for prior preservation
+                else:
+                    assert num_keywords==bsz #//2 for prior preservation
                 encoder_hidden_states = text_encoder(
                                                     input_ids,
-                                                    is_keyword_tokens1=is_keyword_tokens,
-                                                    inj_embeddings1=learned_embeds.repeat(num_keywords,1),
+                                                    # is_keyword_tokens1=is_keyword_tokens,
+                                                    # inj_embeddings1=learned_embeds.repeat(num_keywords,1),
                                                      )[0].to(dtype=weight_dtype)
-                if unwrap_model(unet).config.in_channels == channels * 2:
-                    noisy_model_input = torch.cat([noisy_model_input, noisy_model_input], dim=1)
+                # if unwrap_model(unet).config.in_channels == channels * 2:
+                #     noisy_model_input = torch.cat([noisy_model_input, noisy_model_input], dim=1)
                 if args.class_labels_conditioning == "timesteps":
                     class_labels = timesteps
                 else:
@@ -1199,13 +1096,13 @@ def main(args):
                     input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                     raw_captions_mlm=batch_mlm["raw_captions_mlm"]
                     # for MLM
-                    num_masked=torch.sum(masked_idxs.detach())
+                    num_masked=torch.sum(masked_idxs.clone())
                     mlm_bsz=len(masked_idxs)
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                                            mask_embedding=mask_embeds.repeat(num_masked,1),
-                                                            mask_idxs=masked_idxs,
-                                                            is_keyword_tokens1=is_keyword_tokens_mlm,
-                                                            inj_embeddings1=learned_embeds.repeat(mlm_bsz,1),
+                                                            # mask_embedding=mask_embeds.repeat(num_masked,1),
+                                                            # mask_idxs=masked_idxs,
+                                                            # is_keyword_tokens1=is_keyword_tokens_mlm,
+                                                            # inj_embeddings1=learned_embeds.repeat(mlm_bsz,1),
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
                     masked_idxs_flat=masked_idxs.view(-1)
@@ -1228,6 +1125,9 @@ def main(args):
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad(set_to_none=args.set_grads_to_none)
+                # del learned_embeds
+
+
                 if args.train_text_encoder: 
                     # # update everything
                     # index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
@@ -1254,17 +1154,18 @@ def main(args):
                             index_no_updates] = orig_embeds_params[index_no_updates]
                     
 
-                if args.freeze_mask_embedding:
+                if args.lambda_mlm and args.freeze_mask_embedding:
                     with torch.no_grad():
                         accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
                             mask_token_ids
                         ] = orig_embeds_params[mask_token_ids]
+                        assert len(orig_embeds_params[mask_token_ids])==1
+
+
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
-                
-
                 if accelerator.is_main_process:
-                    if global_step % args.checkpointing_steps == 0:
+                    if global_step % args.checkpointing_steps == 0 and not args.debug:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit is not None:
                             checkpoints = os.listdir(ckpt_dir)
@@ -1294,10 +1195,11 @@ def main(args):
                             torch.save(text_encoder.state_dict(),save_path_text_encoder)
                         else:
                             learned_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                            learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.detach().cpu()}
+                            learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.cpu()}
                             weight_name = "learned_embeds_s{:04d}.pt".format(global_step)
                             save_path = os.path.join(save_dir, weight_name)
                             torch.save(learned_embeds_dict, save_path)
+                            del learned_embeds_saved
                         logger.info(f"Saved state to {save_dir}")
 
                     images = []
@@ -1318,18 +1220,22 @@ def main(args):
                         caption_log_file.flush()
                         caption_log_file.close()
                     if global_step % args.validation_steps == 0:
-                        images,validation_prompts = log_validation(
-                            unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
-                            tokenizer,
-                            unwrap_model(unet),
-                            vae,
-                            args,
-                            accelerator,
-                            weight_dtype,
-                            global_step,
-                            validation_prompt_encoder_hidden_states,
-                            validation_prompt_negative_prompt_embeds,
-                        )
+                        with torch.no_grad():
+                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                            images,validation_prompts = log_validation(
+                                unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
+                                tokenizer,
+                                unwrap_model(unet),
+                                vae,
+                                args,
+                                accelerator,
+                                weight_dtype,
+                                global_step,
+                                learned_embeds_val.clone(),
+                                generator=generator_cuda,
+                                pipeline=pipeline
+                            )
+                            del learned_embeds_val
                         validation_files=sorted(os.listdir(args.train_data_dir1))
                         validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
                         num_images=len(images)
@@ -1350,6 +1256,8 @@ def main(args):
                             merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
                             merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
                         merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
+                        torch.cuda.empty_cache()
+
                         # visualize input
                         input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
                         input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
@@ -1410,12 +1318,17 @@ def main(args):
             with torch.no_grad():
                 target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
                 norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
+                logs['sim_target']=cos_sim(target_embeds_log,initial_embed.detach()).item()
+                logs['same_target']=bool(torch.all(target_embeds_log==initial_embed).item())
                 del target_embeds_log
             if loss_mlm is not None:
                 mask_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
                 logs['loss_mlm']=loss_mlm.detach().item()
                 norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
                 logs['norm_mask']=norm_mask.item()
+                logs['sim_mask']=cos_sim(mask_embeds_log,mask_embeds_initial.detach()).item()
+                logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
+                del mask_embeds_log
             logs['norm_target']=norm_target.item()
             progress_bar.set_postfix(**logs)
             accelerator.log(logs, step=global_step)

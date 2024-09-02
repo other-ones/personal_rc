@@ -151,12 +151,12 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,genera
     else:
         autocast_ctx = torch.autocast(accelerator.device.type)
     with autocast_ctx:
-        images = pipeline(validation_prompts, num_inference_steps=25, generator=generator,
+        images = pipeline(validation_prompts, 
+                          num_inference_steps=25, 
+                          generator=generator,
                           silent=args.silent,
                           inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
                           is_keyword_tokens1=is_keyword_tokens_list1,
-                        #   add_pe=args.add_pe,
-                        #   width=512, height=512, 
                           ).images
     print('Generated')
 
@@ -383,6 +383,9 @@ def main():
         # {"params": learned_embeds, "lr": args.learning_rate},
         # {"params": cls_net.parameters(), "lr": args.learning_rate},
     ]
+    for key, val in text_encoder.named_parameters():
+        if val.requires_grad:
+            print(key,'text_encoder requires')
     # Initialize the optimizer
     optimizer = torch.optim.AdamW(
         params_to_optimize,  # only optimize the embeddings
@@ -694,7 +697,6 @@ def main():
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
                 is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
                 raw_captions_ti=batch["raw_captions_ti"] # B,77 list of booleans (tensor)
-                
                 # 1. Load Batch
                 
                 # 2. Reconstruction Loss

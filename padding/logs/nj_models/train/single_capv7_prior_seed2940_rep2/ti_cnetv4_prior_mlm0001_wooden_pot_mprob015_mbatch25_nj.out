@@ -1,0 +1,141 @@
+INFO:albumentations.check_version:A new version of Albumentations is available: 1.4.14 (you have 1.4.11). Upgrade using: pip install --upgrade albumentations
+WARNING:xformers:WARNING[XFORMERS]: xFormers can't load C++/CUDA extensions. xFormers was built for:
+    PyTorch 2.1.1+cu121 with CUDA 1201 (you have 2.1.1+cu118)
+    Python  3.9.18 (you have 3.9.19)
+  Please reinstall xformers (see https://github.com/facebookresearch/xformers#installing-xformers)
+  Memory-efficient attention, SwiGLU, sparse and more won't be available.
+  Set XFORMERS_MORE_DETAILS=1 for more details
+INFO:__main__:Distributed environment: NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cuda
+
+Mixed precision type: no
+
+/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+{'clip_sample_range', 'sample_max_value', 'thresholding', 'dynamic_thresholding_ratio', 'timestep_spacing', 'variance_type', 'prediction_type'} was not found in config. Values will be initialized to default values.
+{'scaling_factor'} was not found in config. Values will be initialized to default values.
+{'resnet_out_scale_factor', 'transformer_layers_per_block', 'time_cond_proj_dim', 'num_attention_heads', 'class_embed_type', 'addition_time_embed_dim', 'resnet_skip_time_act', 'conv_in_kernel', 'addition_embed_type_num_heads', 'mid_block_type', 'dual_cross_attention', 'resnet_time_scale_shift', 'num_class_embeds', 'conv_out_kernel', 'class_embeddings_concat', 'upcast_attention', 'mid_block_only_cross_attention', 'only_cross_attention', 'use_linear_projection', 'addition_embed_type', 'encoder_hid_dim', 'cross_attention_norm', 'time_embedding_act_fn', 'encoder_hid_dim_type', 'time_embedding_type', 'time_embedding_dim', 'projection_class_embeddings_input_dim', 'timestep_post_act'} was not found in config. Values will be initialized to default values.
+set seed 2940
+saved_models/nj_models/single_capv7_prior_seed2940_rep2/wooden_pot/ti_cnetv4_prior_mlm0001_wooden_pot_mprob015_mbatch25_nj/src/command.txt command_path
+nj_train.py item
+--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 item
+--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/wooden_pot item
+--learnable_property=object item
+--placeholder_token1=<wooden_pot> item
+--train_prior_concept1=pot item
+--eval_prior_concept1=wooden pot item
+--resolution=512 item
+--train_batch_size=1 item
+--gradient_accumulation_steps=4 item
+--learning_rate=5e-4 item
+--lr_scheduler=constant item
+--normalize_mask_embeds=0 item
+--lr_warmup_steps=0 item
+--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/wooden_pot item
+--seed=2940 item
+--mask_tokens=[MASK] item
+--lambda_mlm=0.001 item
+--freeze_mask_embedding=1 item
+--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt item
+--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt item
+--mask_prob=0.15 item
+--mlm_target=masked item
+--mlm_batch_size=25 item
+--scale_lr item
+--eval_prompt_type=nonliving item
+--train_prompt_type=nonliving item
+--silent=0 item
+--rev=0 item
+--normalize_target1=0 item
+--caption_root=../datasets_pkgs/captions/v7 item
+--run_name=ti_cnetv4_prior_mlm0001_wooden_pot_mprob015_mbatch25_nj item
+--include_prior_concept=1 item
+32 norm_num_groups
+320 block_out_channels[0]
+32 norm_num_groups
+[49409] mask_token_ids
+seeded
+captions_nonliving_relations	29376
+captions_nonliving_styles	378
+captions_nonliving_human_interactions	4176
+captions_nonliving_backgrounds	552
+captions_nonliving_creatives	117
+seeded
+captions_nonliving_relations	29376
+captions_nonliving_styles	378
+captions_nonliving_human_interactions	4176
+captions_nonliving_backgrounds	552
+captions_nonliving_creatives	117
+position_ids defined_key-clsnet
+final.weight defined_key-clsnet
+final.bias defined_key-clsnet
+position_embedding.weight defined_key-clsnet
+multi_head_attention1.in_proj_weight defined_key-clsnet
+multi_head_attention1.in_proj_bias defined_key-clsnet
+multi_head_attention1.out_proj.weight defined_key-clsnet
+multi_head_attention1.out_proj.bias defined_key-clsnet
+feed_forward1.W_ff1.weight defined_key-clsnet
+feed_forward1.W_ff1.bias defined_key-clsnet
+feed_forward1.W_ff2.weight defined_key-clsnet
+feed_forward1.W_ff2.bias defined_key-clsnet
+layer_norm1.weight defined_key-clsnet
+layer_norm1.bias defined_key-clsnet
+multi_head_attention2.in_proj_weight defined_key-clsnet
+multi_head_attention2.in_proj_bias defined_key-clsnet
+multi_head_attention2.out_proj.weight defined_key-clsnet
+multi_head_attention2.out_proj.bias defined_key-clsnet
+layer_norm2.weight defined_key-clsnet
+layer_norm2.bias defined_key-clsnet
+
+module.position_ids saved_key-clsnet
+module.final.weight saved_key-clsnet
+module.final.bias saved_key-clsnet
+module.position_embedding.weight saved_key-clsnet
+module.multi_head_attention1.in_proj_weight saved_key-clsnet
+module.multi_head_attention1.in_proj_bias saved_key-clsnet
+module.multi_head_attention1.out_proj.weight saved_key-clsnet
+module.multi_head_attention1.out_proj.bias saved_key-clsnet
+module.feed_forward1.W_ff1.weight saved_key-clsnet
+module.feed_forward1.W_ff1.bias saved_key-clsnet
+module.feed_forward1.W_ff2.weight saved_key-clsnet
+module.feed_forward1.W_ff2.bias saved_key-clsnet
+module.layer_norm1.weight saved_key-clsnet
+module.layer_norm1.bias saved_key-clsnet
+module.multi_head_attention2.in_proj_weight saved_key-clsnet
+module.multi_head_attention2.in_proj_bias saved_key-clsnet
+module.multi_head_attention2.out_proj.weight saved_key-clsnet
+module.multi_head_attention2.out_proj.bias saved_key-clsnet
+module.layer_norm2.weight saved_key-clsnet
+module.layer_norm2.bias saved_key-clsnet
+Traceback (most recent call last):
+  File "/home/twkim/project/rich_context/padding/nj_train.py", line 984, in <module>
+    main()
+  File "/home/twkim/project/rich_context/padding/nj_train.py", line 609, in main
+    unet.to(accelerator.device, dtype=weight_dtype)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1160, in to
+    return self._apply(convert)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 810, in _apply
+    module._apply(fn)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 810, in _apply
+    module._apply(fn)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 810, in _apply
+    module._apply(fn)
+  [Previous line repeated 2 more times]
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 833, in _apply
+    param_applied = fn(param)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1158, in convert
+    return t.to(device, dtype if t.is_floating_point() or t.is_complex() else None, non_blocking)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 58.00 MiB. GPU 0 has a total capacty of 23.69 GiB of which 36.75 MiB is free. Process 3449774 has 20.18 GiB memory in use. Including non-PyTorch memory, this process has 3.47 GiB memory in use. Of the allocated memory 3.10 GiB is allocated by PyTorch, and 80.39 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+Traceback (most recent call last):
+  File "/home/twkim/anaconda3/envs/context/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 47, in main
+    args.func(args)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 1023, in launch_command
+    simple_launcher(args)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 643, in simple_launcher
+    raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmd)
+subprocess.CalledProcessError: Command '['/home/twkim/anaconda3/envs/context/bin/python', 'nj_train.py', '--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5', '--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/wooden_pot', '--learnable_property=object', '--placeholder_token1=<wooden_pot>', '--train_prior_concept1=pot', '--eval_prior_concept1=wooden pot', '--resolution=512', '--train_batch_size=1', '--gradient_accumulation_steps=4', '--learning_rate=5e-4', '--lr_scheduler=constant', '--normalize_mask_embeds=0', '--lr_warmup_steps=0', '--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/wooden_pot', '--seed=2940', '--mask_tokens=[MASK]', '--lambda_mlm=0.001', '--freeze_mask_embedding=1', '--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt', '--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt', '--mask_prob=0.15', '--mlm_target=masked', '--mlm_batch_size=25', '--scale_lr', '--eval_prompt_type=nonliving', '--train_prompt_type=nonliving', '--silent=0', '--rev=0', '--normalize_target1=0', '--caption_root=../datasets_pkgs/captions/v7', '--run_name=ti_cnetv4_prior_mlm0001_wooden_pot_mprob015_mbatch25_nj', '--include_prior_concept=1']' returned non-zero exit status 1.

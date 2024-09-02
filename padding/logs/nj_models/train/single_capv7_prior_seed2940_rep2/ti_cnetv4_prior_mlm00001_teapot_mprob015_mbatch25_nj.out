@@ -15,9 +15,9 @@ Mixed precision type: no
 
 /home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
   warnings.warn(
-{'sample_max_value', 'variance_type', 'prediction_type', 'clip_sample_range', 'thresholding', 'timestep_spacing', 'dynamic_thresholding_ratio'} was not found in config. Values will be initialized to default values.
+{'timestep_spacing', 'sample_max_value', 'prediction_type', 'dynamic_thresholding_ratio', 'variance_type', 'clip_sample_range', 'thresholding'} was not found in config. Values will be initialized to default values.
 {'scaling_factor'} was not found in config. Values will be initialized to default values.
-{'class_embed_type', 'dual_cross_attention', 'num_class_embeds', 'resnet_time_scale_shift', 'resnet_out_scale_factor', 'mid_block_type', 'only_cross_attention', 'addition_embed_type', 'time_cond_proj_dim', 'conv_out_kernel', 'num_attention_heads', 'time_embedding_act_fn', 'addition_embed_type_num_heads', 'time_embedding_type', 'cross_attention_norm', 'class_embeddings_concat', 'encoder_hid_dim', 'resnet_skip_time_act', 'addition_time_embed_dim', 'mid_block_only_cross_attention', 'transformer_layers_per_block', 'conv_in_kernel', 'time_embedding_dim', 'timestep_post_act', 'use_linear_projection', 'projection_class_embeddings_input_dim', 'encoder_hid_dim_type', 'upcast_attention'} was not found in config. Values will be initialized to default values.
+{'conv_in_kernel', 'projection_class_embeddings_input_dim', 'time_embedding_dim', 'upcast_attention', 'resnet_time_scale_shift', 'resnet_skip_time_act', 'addition_time_embed_dim', 'time_cond_proj_dim', 'transformer_layers_per_block', 'num_class_embeds', 'only_cross_attention', 'encoder_hid_dim_type', 'resnet_out_scale_factor', 'use_linear_projection', 'mid_block_only_cross_attention', 'timestep_post_act', 'encoder_hid_dim', 'conv_out_kernel', 'num_attention_heads', 'dual_cross_attention', 'cross_attention_norm', 'class_embeddings_concat', 'addition_embed_type', 'time_embedding_type', 'addition_embed_type_num_heads', 'class_embed_type', 'mid_block_type', 'time_embedding_act_fn'} was not found in config. Values will be initialized to default values.
 INFO:__main__:***** Running training *****
 INFO:__main__:  Num examples = 10000000
 INFO:__main__:  Num Epochs = 1
@@ -119,7 +119,47 @@ module.layer_norm2.weight saved_key-clsnet
 module.layer_norm2.bias saved_key-clsnet
 Steps:   0%|          | 0/1000000 [00:00<?, ?it/s]True accepts_keep_fp32_wrapper
 {'keep_fp32_wrapper': True} extra_args
-Traceback (most recent call last):
+INFO:__main__:STEP 0 Running validation... 
+ Generating 8 images with prompt: ['a <teapot> teapot in the jungle', 'a <teapot> teapot with a city in the background', 'a <teapot> teapot with a mountain in the background', 'a <teapot> teapot with the Eiffel Tower in the background', 'a <teapot> teapot floating on top of water', 'a <teapot> teapot floating in an ocean of milk', 'a <teapot> teapot on top of the sidewalk in a crowded street', 'a cube shaped <teapot> teapot'].
+
+
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+Step		|0
+Raw		|vincent    van        gogh       is         M[auc]     tioning    <teapot>   teapot    
+Masked		|vincent    van        gogh       is         [MASK]     tioning    <teapot>   teapot    
+Preds		|an         c          gogh       is         M[ni]      ating      teapot     teapot    
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+
+  0%|          | 0/25 [00:00<?, ?it/s][A
+  4%|▍         | 1/25 [00:00<00:09,  2.51it/s][A
+  8%|▊         | 2/25 [00:00<00:08,  2.75it/s][A
+ 12%|█▏        | 3/25 [00:01<00:07,  2.83it/s][A
+ 16%|█▌        | 4/25 [00:01<00:07,  2.86it/s][A
+ 20%|██        | 5/25 [00:01<00:06,  2.88it/s][A
+ 24%|██▍       | 6/25 [00:02<00:06,  2.90it/s][A
+ 28%|██▊       | 7/25 [00:02<00:06,  2.90it/s][A
+ 32%|███▏      | 8/25 [00:02<00:05,  2.91it/s][A
+ 36%|███▌      | 9/25 [00:03<00:05,  2.91it/s][A
+ 40%|████      | 10/25 [00:03<00:05,  2.91it/s][A
+ 44%|████▍     | 11/25 [00:03<00:04,  2.91it/s][A
+ 48%|████▊     | 12/25 [00:04<00:04,  2.92it/s][A
+ 52%|█████▏    | 13/25 [00:04<00:04,  2.92it/s][A
+ 56%|█████▌    | 14/25 [00:04<00:03,  2.92it/s][A
+ 60%|██████    | 15/25 [00:05<00:03,  2.92it/s][A
+ 64%|██████▍   | 16/25 [00:05<00:03,  2.85it/s][A
+ 68%|██████▊   | 17/25 [00:05<00:02,  2.87it/s][A
+ 72%|███████▏  | 18/25 [00:06<00:02,  2.88it/s][A
+ 76%|███████▌  | 19/25 [00:06<00:02,  2.89it/s][A
+ 80%|████████  | 20/25 [00:06<00:01,  2.90it/s][A
+ 84%|████████▍ | 21/25 [00:07<00:01,  2.90it/s][A
+ 88%|████████▊ | 22/25 [00:07<00:01,  2.91it/s][A
+ 92%|█████████▏| 23/25 [00:07<00:00,  2.91it/s][A
+ 96%|█████████▌| 24/25 [00:08<00:00,  2.91it/s][A
+100%|██████████| 25/25 [00:08<00:00,  2.91it/s][A100%|██████████| 25/25 [00:09<00:00,  2.63it/s]
+Steps:   0%|          | 0/1000000 [00:24<?, ?it/s, loss=0.179, loss_mlm=0.992, lr=0.002, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 1/1000000 [00:24<6712:24:25, 24.16s/it, loss=0.179, loss_mlm=0.992, lr=0.002, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 1/1000000 [00:35<6712:24:25, 24.16s/it, loss=0.548, loss_mlm=1.12, lr=0.002, norm_mask=8.02, norm_target=8.42] Steps:   0%|          | 2/1000000 [00:35<4616:08:08, 16.62s/it, loss=0.548, loss_mlm=1.12, lr=0.002, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 2/1000000 [00:46<4616:08:08, 16.62s/it, loss=0.103, loss_mlm=0.926, lr=0.002, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 3/1000000 [00:46<3929:28:45, 14.15s/it, loss=0.103, loss_mlm=0.926, lr=0.002, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 3/1000000 [00:57<3929:28:45, 14.15s/it, loss=0.00439, loss_mlm=0.78, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 4/1000000 [00:57<3608:24:49, 12.99s/it, loss=0.00439, loss_mlm=0.78, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 4/1000000 [01:09<3608:24:49, 12.99s/it, loss=0.00355, loss_mlm=1.26, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 5/1000000 [01:09<3431:38:29, 12.35s/it, loss=0.00355, loss_mlm=1.26, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 5/1000000 [01:20<3431:38:29, 12.35s/it, loss=0.00478, loss_mlm=0.837, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 6/1000000 [01:20<3323:45:50, 11.97s/it, loss=0.00478, loss_mlm=0.837, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 6/1000000 [01:31<3323:45:50, 11.97s/it, loss=0.0246, loss_mlm=0.997, lr=0.002, norm_mask=8.02, norm_target=8.61] Steps:   0%|          | 7/1000000 [01:31<3255:38:38, 11.72s/it, loss=0.0246, loss_mlm=0.997, lr=0.002, norm_mask=8.02, norm_target=8.61]Steps:   0%|          | 7/1000000 [01:42<3255:38:38, 11.72s/it, loss=0.143, loss_mlm=1.01, lr=0.002, norm_mask=8.02, norm_target=8.74]  Steps:   0%|          | 8/1000000 [01:42<3211:22:29, 11.56s/it, loss=0.143, loss_mlm=1.01, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 8/1000000 [01:53<3211:22:29, 11.56s/it, loss=0.269, loss_mlm=1.18, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 9/1000000 [01:53<3180:18:09, 11.45s/it, loss=0.269, loss_mlm=1.18, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 9/1000000 [02:05<3180:18:09, 11.45s/it, loss=0.181, loss_mlm=0.779, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 10/1000000 [02:05<3159:44:07, 11.38s/it, loss=0.181, loss_mlm=0.779, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 10/1000000 [02:16<3159:44:07, 11.38s/it, loss=0.0188, loss_mlm=1.08, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 11/1000000 [02:16<3145:01:29, 11.32s/it, loss=0.0188, loss_mlm=1.08, lr=0.002, norm_mask=8.02, norm_target=8.74]Steps:   0%|          | 11/1000000 [02:27<3145:01:29, 11.32s/it, loss=0.332, loss_mlm=1.1, lr=0.002, norm_mask=8.02, norm_target=8.88]  Steps:   0%|          | 12/1000000 [02:27<3137:21:54, 11.29s/it, loss=0.332, loss_mlm=1.1, lr=0.002, norm_mask=8.02, norm_target=8.88]Steps:   0%|          | 12/1000000 [02:38<3137:21:54, 11.29s/it, loss=0.085, loss_mlm=0.951, lr=0.002, norm_mask=8.02, norm_target=8.88]Steps:   0%|          | 13/1000000 [02:38<3132:07:00, 11.28s/it, loss=0.085, loss_mlm=0.951, lr=0.002, norm_mask=8.02, norm_target=8.88]Steps:   0%|          | 13/1000000 [02:50<3132:07:00, 11.28s/it, loss=0.075, loss_mlm=1.25, lr=0.002, norm_mask=8.02, norm_target=8.88] Steps:   0%|          | 14/1000000 [02:50<3127:08:11, 11.26s/it, loss=0.075, loss_mlm=1.25, lr=0.002, norm_mask=8.02, norm_target=8.88]Steps:   0%|          | 14/1000000 [03:01<3127:08:11, 11.26s/it, loss=0.016, loss_mlm=0.822, lr=0.002, norm_mask=8.02, norm_target=8.88]Steps:   0%|          | 15/1000000 [03:01<3123:54:53, 11.25s/it, loss=0.016, loss_mlm=0.822, lr=0.002, norm_mask=8.02, norm_target=8.88]Steps:   0%|          | 15/1000000 [03:12<3123:54:53, 11.25s/it, loss=0.0121, loss_mlm=1.24, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 16/1000000 [03:12<3119:52:52, 11.23s/it, loss=0.0121, loss_mlm=1.24, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 16/1000000 [03:23<3119:52:52, 11.23s/it, loss=0.0156, loss_mlm=0.812, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 17/1000000 [03:23<3141:21:37, 11.31s/it, loss=0.0156, loss_mlm=0.812, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 17/1000000 [03:35<3141:21:37, 11.31s/it, loss=0.246, loss_mlm=1.11, lr=0.002, norm_mask=8.02, norm_target=9.03]  Steps:   0%|          | 18/1000000 [03:35<3132:50:49, 11.28s/it, loss=0.246, loss_mlm=1.11, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 18/1000000 [03:46<3132:50:49, 11.28s/it, loss=0.019, loss_mlm=1.29, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 19/1000000 [03:46<3127:09:52, 11.26s/it, loss=0.019, loss_mlm=1.29, lr=0.002, norm_mask=8.02, norm_target=9.03]Steps:   0%|          | 19/1000000 [03:57<3127:09:52, 11.26s/it, loss=0.00242, loss_mlm=0.737, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 20/1000000 [03:57<3123:01:46, 11.24s/it, loss=0.00242, loss_mlm=0.737, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 20/1000000 [04:08<3123:01:46, 11.24s/it, loss=0.119, loss_mlm=0.9, lr=0.002, norm_mask=8.02, norm_target=9.2]    Steps:   0%|          | 21/1000000 [04:08<3119:25:40, 11.23s/it, loss=0.119, loss_mlm=0.9, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 21/1000000 [04:20<3119:25:40, 11.23s/it, loss=0.237, loss_mlm=0.849, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 22/1000000 [04:20<3117:51:58, 11.22s/it, loss=0.237, loss_mlm=0.849, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 22/1000000 [04:31<3117:51:58, 11.22s/it, loss=0.0676, loss_mlm=0.747, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 23/1000000 [04:31<3117:06:15, 11.22s/it, loss=0.0676, loss_mlm=0.747, lr=0.002, norm_mask=8.02, norm_target=9.2]Steps:   0%|          | 23/1000000 [04:42<3117:06:15, 11.22s/it, loss=0.101, loss_mlm=0.851, lr=0.002, norm_mask=8.02, norm_target=9.37]Steps:   0%|          | 24/1000000 [04:42<3115:55:49, 11.22s/it, loss=0.101, loss_mlm=0.851, lr=0.002, norm_mask=8.02, norm_target=9.37]Steps:   0%|          | 24/1000000 [04:53<3115:55:49, 11.22s/it, loss=0.144, loss_mlm=0.788, lr=0.002, norm_mask=8.02, norm_target=9.37]Steps:   0%|          | 25/1000000 [04:53<3117:35:48, 11.22s/it, loss=0.144, loss_mlm=0.788, lr=0.002, norm_mask=8.02, norm_target=9.37]Traceback (most recent call last):
   File "/home/twkim/anaconda3/envs/context/bin/accelerate", line 8, in <module>
     sys.exit(main())
   File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 47, in main
@@ -129,11 +169,11 @@ Traceback (most recent call last):
   File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 643, in simple_launcher
     raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmd)
 subprocess.CalledProcessError: Command '['/home/twkim/anaconda3/envs/context/bin/python', 'nj_train.py', '--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5', '--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/teapot', '--learnable_property=object', '--placeholder_token1=<teapot>', '--train_prior_concept1=teapot', '--eval_prior_concept1=teapot', '--resolution=512', '--train_batch_size=1', '--gradient_accumulation_steps=4', '--learning_rate=5e-4', '--lr_scheduler=constant', '--normalize_mask_embeds=0', '--lr_warmup_steps=0', '--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/teapot', '--seed=2940', '--mask_tokens=[MASK]', '--lambda_mlm=0.0001', '--freeze_mask_embedding=1', '--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt', '--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt', '--mask_prob=0.15', '--mlm_target=masked', '--mlm_batch_size=25', '--scale_lr', '--eval_prompt_type=nonliving', '--train_prompt_type=nonliving', '--silent=0', '--rev=0', '--normalize_target1=0', '--caption_root=../datasets_pkgs/captions/v7', '--run_name=ti_cnetv4_prior_mlm00001_teapot_mprob015_mbatch25_nj', '--include_prior_concept=1']' died with <Signals.SIGKILL: 9>.
-439510309 worker_seed
-439510308 worker_seed
 439510306 worker_seed
-439510307 worker_seed
-489724170 worker_seed
-489724169 worker_seed
 489724171 worker_seed
+439510307 worker_seed
 489724168 worker_seed
+439510308 worker_seed
+489724169 worker_seed
+439510309 worker_seed
+489724170 worker_seed

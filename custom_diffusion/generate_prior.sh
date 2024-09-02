@@ -4,8 +4,17 @@ accelerate launch generate_prior.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_duck/ \
   --resolution=512  \
+  --class_prompt1="duck" --num_class_images=200 \
+  --sample_batch_size=20;
+export MODEL_NAME="runwayml/stable-diffusion-v1-5";
+export CUDA_VISIBLE_DEVICES=5;
+accelerate launch generate_prior.py \
+  --pretrained_model_name_or_path=$MODEL_NAME  \
+  --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_teapot/ \
+  --resolution=512  \
   --class_prompt1="teapot" --num_class_images=200 \
   --sample_batch_size=20;
+
 
 
   export MODEL_NAME="runwayml/stable-diffusion-v1-5";

@@ -2,23 +2,29 @@
 from PIL import Image
 from PIL import ImageDraw,ImageFont
 def invert_scientific_notation(value):
-    value=str(value).replace('e-0','e-')
-    if 'e' in value:
-        base, exponent = value.split('e')
-        # base = float(base)
-        exponent = int(exponent)
+    value=format(value, ".1e")
+    value=value.replace('.','')
+    value=value.replace('0','')
+    value=value.replace('-','')
+    return value
+    # value=str(value).replace('e-0','e-')
+    
+    # if 'e' in value:
+    #     base, exponent = value.split('e')
+    #     # base = float(base)
+    #     exponent = int(exponent)
         
-        # Invert the sign of the exponent
-        inverted_exponent = -exponent
+    #     # Invert the sign of the exponent
+    #     inverted_exponent = -exponent
         
-        # Calculate the new base by adjusting the exponent
-        # new_base = base * (10 ** abs(inverted_exponent))
+    #     # Calculate the new base by adjusting the exponent
+    #     # new_base = base * (10 ** abs(inverted_exponent))
         
-        # Convert the base to integer and return in scientific notation format
-        return f"{(base)}e{inverted_exponent}"
+    #     # Convert the base to integer and return in scientific notation format
+    #     return f"{(base)}e{inverted_exponent}"
 
-    else:
-        raise ValueError("The input is not in a valid scientific notation format.")
+    # else:
+    #     raise ValueError("The input is not in a valid scientific notation format.")
 def render_caption(image, text, coords, font_path='../fonts/GoNotoCurrent.ttf'):
     # Load the font
     draw = ImageDraw.Draw(image)

@@ -1,0 +1,21 @@
+export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_cat1";
+export MODEL_NAME="runwayml/stable-diffusion-v1-5";
+export CUDA_VISIBLE_DEVICES=0;
+accelerate launch --main_process_port 2731  db_generate.py \
+  --pretrained_model_name_or_path=$MODEL_NAME \
+  --train_data_dir1=$DATA_DIR \
+  --placeholder_token1="<pet_cat1>" \
+  --resolution=512 \
+  --output_dir="results/single/pet_cat1" \
+  --seed=1234 \
+  --mask_tokens="[MASK]" \
+  --resume_unet_path='saved_models/tmp/tmp_mlm0005_dog6/checkpoints/checkpoint-0/unet_s0000.pt' \
+  --resume_text_encoder_path='saved_models/tmp/tmp_mlm0005_dog6/checkpoints/checkpoint-0/text_encoder_s0000.pt' \
+  --train_prior_concept1='cat' \
+  --include_prior_concept=1 \
+  --eval_prompt_type='living' \
+  --benchmark_path='../datasets_pkgs/eval_prompts/dreambooth.json' \
+  --eval_batch_size=1 \
+  --num_images_per_prompt=15 \
+  --dst_exp_path='results/db_results/tmp' \
+  --eval_prior_concept1='cat'

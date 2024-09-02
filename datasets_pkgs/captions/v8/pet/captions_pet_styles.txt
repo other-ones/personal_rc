@@ -1,378 +1,1464 @@
+<new1> captured in the 2D Art style
+<new1> captured in the 3D Art style
+<new1> captured in the 3D Modeling style
 <new1> captured in the 3D Rendering style
 <new1> captured in the AI Art style
+<new1> captured in the Abstract Art style
 <new1> captured in the Abstract Expressionism style
 <new1> captured in the Abstract style
 <new1> captured in the Acrylic style
+<new1> captured in the Action Painting style
+<new1> captured in the Aesthetic Art style
+<new1> captured in the Album Art style
 <new1> captured in the Algorithmic Art style
+<new1> captured in the Animated Art style
+<new1> captured in the Animation style
 <new1> captured in the Anime style
 <new1> captured in the Architectural style
+<new1> captured in the Art Book style
 <new1> captured in the Art Brut style
 <new1> captured in the Art Deco style
+<new1> captured in the Art Installation style
 <new1> captured in the Art Nouveau style
+<new1> captured in the Art Video style
+<new1> captured in the Artist Book style
 <new1> captured in the Assemblage style
 <new1> captured in the Augmented Reality Art style
+<new1> captured in the Background Art style
+<new1> captured in the Background Design style
+<new1> captured in the Banner Art style
+<new1> captured in the Banner Design style
 <new1> captured in the Baroque style
+<new1> captured in the Bas-relief style
 <new1> captured in the Bauhaus style
 <new1> captured in the Bio Art style
+<new1> captured in the Board Game Art style
+<new1> captured in the Body Art style
+<new1> captured in the Book Cover Art style
+<new1> captured in the Book Illustration style
+<new1> captured in the Brand Design style
 <new1> captured in the Byzantine style
+<new1> captured in the Calligraphy style
+<new1> captured in the Cameo style
+<new1> captured in the Cartoon Art style
+<new1> captured in the Cartoon Design style
 <new1> captured in the Cartoon style
+<new1> captured in the Ceramic Art style
+<new1> captured in the Ceramics style
+<new1> captured in the Chalk Art style
+<new1> captured in the Character Animation style
+<new1> captured in the Character Design style
+<new1> captured in the Character Portrait style
 <new1> captured in the Charcoal style
+<new1> captured in the Chiaroscuro style
+<new1> captured in the Childrens Illustration style
 <new1> captured in the Cinematic style
+<new1> captured in the Classical Art style
 <new1> captured in the Claymation style
+<new1> captured in the Collage Art style
 <new1> captured in the Collage style
+<new1> captured in the Color Art style
+<new1> captured in the Color Field style
+<new1> captured in the Comic Strip style
 <new1> captured in the Comic style
+<new1> captured in the Comics Art style
 <new1> captured in the Concept Art style
 <new1> captured in the Conceptual Art style
 <new1> captured in the Constructivism style
 <new1> captured in the Contemporary style
 <new1> captured in the Cosmic style
+<new1> captured in the Costume Design style
+<new1> captured in the Cover Art style
+<new1> captured in the Creative Writing style
 <new1> captured in the Cubism style
+<new1> captured in the Cubist Art style
 <new1> captured in the Cyberpunk style
 <new1> captured in the Dada style
 <new1> captured in the Decorative style
+<new1> captured in the Decoupage style
+<new1> captured in the Design Art style
+<new1> captured in the Digital Drawing style
+<new1> captured in the Digital Painting style
 <new1> captured in the Digital style
+<new1> captured in the Doodle Art style
+<new1> captured in the Doodle style
+<new1> captured in the Dramatic Art style
+<new1> captured in the Drawing Art style
+<new1> captured in the Drawing style
 <new1> captured in the Earth Art style
 <new1> captured in the Ecological Art style
+<new1> captured in the Embroidery style
 <new1> captured in the Engraving style
+<new1> captured in the Environmental Art style
+<new1> captured in the Environmental Design style
 <new1> captured in the Environmental style
+<new1> captured in the Etching style
 <new1> captured in the Existential Art style
 <new1> captured in the Expressionism style
+<new1> captured in the Fantasy Art style
+<new1> captured in the Fantasy Design style
+<new1> captured in the Fantasy Illustration style
 <new1> captured in the Fauvism style
+<new1> captured in the Film Art style
+<new1> captured in the Film Poster style
+<new1> captured in the Fine Art style
+<new1> captured in the Flat Art style
+<new1> captured in the Flat Design style
 <new1> captured in the Folk Art style
+<new1> captured in the Folk Design style
+<new1> captured in the Frame Design style
+<new1> captured in the Fresco style
 <new1> captured in the Futurism style
+<new1> captured in the Game Design style
 <new1> captured in the Generative Art style
+<new1> captured in the Geometric Art style
 <new1> captured in the Geometric style
+<new1> captured in the Glass Art style
 <new1> captured in the Glitch Art style
 <new1> captured in the Gothic Revival style
 <new1> captured in the Gothic style
+<new1> captured in the Graffiti Art style
+<new1> captured in the Graffiti Writing style
 <new1> captured in the Graffiti style
+<new1> captured in the Graphic Art style
+<new1> captured in the Graphic Design style
 <new1> captured in the Green Art style
+<new1> captured in the Hand Lettering style
+<new1> captured in the Handmade Art style
 <new1> captured in the Historic style
+<new1> captured in the Historical Art style
 <new1> captured in the Hypermodernism style
 <new1> captured in the Hypernaturalism style
 <new1> captured in the Hyperrealism style
+<new1> captured in the Iconography style
+<new1> captured in the Illuminated Manuscript style
 <new1> captured in the Impressionism style
+<new1> captured in the Impressionist Art style
+<new1> captured in the Industrial Design style
 <new1> captured in the Industrial style
+<new1> captured in the Infographic Design style
+<new1> captured in the Ink Art style
 <new1> captured in the Ink style
 <new1> captured in the Installation Art style
+<new1> captured in the Installation style
 <new1> captured in the Interactive Art style
+<new1> captured in the Interactive Design style
+<new1> captured in the Interactive Sculpture style
+<new1> captured in the Interior Art style
+<new1> captured in the Interior Design style
+<new1> captured in the Kinetic Art style
 <new1> captured in the Kinetic style
 <new1> captured in the Land Art style
+<new1> captured in the Landscape Painting style
 <new1> captured in the Landscape style
+<new1> captured in the Light Art style
+<new1> captured in the Literary Art style
+<new1> captured in the Lithography style
+<new1> captured in the Live Art style
+<new1> captured in the Logo Art style
+<new1> captured in the Logo Design style
+<new1> captured in the Logo style
+<new1> captured in the Low Poly Art style
+<new1> captured in the Low Poly style
 <new1> captured in the Lowbrow Art style
+<new1> captured in the Magazine Art style
+<new1> captured in the Magazine Cover style
+<new1> captured in the Magazine Illustration style
 <new1> captured in the Magic Realism style
+<new1> captured in the Mandala Art style
+<new1> captured in the Manga Art style
+<new1> captured in the Manga style
+<new1> captured in the Map Design style
+<new1> captured in the Matte Painting style
+<new1> captured in the Metalwork style
 <new1> captured in the Metaphysical Art style
 <new1> captured in the Mid-Century Modern style
+<new1> captured in the Miniature Art style
 <new1> captured in the Minimalism style
+<new1> captured in the Minimalist Art style
+<new1> captured in the Mixed Art style
+<new1> captured in the Mixed Media style
+<new1> captured in the Mixed Reality Art style
+<new1> captured in the Model Making style
 <new1> captured in the Modernism style
+<new1> captured in the Monochrome Art style
+<new1> captured in the Monochrome Design style
 <new1> captured in the Monochrome style
+<new1> captured in the Mosaic Art style
+<new1> captured in the Mosaic Design style
+<new1> captured in the Mosaic style
+<new1> captured in the Motion Graphics style
+<new1> captured in the Movie Poster style
+<new1> captured in the Multimedia Art style
+<new1> captured in the Multimedia Design style
+<new1> captured in the Mural Art style
+<new1> captured in the Mural style
+<new1> captured in the Music Video style
 <new1> captured in the Narrative style
 <new1> captured in the Naturalistic style
+<new1> captured in the Nature Art style
 <new1> captured in the Naïve Art style
+<new1> captured in the Neo Art style
 <new1> captured in the Neo-Impressionism style
 <new1> captured in the Neoclassicism style
+<new1> captured in the Neon Art style
+<new1> captured in the Neon Sign Art style
 <new1> captured in the Net Art style
 <new1> captured in the Oil style
 <new1> captured in the Op Art style
+<new1> captured in the Origami style
+<new1> captured in the Ornamental Art style
 <new1> captured in the Outsider Art style
 <new1> captured in the Panoramic style
+<new1> captured in the Paper Art style
+<new1> captured in the Papercraft style
 <new1> captured in the Pastel style
+<new1> captured in the Pattern Art style
+<new1> captured in the Pattern Design style
+<new1> captured in the Pattern style
 <new1> captured in the Pencil style
 <new1> captured in the Performance Art style
+<new1> captured in the Performance style
+<new1> captured in the Pet Portrait style
+<new1> captured in the Photo Art style
+<new1> captured in the Photography style
 <new1> captured in the Photorealism style
 <new1> captured in the Pixel Art style
+<new1> captured in the Pixel Design style
+<new1> captured in the Plastic Art style
+<new1> captured in the Plastic Design style
+<new1> captured in the Pointillism style
 <new1> captured in the Pop Art style
+<new1> captured in the Pop Culture Art style
 <new1> captured in the Pop Surrealism style
+<new1> captured in the Portrait Painting style
+<new1> captured in the Portrait Photography style
 <new1> captured in the Portraiture style
 <new1> captured in the Post-Impressionism style
+<new1> captured in the Poster Art style
+<new1> captured in the Poster Design style
+<new1> captured in the Poster style
 <new1> captured in the Postmodernism style
+<new1> captured in the Practical Effects style
 <new1> captured in the Precisionism style
+<new1> captured in the Print Art style
+<new1> captured in the Projection Art style
+<new1> captured in the Prop Art style
+<new1> captured in the Prop Design style
 <new1> captured in the Pseudorealism style
 <new1> captured in the Psychedelic style
+<new1> captured in the Quilling style
+<new1> captured in the Quilt Art style
+<new1> captured in the Quilt Design style
+<new1> captured in the Realism style
+<new1> captured in the Realist Painting style
+<new1> captured in the Relief Sculpture style
 <new1> captured in the Renaissance style
+<new1> captured in the Retro Art style
 <new1> captured in the Retro Futurism style
+<new1> captured in the Retro style
 <new1> captured in the Rococo style
 <new1> captured in the Romantic style
 <new1> captured in the Rustic style
+<new1> captured in the Scene Design style
+<new1> captured in the Scenic Art style
+<new1> captured in the Scenic Design style
 <new1> captured in the Scenic style
+<new1> captured in the Sci-Fi Art style
+<new1> captured in the Scientific Art style
 <new1> captured in the Scientific style
+<new1> captured in the Screen Art style
 <new1> captured in the Screenprint style
+<new1> captured in the Sculptural Art style
+<new1> captured in the Silhouette Design style
 <new1> captured in the Silhouette style
+<new1> captured in the Simple Art style
 <new1> captured in the Sketch style
 <new1> captured in the Social Realism style
 <new1> captured in the Sound Art style
+<new1> captured in the Sound Design style
 <new1> captured in the Soundwave Art style
+<new1> captured in the Spray Painting style
+<new1> captured in the Stained Glass style
 <new1> captured in the Steampunk style
 <new1> captured in the Stencil Art style
+<new1> captured in the Stencil Design style
+<new1> captured in the Stencil Graffiti style
+<new1> captured in the Stencil Printing style
 <new1> captured in the Stencil style
+<new1> captured in the Sticker Design style
+<new1> captured in the Stop Motion style
+<new1> captured in the Storyboard Art style
+<new1> captured in the Storybook Art style
 <new1> captured in the Street Art style
+<new1> captured in the Street Photography style
 <new1> captured in the Surrealism style
+<new1> captured in the Surrealist Painting style
 <new1> captured in the Surrealist Pop style
 <new1> captured in the Sustainable Art style
+<new1> captured in the Symbolic Art style
 <new1> captured in the Symbolism style
+<new1> captured in the Tactile Art style
+<new1> captured in the Tapestry style
+<new1> captured in the Tattoo Art style
+<new1> captured in the Tattoo Design style
+<new1> captured in the Tattoo style
 <new1> captured in the Tempera style
+<new1> captured in the Text Art style
+<new1> captured in the Text Design style
 <new1> captured in the Textile Art style
+<new1> captured in the Textile Design style
+<new1> captured in the Textile style
+<new1> captured in the Theme Art style
+<new1> captured in the Tiling style
+<new1> captured in the Traditional Art style
 <new1> captured in the Transhuman Art style
+<new1> captured in the Trompe-l'oeil style
+<new1> captured in the Typography style
 <new1> captured in the Ukiyo-e style
+<new1> captured in the Upcycling Art style
+<new1> captured in the Urban Design style
 <new1> captured in the Urban style
+<new1> captured in the User Interface Design style
 <new1> captured in the Vector Art style
+<new1> captured in the Vector Design style
 <new1> captured in the Vexel style
 <new1> captured in the Video Art style
+<new1> captured in the Video Game Art style
 <new1> captured in the Vintage style
+<new1> captured in the Virtual Art style
 <new1> captured in the Virtual Reality Art style
+<new1> captured in the Virtual Sculpture style
 <new1> captured in the Virtual style
 <new1> captured in the Visionary Art style
+<new1> captured in the Watercolor Design style
 <new1> captured in the Watercolor style
+<new1> captured in the Wearable Art style
+<new1> captured in the Web Art style
+<new1> captured in the Web Design style
+<new1> captured in the Window Art style
+<new1> captured in the Wood Art style
+<new1> captured in the Woodblock Printing style
 <new1> captured in the Woodcut style
+<new1> captured in the Woodworking style
+<new1> captured in the Word Art style
+<new1> captured in the Yarn Art style
+<new1> captured in the Yarn Craft style
+<new1> captured in the Zentangle Art style
+<new1> captured in the Zentangle style
+<new1> captured in the Zine Art style
+<new1> depicted in the 2D Art style
+<new1> depicted in the 3D Art style
+<new1> depicted in the 3D Modeling style
 <new1> depicted in the 3D Rendering style
 <new1> depicted in the AI Art style
+<new1> depicted in the Abstract Art style
 <new1> depicted in the Abstract Expressionism style
 <new1> depicted in the Abstract style
 <new1> depicted in the Acrylic style
+<new1> depicted in the Action Painting style
+<new1> depicted in the Aesthetic Art style
+<new1> depicted in the Album Art style
 <new1> depicted in the Algorithmic Art style
+<new1> depicted in the Animated Art style
+<new1> depicted in the Animation style
 <new1> depicted in the Anime style
 <new1> depicted in the Architectural style
+<new1> depicted in the Art Book style
 <new1> depicted in the Art Brut style
 <new1> depicted in the Art Deco style
+<new1> depicted in the Art Installation style
 <new1> depicted in the Art Nouveau style
+<new1> depicted in the Art Video style
+<new1> depicted in the Artist Book style
 <new1> depicted in the Assemblage style
 <new1> depicted in the Augmented Reality Art style
+<new1> depicted in the Background Art style
+<new1> depicted in the Background Design style
+<new1> depicted in the Banner Art style
+<new1> depicted in the Banner Design style
 <new1> depicted in the Baroque style
+<new1> depicted in the Bas-relief style
 <new1> depicted in the Bauhaus style
 <new1> depicted in the Bio Art style
+<new1> depicted in the Board Game Art style
+<new1> depicted in the Body Art style
+<new1> depicted in the Book Cover Art style
+<new1> depicted in the Book Illustration style
+<new1> depicted in the Brand Design style
 <new1> depicted in the Byzantine style
+<new1> depicted in the Calligraphy style
+<new1> depicted in the Cameo style
+<new1> depicted in the Cartoon Art style
+<new1> depicted in the Cartoon Design style
 <new1> depicted in the Cartoon style
+<new1> depicted in the Ceramic Art style
+<new1> depicted in the Ceramics style
+<new1> depicted in the Chalk Art style
+<new1> depicted in the Character Animation style
+<new1> depicted in the Character Design style
+<new1> depicted in the Character Portrait style
 <new1> depicted in the Charcoal style
+<new1> depicted in the Chiaroscuro style
+<new1> depicted in the Childrens Illustration style
 <new1> depicted in the Cinematic style
+<new1> depicted in the Classical Art style
 <new1> depicted in the Claymation style
+<new1> depicted in the Collage Art style
 <new1> depicted in the Collage style
+<new1> depicted in the Color Art style
+<new1> depicted in the Color Field style
+<new1> depicted in the Comic Strip style
 <new1> depicted in the Comic style
+<new1> depicted in the Comics Art style
 <new1> depicted in the Concept Art style
 <new1> depicted in the Conceptual Art style
 <new1> depicted in the Constructivism style
 <new1> depicted in the Contemporary style
 <new1> depicted in the Cosmic style
+<new1> depicted in the Costume Design style
+<new1> depicted in the Cover Art style
+<new1> depicted in the Creative Writing style
 <new1> depicted in the Cubism style
+<new1> depicted in the Cubist Art style
 <new1> depicted in the Cyberpunk style
 <new1> depicted in the Dada style
 <new1> depicted in the Decorative style
+<new1> depicted in the Decoupage style
+<new1> depicted in the Design Art style
+<new1> depicted in the Digital Drawing style
+<new1> depicted in the Digital Painting style
 <new1> depicted in the Digital style
+<new1> depicted in the Doodle Art style
+<new1> depicted in the Doodle style
+<new1> depicted in the Dramatic Art style
+<new1> depicted in the Drawing Art style
+<new1> depicted in the Drawing style
 <new1> depicted in the Earth Art style
 <new1> depicted in the Ecological Art style
+<new1> depicted in the Embroidery style
 <new1> depicted in the Engraving style
+<new1> depicted in the Environmental Art style
+<new1> depicted in the Environmental Design style
 <new1> depicted in the Environmental style
+<new1> depicted in the Etching style
 <new1> depicted in the Existential Art style
 <new1> depicted in the Expressionism style
+<new1> depicted in the Fantasy Art style
+<new1> depicted in the Fantasy Design style
+<new1> depicted in the Fantasy Illustration style
 <new1> depicted in the Fauvism style
+<new1> depicted in the Film Art style
+<new1> depicted in the Film Poster style
+<new1> depicted in the Fine Art style
+<new1> depicted in the Flat Art style
+<new1> depicted in the Flat Design style
 <new1> depicted in the Folk Art style
+<new1> depicted in the Folk Design style
+<new1> depicted in the Frame Design style
+<new1> depicted in the Fresco style
 <new1> depicted in the Futurism style
+<new1> depicted in the Game Design style
 <new1> depicted in the Generative Art style
+<new1> depicted in the Geometric Art style
 <new1> depicted in the Geometric style
+<new1> depicted in the Glass Art style
 <new1> depicted in the Glitch Art style
 <new1> depicted in the Gothic Revival style
 <new1> depicted in the Gothic style
+<new1> depicted in the Graffiti Art style
+<new1> depicted in the Graffiti Writing style
 <new1> depicted in the Graffiti style
+<new1> depicted in the Graphic Art style
+<new1> depicted in the Graphic Design style
 <new1> depicted in the Green Art style
+<new1> depicted in the Hand Lettering style
+<new1> depicted in the Handmade Art style
 <new1> depicted in the Historic style
+<new1> depicted in the Historical Art style
 <new1> depicted in the Hypermodernism style
 <new1> depicted in the Hypernaturalism style
 <new1> depicted in the Hyperrealism style
+<new1> depicted in the Iconography style
+<new1> depicted in the Illuminated Manuscript style
 <new1> depicted in the Impressionism style
+<new1> depicted in the Impressionist Art style
+<new1> depicted in the Industrial Design style
 <new1> depicted in the Industrial style
+<new1> depicted in the Infographic Design style
+<new1> depicted in the Ink Art style
 <new1> depicted in the Ink style
 <new1> depicted in the Installation Art style
+<new1> depicted in the Installation style
 <new1> depicted in the Interactive Art style
+<new1> depicted in the Interactive Design style
+<new1> depicted in the Interactive Sculpture style
+<new1> depicted in the Interior Art style
+<new1> depicted in the Interior Design style
+<new1> depicted in the Kinetic Art style
 <new1> depicted in the Kinetic style
 <new1> depicted in the Land Art style
+<new1> depicted in the Landscape Painting style
 <new1> depicted in the Landscape style
+<new1> depicted in the Light Art style
+<new1> depicted in the Literary Art style
+<new1> depicted in the Lithography style
+<new1> depicted in the Live Art style
+<new1> depicted in the Logo Art style
+<new1> depicted in the Logo Design style
+<new1> depicted in the Logo style
+<new1> depicted in the Low Poly Art style
+<new1> depicted in the Low Poly style
 <new1> depicted in the Lowbrow Art style
+<new1> depicted in the Magazine Art style
+<new1> depicted in the Magazine Cover style
+<new1> depicted in the Magazine Illustration style
 <new1> depicted in the Magic Realism style
+<new1> depicted in the Mandala Art style
+<new1> depicted in the Manga Art style
+<new1> depicted in the Manga style
+<new1> depicted in the Map Design style
+<new1> depicted in the Matte Painting style
+<new1> depicted in the Metalwork style
 <new1> depicted in the Metaphysical Art style
 <new1> depicted in the Mid-Century Modern style
+<new1> depicted in the Miniature Art style
 <new1> depicted in the Minimalism style
+<new1> depicted in the Minimalist Art style
+<new1> depicted in the Mixed Art style
+<new1> depicted in the Mixed Media style
+<new1> depicted in the Mixed Reality Art style
+<new1> depicted in the Model Making style
 <new1> depicted in the Modernism style
+<new1> depicted in the Monochrome Art style
+<new1> depicted in the Monochrome Design style
 <new1> depicted in the Monochrome style
+<new1> depicted in the Mosaic Art style
+<new1> depicted in the Mosaic Design style
+<new1> depicted in the Mosaic style
+<new1> depicted in the Motion Graphics style
+<new1> depicted in the Movie Poster style
+<new1> depicted in the Multimedia Art style
+<new1> depicted in the Multimedia Design style
+<new1> depicted in the Mural Art style
+<new1> depicted in the Mural style
+<new1> depicted in the Music Video style
 <new1> depicted in the Narrative style
 <new1> depicted in the Naturalistic style
+<new1> depicted in the Nature Art style
 <new1> depicted in the Naïve Art style
+<new1> depicted in the Neo Art style
 <new1> depicted in the Neo-Impressionism style
 <new1> depicted in the Neoclassicism style
+<new1> depicted in the Neon Art style
+<new1> depicted in the Neon Sign Art style
 <new1> depicted in the Net Art style
 <new1> depicted in the Oil style
 <new1> depicted in the Op Art style
+<new1> depicted in the Origami style
+<new1> depicted in the Ornamental Art style
 <new1> depicted in the Outsider Art style
 <new1> depicted in the Panoramic style
+<new1> depicted in the Paper Art style
+<new1> depicted in the Papercraft style
 <new1> depicted in the Pastel style
+<new1> depicted in the Pattern Art style
+<new1> depicted in the Pattern Design style
+<new1> depicted in the Pattern style
 <new1> depicted in the Pencil style
 <new1> depicted in the Performance Art style
+<new1> depicted in the Performance style
+<new1> depicted in the Pet Portrait style
+<new1> depicted in the Photo Art style
+<new1> depicted in the Photography style
 <new1> depicted in the Photorealism style
 <new1> depicted in the Pixel Art style
+<new1> depicted in the Pixel Design style
+<new1> depicted in the Plastic Art style
+<new1> depicted in the Plastic Design style
+<new1> depicted in the Pointillism style
 <new1> depicted in the Pop Art style
+<new1> depicted in the Pop Culture Art style
 <new1> depicted in the Pop Surrealism style
+<new1> depicted in the Portrait Painting style
+<new1> depicted in the Portrait Photography style
 <new1> depicted in the Portraiture style
 <new1> depicted in the Post-Impressionism style
+<new1> depicted in the Poster Art style
+<new1> depicted in the Poster Design style
+<new1> depicted in the Poster style
 <new1> depicted in the Postmodernism style
+<new1> depicted in the Practical Effects style
 <new1> depicted in the Precisionism style
+<new1> depicted in the Print Art style
+<new1> depicted in the Projection Art style
+<new1> depicted in the Prop Art style
+<new1> depicted in the Prop Design style
 <new1> depicted in the Pseudorealism style
 <new1> depicted in the Psychedelic style
+<new1> depicted in the Quilling style
+<new1> depicted in the Quilt Art style
+<new1> depicted in the Quilt Design style
+<new1> depicted in the Realism style
+<new1> depicted in the Realist Painting style
+<new1> depicted in the Relief Sculpture style
 <new1> depicted in the Renaissance style
+<new1> depicted in the Retro Art style
 <new1> depicted in the Retro Futurism style
+<new1> depicted in the Retro style
 <new1> depicted in the Rococo style
 <new1> depicted in the Romantic style
 <new1> depicted in the Rustic style
+<new1> depicted in the Scene Design style
+<new1> depicted in the Scenic Art style
+<new1> depicted in the Scenic Design style
 <new1> depicted in the Scenic style
+<new1> depicted in the Sci-Fi Art style
+<new1> depicted in the Scientific Art style
 <new1> depicted in the Scientific style
+<new1> depicted in the Screen Art style
 <new1> depicted in the Screenprint style
+<new1> depicted in the Sculptural Art style
+<new1> depicted in the Silhouette Design style
 <new1> depicted in the Silhouette style
+<new1> depicted in the Simple Art style
 <new1> depicted in the Sketch style
 <new1> depicted in the Social Realism style
 <new1> depicted in the Sound Art style
+<new1> depicted in the Sound Design style
 <new1> depicted in the Soundwave Art style
+<new1> depicted in the Spray Painting style
+<new1> depicted in the Stained Glass style
 <new1> depicted in the Steampunk style
 <new1> depicted in the Stencil Art style
+<new1> depicted in the Stencil Design style
+<new1> depicted in the Stencil Graffiti style
+<new1> depicted in the Stencil Printing style
 <new1> depicted in the Stencil style
+<new1> depicted in the Sticker Design style
+<new1> depicted in the Stop Motion style
+<new1> depicted in the Storyboard Art style
+<new1> depicted in the Storybook Art style
 <new1> depicted in the Street Art style
+<new1> depicted in the Street Photography style
 <new1> depicted in the Surrealism style
+<new1> depicted in the Surrealist Painting style
 <new1> depicted in the Surrealist Pop style
 <new1> depicted in the Sustainable Art style
+<new1> depicted in the Symbolic Art style
 <new1> depicted in the Symbolism style
+<new1> depicted in the Tactile Art style
+<new1> depicted in the Tapestry style
+<new1> depicted in the Tattoo Art style
+<new1> depicted in the Tattoo Design style
+<new1> depicted in the Tattoo style
 <new1> depicted in the Tempera style
+<new1> depicted in the Text Art style
+<new1> depicted in the Text Design style
 <new1> depicted in the Textile Art style
+<new1> depicted in the Textile Design style
+<new1> depicted in the Textile style
+<new1> depicted in the Theme Art style
+<new1> depicted in the Tiling style
+<new1> depicted in the Traditional Art style
 <new1> depicted in the Transhuman Art style
+<new1> depicted in the Trompe-l'oeil style
+<new1> depicted in the Typography style
 <new1> depicted in the Ukiyo-e style
+<new1> depicted in the Upcycling Art style
+<new1> depicted in the Urban Design style
 <new1> depicted in the Urban style
+<new1> depicted in the User Interface Design style
 <new1> depicted in the Vector Art style
+<new1> depicted in the Vector Design style
 <new1> depicted in the Vexel style
 <new1> depicted in the Video Art style
+<new1> depicted in the Video Game Art style
 <new1> depicted in the Vintage style
+<new1> depicted in the Virtual Art style
 <new1> depicted in the Virtual Reality Art style
+<new1> depicted in the Virtual Sculpture style
 <new1> depicted in the Virtual style
 <new1> depicted in the Visionary Art style
+<new1> depicted in the Watercolor Design style
 <new1> depicted in the Watercolor style
+<new1> depicted in the Wearable Art style
+<new1> depicted in the Web Art style
+<new1> depicted in the Web Design style
+<new1> depicted in the Window Art style
+<new1> depicted in the Wood Art style
+<new1> depicted in the Woodblock Printing style
 <new1> depicted in the Woodcut style
+<new1> depicted in the Woodworking style
+<new1> depicted in the Word Art style
+<new1> depicted in the Yarn Art style
+<new1> depicted in the Yarn Craft style
+<new1> depicted in the Zentangle Art style
+<new1> depicted in the Zentangle style
+<new1> depicted in the Zine Art style
+<new1> painted by Albrecht Dürer
+<new1> painted by Amedeo Modigliani
+<new1> painted by Andy Warhol
+<new1> painted by Anthony van Dyck
+<new1> painted by Artemisia Gentileschi
+<new1> painted by Camille Pissarro
+<new1> painted by Canaletto
+<new1> painted by Caravaggio
+<new1> painted by Claude Monet
+<new1> painted by Diego Rivera
+<new1> painted by Diego Velázquez
+<new1> painted by Edgar Degas
+<new1> painted by Edvard Munch
+<new1> painted by Edward Hopper
+<new1> painted by Egon Schiele
+<new1> painted by El Greco
+<new1> painted by Eugène Delacroix
+<new1> painted by Francis Bacon
+<new1> painted by Francisco Goya
+<new1> painted by Frida Kahlo
+<new1> painted by Georges Braque
+<new1> painted by Georges Seurat
+<new1> painted by Georgia O'Keeffe
+<new1> painted by Giacomo Balla
+<new1> painted by Giorgio de Chirico
+<new1> painted by Giotto
+<new1> painted by Goya
+<new1> painted by Grant Wood
+<new1> painted by Gustav Klimt
+<new1> painted by Gustave Courbet
+<new1> painted by Gustave Moreau
+<new1> painted by Hans Holbein
+<new1> painted by Henri Matisse
+<new1> painted by Henri Rousseau
+<new1> painted by Hieronymus Bosch
+<new1> painted by J.M.W. Turner
+<new1> painted by Jackson Pollock
+<new1> painted by Jan van Eyck
+<new1> painted by Jean-Michel Basquiat
+<new1> painted by Joan Miró
+<new1> painted by John Constable
+<new1> painted by John Singer Sargent
+<new1> painted by Kazimir Malevich
+<new1> painted by Leonardo da Vinci
+<new1> painted by Marc Chagall
+<new1> painted by Mary Cassatt
+<new1> painted by Max Ernst
+<new1> painted by Michelangelo
+<new1> painted by Norman Rockwell
+<new1> painted by Pablo Picasso
+<new1> painted by Paul Cézanne
+<new1> painted by Paul Gauguin
+<new1> painted by Paul Klee
+<new1> painted by Paul Signac
+<new1> painted by Peter Paul Rubens
+<new1> painted by Pierre-Auguste Renoir
+<new1> painted by Piet Mondrian
+<new1> painted by Raphael
+<new1> painted by Rembrandt
+<new1> painted by Rene Magritte
+<new1> painted by Salvador Dalí
+<new1> painted by Tintoretto
+<new1> painted by Titian
+<new1> painted by Toulouse-Lautrec
+<new1> painted by Vincent van Gogh
+<new1> painted by Wassily Kandinsky
+<new1> painted by William Blake
+<new1> painted by Édouard Manet
+<new1> painted in the 2D Art style
+<new1> painted in the 3D Art style
+<new1> painted in the 3D Modeling style
+<new1> painted in the 3D Rendering style
+<new1> painted in the AI Art style
+<new1> painted in the Abstract Art style
+<new1> painted in the Abstract Expressionism style
+<new1> painted in the Abstract style
+<new1> painted in the Acrylic style
+<new1> painted in the Action Painting style
+<new1> painted in the Aesthetic Art style
+<new1> painted in the Album Art style
+<new1> painted in the Algorithmic Art style
+<new1> painted in the Animated Art style
+<new1> painted in the Animation style
+<new1> painted in the Anime style
+<new1> painted in the Architectural style
+<new1> painted in the Art Book style
+<new1> painted in the Art Brut style
+<new1> painted in the Art Deco style
+<new1> painted in the Art Installation style
+<new1> painted in the Art Nouveau style
+<new1> painted in the Art Video style
+<new1> painted in the Artist Book style
+<new1> painted in the Assemblage style
+<new1> painted in the Augmented Reality Art style
+<new1> painted in the Background Art style
+<new1> painted in the Background Design style
+<new1> painted in the Banner Art style
+<new1> painted in the Banner Design style
+<new1> painted in the Baroque style
+<new1> painted in the Bas-relief style
+<new1> painted in the Bauhaus style
+<new1> painted in the Bio Art style
+<new1> painted in the Board Game Art style
+<new1> painted in the Body Art style
+<new1> painted in the Book Cover Art style
+<new1> painted in the Book Illustration style
+<new1> painted in the Brand Design style
+<new1> painted in the Byzantine style
+<new1> painted in the Calligraphy style
+<new1> painted in the Cameo style
+<new1> painted in the Cartoon Art style
+<new1> painted in the Cartoon Design style
+<new1> painted in the Cartoon style
+<new1> painted in the Ceramic Art style
+<new1> painted in the Ceramics style
+<new1> painted in the Chalk Art style
+<new1> painted in the Character Animation style
+<new1> painted in the Character Design style
+<new1> painted in the Character Portrait style
+<new1> painted in the Charcoal style
+<new1> painted in the Chiaroscuro style
+<new1> painted in the Childrens Illustration style
+<new1> painted in the Cinematic style
+<new1> painted in the Classical Art style
+<new1> painted in the Claymation style
+<new1> painted in the Collage Art style
+<new1> painted in the Collage style
+<new1> painted in the Color Art style
+<new1> painted in the Color Field style
+<new1> painted in the Comic Strip style
+<new1> painted in the Comic style
+<new1> painted in the Comics Art style
+<new1> painted in the Concept Art style
+<new1> painted in the Conceptual Art style
+<new1> painted in the Constructivism style
+<new1> painted in the Contemporary style
+<new1> painted in the Cosmic style
+<new1> painted in the Costume Design style
+<new1> painted in the Cover Art style
+<new1> painted in the Creative Writing style
+<new1> painted in the Cubism style
+<new1> painted in the Cubist Art style
+<new1> painted in the Cyberpunk style
+<new1> painted in the Dada style
+<new1> painted in the Decorative style
+<new1> painted in the Decoupage style
+<new1> painted in the Design Art style
+<new1> painted in the Digital Drawing style
+<new1> painted in the Digital Painting style
+<new1> painted in the Digital style
+<new1> painted in the Doodle Art style
+<new1> painted in the Doodle style
+<new1> painted in the Dramatic Art style
+<new1> painted in the Drawing Art style
+<new1> painted in the Drawing style
+<new1> painted in the Earth Art style
+<new1> painted in the Ecological Art style
+<new1> painted in the Embroidery style
+<new1> painted in the Engraving style
+<new1> painted in the Environmental Art style
+<new1> painted in the Environmental Design style
+<new1> painted in the Environmental style
+<new1> painted in the Etching style
+<new1> painted in the Existential Art style
+<new1> painted in the Expressionism style
+<new1> painted in the Fantasy Art style
+<new1> painted in the Fantasy Design style
+<new1> painted in the Fantasy Illustration style
+<new1> painted in the Fauvism style
+<new1> painted in the Film Art style
+<new1> painted in the Film Poster style
+<new1> painted in the Fine Art style
+<new1> painted in the Flat Art style
+<new1> painted in the Flat Design style
+<new1> painted in the Folk Art style
+<new1> painted in the Folk Design style
+<new1> painted in the Frame Design style
+<new1> painted in the Fresco style
+<new1> painted in the Futurism style
+<new1> painted in the Game Design style
+<new1> painted in the Generative Art style
+<new1> painted in the Geometric Art style
+<new1> painted in the Geometric style
+<new1> painted in the Glass Art style
+<new1> painted in the Glitch Art style
+<new1> painted in the Gothic Revival style
+<new1> painted in the Gothic style
+<new1> painted in the Graffiti Art style
+<new1> painted in the Graffiti Writing style
+<new1> painted in the Graffiti style
+<new1> painted in the Graphic Art style
+<new1> painted in the Graphic Design style
+<new1> painted in the Green Art style
+<new1> painted in the Hand Lettering style
+<new1> painted in the Handmade Art style
+<new1> painted in the Historic style
+<new1> painted in the Historical Art style
+<new1> painted in the Hypermodernism style
+<new1> painted in the Hypernaturalism style
+<new1> painted in the Hyperrealism style
+<new1> painted in the Iconography style
+<new1> painted in the Illuminated Manuscript style
+<new1> painted in the Impressionism style
+<new1> painted in the Impressionist Art style
+<new1> painted in the Industrial Design style
+<new1> painted in the Industrial style
+<new1> painted in the Infographic Design style
+<new1> painted in the Ink Art style
+<new1> painted in the Ink style
+<new1> painted in the Installation Art style
+<new1> painted in the Installation style
+<new1> painted in the Interactive Art style
+<new1> painted in the Interactive Design style
+<new1> painted in the Interactive Sculpture style
+<new1> painted in the Interior Art style
+<new1> painted in the Interior Design style
+<new1> painted in the Kinetic Art style
+<new1> painted in the Kinetic style
+<new1> painted in the Land Art style
+<new1> painted in the Landscape Painting style
+<new1> painted in the Landscape style
+<new1> painted in the Light Art style
+<new1> painted in the Literary Art style
+<new1> painted in the Lithography style
+<new1> painted in the Live Art style
+<new1> painted in the Logo Art style
+<new1> painted in the Logo Design style
+<new1> painted in the Logo style
+<new1> painted in the Low Poly Art style
+<new1> painted in the Low Poly style
+<new1> painted in the Lowbrow Art style
+<new1> painted in the Magazine Art style
+<new1> painted in the Magazine Cover style
+<new1> painted in the Magazine Illustration style
+<new1> painted in the Magic Realism style
+<new1> painted in the Mandala Art style
+<new1> painted in the Manga Art style
+<new1> painted in the Manga style
+<new1> painted in the Map Design style
+<new1> painted in the Matte Painting style
+<new1> painted in the Metalwork style
+<new1> painted in the Metaphysical Art style
+<new1> painted in the Mid-Century Modern style
+<new1> painted in the Miniature Art style
+<new1> painted in the Minimalism style
+<new1> painted in the Minimalist Art style
+<new1> painted in the Mixed Art style
+<new1> painted in the Mixed Media style
+<new1> painted in the Mixed Reality Art style
+<new1> painted in the Model Making style
+<new1> painted in the Modernism style
+<new1> painted in the Monochrome Art style
+<new1> painted in the Monochrome Design style
+<new1> painted in the Monochrome style
+<new1> painted in the Mosaic Art style
+<new1> painted in the Mosaic Design style
+<new1> painted in the Mosaic style
+<new1> painted in the Motion Graphics style
+<new1> painted in the Movie Poster style
+<new1> painted in the Multimedia Art style
+<new1> painted in the Multimedia Design style
+<new1> painted in the Mural Art style
+<new1> painted in the Mural style
+<new1> painted in the Music Video style
+<new1> painted in the Narrative style
+<new1> painted in the Naturalistic style
+<new1> painted in the Nature Art style
+<new1> painted in the Naïve Art style
+<new1> painted in the Neo Art style
+<new1> painted in the Neo-Impressionism style
+<new1> painted in the Neoclassicism style
+<new1> painted in the Neon Art style
+<new1> painted in the Neon Sign Art style
+<new1> painted in the Net Art style
+<new1> painted in the Oil style
+<new1> painted in the Op Art style
+<new1> painted in the Origami style
+<new1> painted in the Ornamental Art style
+<new1> painted in the Outsider Art style
+<new1> painted in the Panoramic style
+<new1> painted in the Paper Art style
+<new1> painted in the Papercraft style
+<new1> painted in the Pastel style
+<new1> painted in the Pattern Art style
+<new1> painted in the Pattern Design style
+<new1> painted in the Pattern style
+<new1> painted in the Pencil style
+<new1> painted in the Performance Art style
+<new1> painted in the Performance style
+<new1> painted in the Pet Portrait style
+<new1> painted in the Photo Art style
+<new1> painted in the Photography style
+<new1> painted in the Photorealism style
+<new1> painted in the Pixel Art style
+<new1> painted in the Pixel Design style
+<new1> painted in the Plastic Art style
+<new1> painted in the Plastic Design style
+<new1> painted in the Pointillism style
+<new1> painted in the Pop Art style
+<new1> painted in the Pop Culture Art style
+<new1> painted in the Pop Surrealism style
+<new1> painted in the Portrait Painting style
+<new1> painted in the Portrait Photography style
+<new1> painted in the Portraiture style
+<new1> painted in the Post-Impressionism style
+<new1> painted in the Poster Art style
+<new1> painted in the Poster Design style
+<new1> painted in the Poster style
+<new1> painted in the Postmodernism style
+<new1> painted in the Practical Effects style
+<new1> painted in the Precisionism style
+<new1> painted in the Print Art style
+<new1> painted in the Projection Art style
+<new1> painted in the Prop Art style
+<new1> painted in the Prop Design style
+<new1> painted in the Pseudorealism style
+<new1> painted in the Psychedelic style
+<new1> painted in the Quilling style
+<new1> painted in the Quilt Art style
+<new1> painted in the Quilt Design style
+<new1> painted in the Realism style
+<new1> painted in the Realist Painting style
+<new1> painted in the Relief Sculpture style
+<new1> painted in the Renaissance style
+<new1> painted in the Retro Art style
+<new1> painted in the Retro Futurism style
+<new1> painted in the Retro style
+<new1> painted in the Rococo style
+<new1> painted in the Romantic style
+<new1> painted in the Rustic style
+<new1> painted in the Scene Design style
+<new1> painted in the Scenic Art style
+<new1> painted in the Scenic Design style
+<new1> painted in the Scenic style
+<new1> painted in the Sci-Fi Art style
+<new1> painted in the Scientific Art style
+<new1> painted in the Scientific style
+<new1> painted in the Screen Art style
+<new1> painted in the Screenprint style
+<new1> painted in the Sculptural Art style
+<new1> painted in the Silhouette Design style
+<new1> painted in the Silhouette style
+<new1> painted in the Simple Art style
+<new1> painted in the Sketch style
+<new1> painted in the Social Realism style
+<new1> painted in the Sound Art style
+<new1> painted in the Sound Design style
+<new1> painted in the Soundwave Art style
+<new1> painted in the Spray Painting style
+<new1> painted in the Stained Glass style
+<new1> painted in the Steampunk style
+<new1> painted in the Stencil Art style
+<new1> painted in the Stencil Design style
+<new1> painted in the Stencil Graffiti style
+<new1> painted in the Stencil Printing style
+<new1> painted in the Stencil style
+<new1> painted in the Sticker Design style
+<new1> painted in the Stop Motion style
+<new1> painted in the Storyboard Art style
+<new1> painted in the Storybook Art style
+<new1> painted in the Street Art style
+<new1> painted in the Street Photography style
+<new1> painted in the Surrealism style
+<new1> painted in the Surrealist Painting style
+<new1> painted in the Surrealist Pop style
+<new1> painted in the Sustainable Art style
+<new1> painted in the Symbolic Art style
+<new1> painted in the Symbolism style
+<new1> painted in the Tactile Art style
+<new1> painted in the Tapestry style
+<new1> painted in the Tattoo Art style
+<new1> painted in the Tattoo Design style
+<new1> painted in the Tattoo style
+<new1> painted in the Tempera style
+<new1> painted in the Text Art style
+<new1> painted in the Text Design style
+<new1> painted in the Textile Art style
+<new1> painted in the Textile Design style
+<new1> painted in the Textile style
+<new1> painted in the Theme Art style
+<new1> painted in the Tiling style
+<new1> painted in the Traditional Art style
+<new1> painted in the Transhuman Art style
+<new1> painted in the Trompe-l'oeil style
+<new1> painted in the Typography style
+<new1> painted in the Ukiyo-e style
+<new1> painted in the Upcycling Art style
+<new1> painted in the Urban Design style
+<new1> painted in the Urban style
+<new1> painted in the User Interface Design style
+<new1> painted in the Vector Art style
+<new1> painted in the Vector Design style
+<new1> painted in the Vexel style
+<new1> painted in the Video Art style
+<new1> painted in the Video Game Art style
+<new1> painted in the Vintage style
+<new1> painted in the Virtual Art style
+<new1> painted in the Virtual Reality Art style
+<new1> painted in the Virtual Sculpture style
+<new1> painted in the Virtual style
+<new1> painted in the Visionary Art style
+<new1> painted in the Watercolor Design style
+<new1> painted in the Watercolor style
+<new1> painted in the Wearable Art style
+<new1> painted in the Web Art style
+<new1> painted in the Web Design style
+<new1> painted in the Window Art style
+<new1> painted in the Wood Art style
+<new1> painted in the Woodblock Printing style
+<new1> painted in the Woodcut style
+<new1> painted in the Woodworking style
+<new1> painted in the Word Art style
+<new1> painted in the Yarn Art style
+<new1> painted in the Yarn Craft style
+<new1> painted in the Zentangle Art style
+<new1> painted in the Zentangle style
+<new1> painted in the Zine Art style
+<new1> rendered in the 2D Art style
+<new1> rendered in the 3D Art style
+<new1> rendered in the 3D Modeling style
 <new1> rendered in the 3D Rendering style
 <new1> rendered in the AI Art style
+<new1> rendered in the Abstract Art style
 <new1> rendered in the Abstract Expressionism style
 <new1> rendered in the Abstract style
 <new1> rendered in the Acrylic style
+<new1> rendered in the Action Painting style
+<new1> rendered in the Aesthetic Art style
+<new1> rendered in the Album Art style
 <new1> rendered in the Algorithmic Art style
+<new1> rendered in the Animated Art style
+<new1> rendered in the Animation style
 <new1> rendered in the Anime style
 <new1> rendered in the Architectural style
+<new1> rendered in the Art Book style
 <new1> rendered in the Art Brut style
 <new1> rendered in the Art Deco style
+<new1> rendered in the Art Installation style
 <new1> rendered in the Art Nouveau style
+<new1> rendered in the Art Video style
+<new1> rendered in the Artist Book style
 <new1> rendered in the Assemblage style
 <new1> rendered in the Augmented Reality Art style
+<new1> rendered in the Background Art style
+<new1> rendered in the Background Design style
+<new1> rendered in the Banner Art style
+<new1> rendered in the Banner Design style
 <new1> rendered in the Baroque style
+<new1> rendered in the Bas-relief style
 <new1> rendered in the Bauhaus style
 <new1> rendered in the Bio Art style
+<new1> rendered in the Board Game Art style
+<new1> rendered in the Body Art style
+<new1> rendered in the Book Cover Art style
+<new1> rendered in the Book Illustration style
+<new1> rendered in the Brand Design style
 <new1> rendered in the Byzantine style
+<new1> rendered in the Calligraphy style
+<new1> rendered in the Cameo style
+<new1> rendered in the Cartoon Art style
+<new1> rendered in the Cartoon Design style
 <new1> rendered in the Cartoon style
+<new1> rendered in the Ceramic Art style
+<new1> rendered in the Ceramics style
+<new1> rendered in the Chalk Art style
+<new1> rendered in the Character Animation style
+<new1> rendered in the Character Design style
+<new1> rendered in the Character Portrait style
 <new1> rendered in the Charcoal style
+<new1> rendered in the Chiaroscuro style
+<new1> rendered in the Childrens Illustration style
 <new1> rendered in the Cinematic style
+<new1> rendered in the Classical Art style
 <new1> rendered in the Claymation style
+<new1> rendered in the Collage Art style
 <new1> rendered in the Collage style
+<new1> rendered in the Color Art style
+<new1> rendered in the Color Field style
+<new1> rendered in the Comic Strip style
 <new1> rendered in the Comic style
+<new1> rendered in the Comics Art style
 <new1> rendered in the Concept Art style
 <new1> rendered in the Conceptual Art style
 <new1> rendered in the Constructivism style
 <new1> rendered in the Contemporary style
 <new1> rendered in the Cosmic style
+<new1> rendered in the Costume Design style
+<new1> rendered in the Cover Art style
+<new1> rendered in the Creative Writing style
 <new1> rendered in the Cubism style
+<new1> rendered in the Cubist Art style
 <new1> rendered in the Cyberpunk style
 <new1> rendered in the Dada style
 <new1> rendered in the Decorative style
+<new1> rendered in the Decoupage style
+<new1> rendered in the Design Art style
+<new1> rendered in the Digital Drawing style
+<new1> rendered in the Digital Painting style
 <new1> rendered in the Digital style
+<new1> rendered in the Doodle Art style
+<new1> rendered in the Doodle style
+<new1> rendered in the Dramatic Art style
+<new1> rendered in the Drawing Art style
+<new1> rendered in the Drawing style
 <new1> rendered in the Earth Art style
 <new1> rendered in the Ecological Art style
+<new1> rendered in the Embroidery style
 <new1> rendered in the Engraving style
+<new1> rendered in the Environmental Art style
+<new1> rendered in the Environmental Design style
 <new1> rendered in the Environmental style
+<new1> rendered in the Etching style
 <new1> rendered in the Existential Art style
 <new1> rendered in the Expressionism style
+<new1> rendered in the Fantasy Art style
+<new1> rendered in the Fantasy Design style
+<new1> rendered in the Fantasy Illustration style
 <new1> rendered in the Fauvism style
+<new1> rendered in the Film Art style
+<new1> rendered in the Film Poster style
+<new1> rendered in the Fine Art style
+<new1> rendered in the Flat Art style
+<new1> rendered in the Flat Design style
 <new1> rendered in the Folk Art style
+<new1> rendered in the Folk Design style
+<new1> rendered in the Frame Design style
+<new1> rendered in the Fresco style
 <new1> rendered in the Futurism style
+<new1> rendered in the Game Design style
 <new1> rendered in the Generative Art style
+<new1> rendered in the Geometric Art style
 <new1> rendered in the Geometric style
+<new1> rendered in the Glass Art style
 <new1> rendered in the Glitch Art style
 <new1> rendered in the Gothic Revival style
 <new1> rendered in the Gothic style
+<new1> rendered in the Graffiti Art style
+<new1> rendered in the Graffiti Writing style
 <new1> rendered in the Graffiti style
+<new1> rendered in the Graphic Art style
+<new1> rendered in the Graphic Design style
 <new1> rendered in the Green Art style
+<new1> rendered in the Hand Lettering style
+<new1> rendered in the Handmade Art style
 <new1> rendered in the Historic style
+<new1> rendered in the Historical Art style
 <new1> rendered in the Hypermodernism style
 <new1> rendered in the Hypernaturalism style
 <new1> rendered in the Hyperrealism style
+<new1> rendered in the Iconography style
+<new1> rendered in the Illuminated Manuscript style
 <new1> rendered in the Impressionism style
+<new1> rendered in the Impressionist Art style
+<new1> rendered in the Industrial Design style
 <new1> rendered in the Industrial style
+<new1> rendered in the Infographic Design style
+<new1> rendered in the Ink Art style
 <new1> rendered in the Ink style
 <new1> rendered in the Installation Art style
+<new1> rendered in the Installation style
 <new1> rendered in the Interactive Art style
+<new1> rendered in the Interactive Design style
+<new1> rendered in the Interactive Sculpture style
+<new1> rendered in the Interior Art style
+<new1> rendered in the Interior Design style
+<new1> rendered in the Kinetic Art style
 <new1> rendered in the Kinetic style
 <new1> rendered in the Land Art style
+<new1> rendered in the Landscape Painting style
 <new1> rendered in the Landscape style
+<new1> rendered in the Light Art style
+<new1> rendered in the Literary Art style
+<new1> rendered in the Lithography style
+<new1> rendered in the Live Art style
+<new1> rendered in the Logo Art style
+<new1> rendered in the Logo Design style
+<new1> rendered in the Logo style
+<new1> rendered in the Low Poly Art style
+<new1> rendered in the Low Poly style
 <new1> rendered in the Lowbrow Art style
+<new1> rendered in the Magazine Art style
+<new1> rendered in the Magazine Cover style
+<new1> rendered in the Magazine Illustration style
 <new1> rendered in the Magic Realism style
+<new1> rendered in the Mandala Art style
+<new1> rendered in the Manga Art style
+<new1> rendered in the Manga style
+<new1> rendered in the Map Design style
+<new1> rendered in the Matte Painting style
+<new1> rendered in the Metalwork style
 <new1> rendered in the Metaphysical Art style
 <new1> rendered in the Mid-Century Modern style
+<new1> rendered in the Miniature Art style
 <new1> rendered in the Minimalism style
+<new1> rendered in the Minimalist Art style
+<new1> rendered in the Mixed Art style
+<new1> rendered in the Mixed Media style
+<new1> rendered in the Mixed Reality Art style
+<new1> rendered in the Model Making style
 <new1> rendered in the Modernism style
+<new1> rendered in the Monochrome Art style
+<new1> rendered in the Monochrome Design style
 <new1> rendered in the Monochrome style
+<new1> rendered in the Mosaic Art style
+<new1> rendered in the Mosaic Design style
+<new1> rendered in the Mosaic style
+<new1> rendered in the Motion Graphics style
+<new1> rendered in the Movie Poster style
+<new1> rendered in the Multimedia Art style
+<new1> rendered in the Multimedia Design style
+<new1> rendered in the Mural Art style
+<new1> rendered in the Mural style
+<new1> rendered in the Music Video style
 <new1> rendered in the Narrative style
 <new1> rendered in the Naturalistic style
+<new1> rendered in the Nature Art style
 <new1> rendered in the Naïve Art style
+<new1> rendered in the Neo Art style
 <new1> rendered in the Neo-Impressionism style
 <new1> rendered in the Neoclassicism style
+<new1> rendered in the Neon Art style
+<new1> rendered in the Neon Sign Art style
 <new1> rendered in the Net Art style
 <new1> rendered in the Oil style
 <new1> rendered in the Op Art style
+<new1> rendered in the Origami style
+<new1> rendered in the Ornamental Art style
 <new1> rendered in the Outsider Art style
 <new1> rendered in the Panoramic style
+<new1> rendered in the Paper Art style
+<new1> rendered in the Papercraft style
 <new1> rendered in the Pastel style
+<new1> rendered in the Pattern Art style
+<new1> rendered in the Pattern Design style
+<new1> rendered in the Pattern style
 <new1> rendered in the Pencil style
 <new1> rendered in the Performance Art style
+<new1> rendered in the Performance style
+<new1> rendered in the Pet Portrait style
+<new1> rendered in the Photo Art style
+<new1> rendered in the Photography style
 <new1> rendered in the Photorealism style
 <new1> rendered in the Pixel Art style
+<new1> rendered in the Pixel Design style
+<new1> rendered in the Plastic Art style
+<new1> rendered in the Plastic Design style
+<new1> rendered in the Pointillism style
 <new1> rendered in the Pop Art style
+<new1> rendered in the Pop Culture Art style
 <new1> rendered in the Pop Surrealism style
+<new1> rendered in the Portrait Painting style
+<new1> rendered in the Portrait Photography style
 <new1> rendered in the Portraiture style
 <new1> rendered in the Post-Impressionism style
+<new1> rendered in the Poster Art style
+<new1> rendered in the Poster Design style
+<new1> rendered in the Poster style
 <new1> rendered in the Postmodernism style
+<new1> rendered in the Practical Effects style
 <new1> rendered in the Precisionism style
+<new1> rendered in the Print Art style
+<new1> rendered in the Projection Art style
+<new1> rendered in the Prop Art style
+<new1> rendered in the Prop Design style
 <new1> rendered in the Pseudorealism style
 <new1> rendered in the Psychedelic style
+<new1> rendered in the Quilling style
+<new1> rendered in the Quilt Art style
+<new1> rendered in the Quilt Design style
+<new1> rendered in the Realism style
+<new1> rendered in the Realist Painting style
+<new1> rendered in the Relief Sculpture style
 <new1> rendered in the Renaissance style
+<new1> rendered in the Retro Art style
 <new1> rendered in the Retro Futurism style
+<new1> rendered in the Retro style
 <new1> rendered in the Rococo style
 <new1> rendered in the Romantic style
 <new1> rendered in the Rustic style
+<new1> rendered in the Scene Design style
+<new1> rendered in the Scenic Art style
+<new1> rendered in the Scenic Design style
 <new1> rendered in the Scenic style
+<new1> rendered in the Sci-Fi Art style
+<new1> rendered in the Scientific Art style
 <new1> rendered in the Scientific style
+<new1> rendered in the Screen Art style
 <new1> rendered in the Screenprint style
+<new1> rendered in the Sculptural Art style
+<new1> rendered in the Silhouette Design style
 <new1> rendered in the Silhouette style
+<new1> rendered in the Simple Art style
 <new1> rendered in the Sketch style
 <new1> rendered in the Social Realism style
 <new1> rendered in the Sound Art style
+<new1> rendered in the Sound Design style
 <new1> rendered in the Soundwave Art style
+<new1> rendered in the Spray Painting style
+<new1> rendered in the Stained Glass style
 <new1> rendered in the Steampunk style
 <new1> rendered in the Stencil Art style
+<new1> rendered in the Stencil Design style
+<new1> rendered in the Stencil Graffiti style
+<new1> rendered in the Stencil Printing style
 <new1> rendered in the Stencil style
+<new1> rendered in the Sticker Design style
+<new1> rendered in the Stop Motion style
+<new1> rendered in the Storyboard Art style
+<new1> rendered in the Storybook Art style
 <new1> rendered in the Street Art style
+<new1> rendered in the Street Photography style
 <new1> rendered in the Surrealism style
+<new1> rendered in the Surrealist Painting style
 <new1> rendered in the Surrealist Pop style
 <new1> rendered in the Sustainable Art style
+<new1> rendered in the Symbolic Art style
 <new1> rendered in the Symbolism style
+<new1> rendered in the Tactile Art style
+<new1> rendered in the Tapestry style
+<new1> rendered in the Tattoo Art style
+<new1> rendered in the Tattoo Design style
+<new1> rendered in the Tattoo style
 <new1> rendered in the Tempera style
+<new1> rendered in the Text Art style
+<new1> rendered in the Text Design style
 <new1> rendered in the Textile Art style
+<new1> rendered in the Textile Design style
+<new1> rendered in the Textile style
+<new1> rendered in the Theme Art style
+<new1> rendered in the Tiling style
+<new1> rendered in the Traditional Art style
 <new1> rendered in the Transhuman Art style
+<new1> rendered in the Trompe-l'oeil style
+<new1> rendered in the Typography style
 <new1> rendered in the Ukiyo-e style
+<new1> rendered in the Upcycling Art style
+<new1> rendered in the Urban Design style
 <new1> rendered in the Urban style
+<new1> rendered in the User Interface Design style
 <new1> rendered in the Vector Art style
+<new1> rendered in the Vector Design style
 <new1> rendered in the Vexel style
 <new1> rendered in the Video Art style
+<new1> rendered in the Video Game Art style
 <new1> rendered in the Vintage style
+<new1> rendered in the Virtual Art style
 <new1> rendered in the Virtual Reality Art style
+<new1> rendered in the Virtual Sculpture style
 <new1> rendered in the Virtual style
 <new1> rendered in the Visionary Art style
+<new1> rendered in the Watercolor Design style
 <new1> rendered in the Watercolor style
+<new1> rendered in the Wearable Art style
+<new1> rendered in the Web Art style
+<new1> rendered in the Web Design style
+<new1> rendered in the Window Art style
+<new1> rendered in the Wood Art style
+<new1> rendered in the Woodblock Printing style
 <new1> rendered in the Woodcut style
+<new1> rendered in the Woodworking style
+<new1> rendered in the Word Art style
+<new1> rendered in the Yarn Art style
+<new1> rendered in the Yarn Craft style
+<new1> rendered in the Zentangle Art style
+<new1> rendered in the Zentangle style
+<new1> rendered in the Zine Art style
