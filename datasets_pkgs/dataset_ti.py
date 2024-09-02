@@ -1,4 +1,4 @@
-import torchvision
+# import torchvision
 import re
 import random
 import time
@@ -17,7 +17,7 @@ from PIL import Image,ImageDraw
 import string
 import albumentations as A
 from packaging import version
-torch.use_deterministic_algorithms(True)
+# torch.use_deterministic_algorithms(True)
 # Added
 
 # Added
@@ -120,7 +120,7 @@ class TextualInversionDataset(Dataset):
         center_crop=False,
         exclude_suffix=True,
         mlm_target='all',
-        mask_prob=0.25,
+        mask_prob=0.15,
         mask_token_ids=None,
         get_images=True,
         train_prior_concept1=None,
@@ -130,6 +130,7 @@ class TextualInversionDataset(Dataset):
         seed=None,
         exclude_cap_types=None,
         prompt_type=None,
+        use_det_alg=False,
     ):  
 
         # randomness
@@ -139,6 +140,13 @@ class TextualInversionDataset(Dataset):
             random.seed(seed)
             torch.cuda.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)  # if use multi-GPU
+
+
+            # if use_det_alg:
+            #     torch.use_deterministic_algorithms(True)
+            # else:
+            #     torch.use_deterministic_algorithms(False)
+            
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
             print('seeded')
@@ -270,8 +278,10 @@ class TextualInversionDataset(Dataset):
                 cap_word=text_words[word_idx]
                 word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
+                
                 for tok_id in word_token_ids:
-                    if self.placeholder_token in cap_word:
+                    tok_decoded=self.tokenizer.decode(tok_id)
+                    if self.placeholder_token == tok_decoded:
                         is_keyword_tokens.append(True)
                     else:
                         is_keyword_tokens.append(False)
@@ -328,6 +338,7 @@ class TextualInversionDataset(Dataset):
                 for tok_id in word_token_ids:
                     # 1) input ids and indices for mask token
                     tok_decoded=self.tokenizer.decode(tok_id)
+                    
                     if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
                         masked_idxs.append(True)
                         input_ids_masked.append(self.mask_token_ids)
@@ -351,7 +362,6 @@ class TextualInversionDataset(Dataset):
                 print(mlm_caption,'mlm_caption')
                 print(sum(is_keyword_tokens_mlm),'sum(is_keyword_tokens_mlm)')
             assert sum(is_keyword_tokens_mlm)==1
-            
             example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
 
             # 4) input_ids or MLM
@@ -361,6 +371,7 @@ class TextualInversionDataset(Dataset):
                 input_ids_masked.append(self.tokenizer.pad_token_id)
             input_ids_masked=torch.LongTensor(input_ids_masked)
             example["input_ids_masked"]=input_ids_masked
+            
             # 5) mlm_labels
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
             if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token

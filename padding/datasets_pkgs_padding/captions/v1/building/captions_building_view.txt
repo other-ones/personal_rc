@@ -1,0 +1,106 @@
+a 360-degree view of <new1>
+a 3D model view of <new1>
+a CAD model view of <new1>
+a bird's-eye view of <new1>
+a blueprint view of <new1>
+a close-up view of <new1>
+a conceptual sketch view of <new1>
+a construction phase view of <new1>
+a corner view of <new1>
+a courtyard view of <new1>
+a cross-sectional view of <new1>
+a day view of <new1>
+a decayed view of <new1>
+a demolished view of <new1>
+a distant view of <new1>
+a drone view of <new1>
+a drone-following view of <new1>
+a fisheye lens view of <new1>
+a foggy view of <new1>
+a front view of <new1>
+a high-angle view of <new1>
+a historical reconstruction view of <new1>
+a historical view of <new1>
+a longitudinal section view of <new1>
+a look at the balconies of <new1>
+a look at the facade of <new1>
+a look at the fence around <new1>
+a look at the garage door of <new1>
+a look at the porch of <new1>
+a look at the roofline of <new1>
+a look at the side yard of <new1>
+a look at the signs on <new1>
+a look down from <new1>
+a look up at <new1>
+a low-angle view of <new1>
+a maximalist view of <new1>
+a minimalist view of <new1>
+a mirrored view of <new1>
+a modernized view of <new1>
+a night view of <new1>
+a night-lit view of <new1>
+a nightscape view with <new1>
+a nighttime skyline view including <new1>
+a panoramic view of <new1>
+a perspective view of <new1>
+a rainy view of <new1>
+a rear view of <new1>
+a reflected view of <new1>
+a reflective glass view of <new1>
+a reflective pool view with <new1>
+a rooftop view from <new1>
+a scanned view of <new1>
+a seasonal view of <new1>
+a sectional elevation view of <new1>
+a shadowed view of <new1>
+a side elevation view of <new1>
+a side view of <new1>
+a silhouette view of <new1>
+a skyline view including <new1>
+a snow-covered view of <new1>
+a street view next to <new1>
+a street-level view of <new1>
+a summer view of <new1>
+a sunlit view of <new1>
+a sunrise view with <new1>
+a sunset view with <new1>
+a textured surface view of <new1>
+a thermal view of <new1>
+a time-lapse view of <new1>
+a top view of <new1>
+a transverse section view of <new1>
+a view from the alley beside <new1>
+a view from the driveway of <new1>
+a view from the entrance of <new1>
+a view from the patio of <new1>
+a view from the sidewalk in front of <new1>
+a view of the address on <new1>
+a view of the back yard of <new1>
+a view of the chimney on <new1>
+a view of the entire <new1>
+a view of the foundation of <new1>
+a view of the front door of <new1>
+a view of the garden in front of <new1>
+a view of the landscaping around <new1>
+a view of the lighting on <new1>
+a view of the parking lot next to <new1>
+a view of the path leading to <new1>
+a view of the roof of <new1>
+a view of the steps leading to <new1>
+a view of the windows of <new1>
+a window view from <new1>
+a winter view of <new1>
+a zoomed-in detail view of <new1>
+an abandoned view of <new1>
+an aerial view of <new1>
+an angled view of <new1>
+an artistic rendering of <new1>
+an exploded view of <new1>
+an exterior view of <new1>
+an infrared view of <new1>
+an interior view of <new1>
+an isometric view of <new1>
+an oblique view of <new1>
+an overgrown view of <new1>
+an underground view of <new1>
+the main entrance of <new1>

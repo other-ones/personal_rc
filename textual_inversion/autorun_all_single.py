@@ -33,15 +33,18 @@ info_map_03={
     # 'barn': ('barn','barn'),
     # 'flower1':('flower','flower'),
 }
+
 info_map_01={
+    # train_prior/eval_prior/train_prompt_type/eval_prompt_type
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
+
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'backpack_dog':('backpack','backpack','nonliving','nonliving'),
     'poop_emoji':('toy','toy','nonliving','nonliving'),
     'cat2':('cat','cat','pet','living'),
-    # 'red_cartoon':('character','cartoon character','pet','living'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'pet_cat1':('cat','cat','pet','living'),
     'cat1': ('cat','cat','pet','living'),
     'dog3':  ('dog','dog','pet','living'),
     'pet_dog1':('dog','dog','pet','living'),
@@ -49,12 +52,12 @@ info_map_01={
     'teddybear':('bear','teddy bear','nonliving','nonliving'),
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'chair1': ('chair','chair','nonliving','nonliving'),
-    'pink_sunglasses': ('sunglasses','sunglasses','nonliving','nonliving'),
-    'dog7': ('dog','dog','pet','living'),
+
+    # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
     # 'barn': ('barn','barn'),
     # 'flower1':('flower','flower'),
 }
@@ -66,11 +69,12 @@ elif 'ubuntu' in hostname:
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             0.0001,
+            0.0002,
             0.001,
             0,
             # 0.005,
             # 0.01,
-            # 0.0005,
+            0.0005,
             # 0.0002,
             ]
 target_norms=[0]
@@ -97,7 +101,7 @@ delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
 mlm_batch_list=[25]
-rep_id=2
+rep_id=3
 benchmark='dreambooth'
 
 if include_prior:
@@ -194,8 +198,8 @@ for mlm_batch in mlm_batch_list:
                     command+='--normalize_target1=0 \\\n'
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
                     command+='--run_name="{}" \\\n'.format(run_name)
-                    # command+='--report_to="wandb" \\\n'
-                    # command+='--project_name="TI MLM SINGLE" \\\n'
+                    command+='--report_to="wandb" \\\n'
+                    command+='--project_name="TI MLM SINGLE" \\\n'
                     command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
                     os.system(command)
                     print('TRAIN STARTED')

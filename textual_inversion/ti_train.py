@@ -58,6 +58,7 @@ from torch import nn
 from utils import render_caption
 # torch.set_default_device('cuda')
 torch.autograd.set_detect_anomaly(True)
+
 torch.use_deterministic_algorithms(True)
 # ADDED
 if is_wandb_available():
@@ -170,6 +171,11 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,genera
 
 def main():
     args = parse_args()
+    # if args.use_det_alg:
+    #     # torch.use_deterministic_algorithms(True)
+    #     torch.set_deterministic(True)
+    # else:
+    #     torch.use_deterministic_algorithms(False)
     dict_args=vars(args)
     exp_dir=os.path.join(args.output_dir,args.run_name)    
     logging_dir = os.path.join(exp_dir, args.logging_dir)
@@ -411,6 +417,7 @@ def main():
         rev=args.rev,
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
+        use_det_alg=args.use_det_alg,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -431,6 +438,7 @@ def main():
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
         exclude_suffix=args.exclude_suffix,
+        use_det_alg=args.use_det_alg,
     )
     
     def collate_fn(examples):
@@ -447,7 +455,7 @@ def main():
             # 2. input ids
             input_ids = [example["input_ids"] for example in examples]
             input_ids=torch.stack(input_ids)
-            # 2. input ids
+            # 2. keyword_idxs
             is_keyword_tokens = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
             is_keyword_tokens = torch.stack(is_keyword_tokens)
             raw_captions_ti = [example["raw_caption_ti"] for example in examples]

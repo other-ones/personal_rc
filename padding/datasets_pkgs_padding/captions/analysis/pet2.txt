@@ -1,0 +1,31 @@
+<new1> talking with a person
+<new1> talking with a robot
+<new1> talking with a wizard
+<new1> playing with a ball
+<new1> playing with a toy
+<new1> playing with a cat
+<new1> playing with a squirrel
+<new1> playing with a panda
+<new1> running with a person
+<new1> running with a robot
+<new1> running with a child
+<new1> running with a girl
+<new1> running with a frisbee
+<new1> in the forest
+<new1> in the jungle
+<new1> in the snow
+<new1> on the beach
+<new1> on a cobblestone street
+<new1> in a police outfit
+<new1> in a firefighter outfit
+<new1> in a purple wizard outfit
+<new1> wearing a pink glasses
+<new1> wearing a yellow shirt
+<new1> with a river in the background
+<new1> with a city in the background
+<new1> with a mountain in the background
+<new1> with a blue house in the background
+<new1> with Chinese Great Wall in the background
+<new1> on top of a purple rug
+<new1> on top of a white rug
+<new1> swimming in a pool
