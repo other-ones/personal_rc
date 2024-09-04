@@ -1,11 +1,13 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=4;
 accelerate launch generate_prior.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
-  --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_duck/ \
+  --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_bear/ \
   --resolution=512  \
-  --class_prompt1="duck" --num_class_images=200 \
-  --sample_batch_size=20;
+  --class_prompt1="bear" --num_class_images=200 \
+  --sample_batch_size=20
+
+
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export CUDA_VISIBLE_DEVICES=5;
 accelerate launch generate_prior.py \
@@ -29,7 +31,7 @@ accelerate launch generate_prior.py \
   --sample_batch_size=20;
 
 
-    export MODEL_NAME="runwayml/stable-diffusion-v1-5";
+export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export OUTPUT_DIR="saved_models/custom_diffusion/single";
 export INSTANCE_DIR="/data/twkim/diffusion/personalization/collected/images/pet_cat1";
 export CUDA_VISIBLE_DEVICES=2;

@@ -1188,12 +1188,13 @@ def main(args):
 
                         save_dir = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
                         os.makedirs(save_dir,exist_ok=True)
-                        save_path_unet=os.path.join(save_dir,'unet_s{:04d}.pt'.format(global_step))
-                        torch.save(unet.state_dict(),save_path_unet)
-                        if args.train_text_encoder:
+                        
+                        if args.resume_unet_path is None:
+                            save_path_unet=os.path.join(save_dir,'unet_s{:04d}.pt'.format(global_step))
+                            torch.save(unet.state_dict(),save_path_unet)
                             save_path_text_encoder=os.path.join(save_dir,'text_encoder_s{:04d}.pt'.format(global_step))
                             torch.save(text_encoder.state_dict(),save_path_text_encoder)
-                        else:
+                        else: #ti training
                             learned_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                             learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.cpu()}
                             weight_name = "learned_embeds_s{:04d}.pt".format(global_step)

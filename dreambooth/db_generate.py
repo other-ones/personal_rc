@@ -185,6 +185,8 @@ def main(args):
     text_encoder.text_model.encoder.requires_grad_(False)
     text_encoder.text_model.final_layer_norm.requires_grad_(False)
     text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+
+    
     # HERE
     
     """VAE Initialization"""
@@ -251,6 +253,17 @@ def main(args):
         text_encoder.load_state_dict(state_dict,strict=True)
         print('text_encoder parameters loaded')
         del state_dict
+        
+    if args.learned_embed_path1 is not None:
+        token_embeds = text_encoder.get_input_embeddings().weight.data
+        learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
+        print('load ti embeddings')
+        learned_embed1=learned_embed1[args.placeholder_token1]
+        learned_embed1=learned_embed1.to(accelerator.device)
+        # initial_embed=learned_embed1.clone().detach()
+        with torch.no_grad():
+            token_embeds[placeholder_token_id1] = learned_embed1.clone()
+        del learned_embed1
     # std_pipeline = StableDiffusionPipelineClsAug.from_pretrained( model_name,
     #                         unet=accelerator.unwrap_model(unet, **extra_args),
     #                         tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),

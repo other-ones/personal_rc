@@ -15,9 +15,9 @@ Mixed precision type: no
 
 /home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
   warnings.warn(
-{'variance_type', 'sample_max_value', 'prediction_type', 'timestep_spacing', 'dynamic_thresholding_ratio', 'thresholding', 'clip_sample_range'} was not found in config. Values will be initialized to default values.
+{'thresholding', 'prediction_type', 'variance_type', 'dynamic_thresholding_ratio', 'clip_sample_range', 'sample_max_value', 'timestep_spacing'} was not found in config. Values will be initialized to default values.
 {'scaling_factor'} was not found in config. Values will be initialized to default values.
-{'resnet_out_scale_factor', 'resnet_time_scale_shift', 'num_class_embeds', 'upcast_attention', 'mid_block_type', 'transformer_layers_per_block', 'use_linear_projection', 'projection_class_embeddings_input_dim', 'cross_attention_norm', 'mid_block_only_cross_attention', 'time_embedding_type', 'time_embedding_dim', 'time_cond_proj_dim', 'only_cross_attention', 'addition_time_embed_dim', 'num_attention_heads', 'encoder_hid_dim', 'dual_cross_attention', 'resnet_skip_time_act', 'encoder_hid_dim_type', 'class_embed_type', 'conv_in_kernel', 'addition_embed_type_num_heads', 'addition_embed_type', 'timestep_post_act', 'class_embeddings_concat', 'time_embedding_act_fn', 'conv_out_kernel'} was not found in config. Values will be initialized to default values.
+{'conv_out_kernel', 'cross_attention_norm', 'encoder_hid_dim_type', 'addition_time_embed_dim', 'only_cross_attention', 'transformer_layers_per_block', 'num_attention_heads', 'mid_block_type', 'mid_block_only_cross_attention', 'num_class_embeds', 'time_embedding_type', 'encoder_hid_dim', 'upcast_attention', 'class_embeddings_concat', 'class_embed_type', 'resnet_time_scale_shift', 'timestep_post_act', 'time_embedding_act_fn', 'conv_in_kernel', 'time_embedding_dim', 'time_cond_proj_dim', 'resnet_skip_time_act', 'addition_embed_type', 'dual_cross_attention', 'resnet_out_scale_factor', 'addition_embed_type_num_heads', 'projection_class_embeddings_input_dim', 'use_linear_projection'} was not found in config. Values will be initialized to default values.
 INFO:__main__:***** Running training *****
 INFO:__main__:  Num examples = 10000000
 INFO:__main__:  Num Epochs = 1
@@ -82,29 +82,29 @@ INFO:__main__:STEP 0 Running validation...
  Generating 8 images with prompt: ['a <wooden_pot> pot in the jungle', 'a <wooden_pot> pot with a city in the background', 'a <wooden_pot> pot with a mountain in the background', 'a <wooden_pot> pot with the Eiffel Tower in the background', 'a <wooden_pot> pot floating on top of water', 'a <wooden_pot> pot floating in an ocean of milk', 'a <wooden_pot> pot on top of the sidewalk in a crowded street', 'a cube shaped <wooden_pot> pot'].
 
   0%|          | 0/25 [00:00<?, ?it/s][A
-  4%|▍         | 1/25 [00:00<00:13,  1.82it/s][A
-  8%|▊         | 2/25 [00:00<00:10,  2.14it/s][A
- 12%|█▏        | 3/25 [00:01<00:09,  2.27it/s][A
- 16%|█▌        | 4/25 [00:01<00:09,  2.28it/s][A
- 20%|██        | 5/25 [00:02<00:08,  2.48it/s][A
- 24%|██▍       | 6/25 [00:02<00:07,  2.62it/s][A
- 28%|██▊       | 7/25 [00:02<00:06,  2.71it/s][A
- 32%|███▏      | 8/25 [00:03<00:06,  2.76it/s][A
- 36%|███▌      | 9/25 [00:03<00:05,  2.81it/s][A
- 40%|████      | 10/25 [00:03<00:05,  2.85it/s][A
- 44%|████▍     | 11/25 [00:04<00:04,  2.88it/s][A
- 48%|████▊     | 12/25 [00:04<00:04,  2.89it/s][A
+  4%|▍         | 1/25 [00:00<00:09,  2.55it/s][A
+  8%|▊         | 2/25 [00:00<00:08,  2.74it/s][A
+ 12%|█▏        | 3/25 [00:01<00:07,  2.82it/s][A
+ 16%|█▌        | 4/25 [00:01<00:07,  2.85it/s][A
+ 20%|██        | 5/25 [00:01<00:06,  2.87it/s][A
+ 24%|██▍       | 6/25 [00:02<00:06,  2.89it/s][A
+ 28%|██▊       | 7/25 [00:02<00:06,  2.89it/s][A
+ 32%|███▏      | 8/25 [00:02<00:05,  2.90it/s][A
+ 36%|███▌      | 9/25 [00:03<00:05,  2.90it/s][A
+ 40%|████      | 10/25 [00:03<00:05,  2.90it/s][A
+ 44%|████▍     | 11/25 [00:03<00:04,  2.91it/s][A
+ 48%|████▊     | 12/25 [00:04<00:04,  2.91it/s][A
  52%|█████▏    | 13/25 [00:04<00:04,  2.91it/s][A
- 56%|█████▌    | 14/25 [00:05<00:03,  2.92it/s][A
- 60%|██████    | 15/25 [00:05<00:03,  2.92it/s][A
- 64%|██████▍   | 16/25 [00:05<00:03,  2.92it/s][A
- 68%|██████▊   | 17/25 [00:06<00:02,  2.92it/s][A
- 72%|███████▏  | 18/25 [00:06<00:02,  2.93it/s][A
- 76%|███████▌  | 19/25 [00:06<00:02,  2.93it/s][A
- 80%|████████  | 20/25 [00:07<00:01,  2.93it/s][A
- 84%|████████▍ | 21/25 [00:07<00:01,  2.92it/s][A
- 88%|████████▊ | 22/25 [00:07<00:01,  2.92it/s][A
- 92%|█████████▏| 23/25 [00:08<00:00,  2.92it/s][A
- 96%|█████████▌| 24/25 [00:08<00:00,  2.92it/s][A
-100%|██████████| 25/25 [00:08<00:00,  2.92it/s][A100%|██████████| 25/25 [00:09<00:00,  2.54it/s]
-Steps:   0%|          | 0/1000000 [00:24<?, ?it/s, loss=0.198, lr=0.002, norm_target=8.7]Steps:   0%|          | 1/1000000 [00:24<6860:42:07, 24.70s/it, loss=0.198, lr=0.002, norm_target=8.7]Steps:   0%|          | 1/1000000 [00:35<6860:42:07, 24.70s/it, loss=0.638, lr=0.002, norm_target=8.7]Steps:   0%|          | 2/1000000 [00:35<4631:02:26, 16.67s/it, loss=0.638, lr=0.002, norm_target=8.7]Steps:   0%|          | 2/1000000 [00:46<4631:02:26, 16.67s/it, loss=0.116, lr=0.002, norm_target=8.7]Steps:   0%|          | 3/1000000 [00:46<3913:37:58, 14.09s/it, loss=0.116, lr=0.002, norm_target=8.7]
+ 56%|█████▌    | 14/25 [00:04<00:03,  2.91it/s][A
+ 60%|██████    | 15/25 [00:05<00:03,  2.91it/s][A
+ 64%|██████▍   | 16/25 [00:05<00:03,  2.91it/s][A
+ 68%|██████▊   | 17/25 [00:05<00:02,  2.91it/s][A
+ 72%|███████▏  | 18/25 [00:06<00:02,  2.91it/s][A
+ 76%|███████▌  | 19/25 [00:06<00:02,  2.91it/s][A
+ 80%|████████  | 20/25 [00:06<00:01,  2.91it/s][A
+ 84%|████████▍ | 21/25 [00:07<00:01,  2.91it/s][A
+ 88%|████████▊ | 22/25 [00:07<00:01,  2.91it/s][A
+ 92%|█████████▏| 23/25 [00:07<00:00,  2.90it/s][A
+ 96%|█████████▌| 24/25 [00:08<00:00,  2.90it/s][A
+100%|██████████| 25/25 [00:08<00:00,  2.90it/s][A100%|██████████| 25/25 [00:09<00:00,  2.63it/s]
+Steps:   0%|          | 0/1000000 [00:24<?, ?it/s, loss=0.198, lr=0.002, norm_target=8.7]Steps:   0%|          | 1/1000000 [00:24<6677:33:08, 24.04s/it, loss=0.198, lr=0.002, norm_target=8.7]Steps:   0%|          | 1/1000000 [00:35<6677:33:08, 24.04s/it, loss=0.638, lr=0.002, norm_target=8.7]Steps:   0%|          | 2/1000000 [00:35<4556:57:13, 16.41s/it, loss=0.638, lr=0.002, norm_target=8.7]Steps:   0%|          | 2/1000000 [00:46<4556:57:13, 16.41s/it, loss=0.116, lr=0.002, norm_target=8.7]Steps:   0%|          | 3/1000000 [00:46<3873:24:21, 13.94s/it, loss=0.116, lr=0.002, norm_target=8.7]Steps:   0%|          | 3/1000000 [00:57<3873:24:21, 13.94s/it, loss=0.00479, lr=0.002, norm_target=8.83]Steps:   0%|          | 4/1000000 [00:57<3554:50:45, 12.80s/it, loss=0.00479, lr=0.002, norm_target=8.83]Steps:   0%|          | 4/1000000 [01:08<3554:50:45, 12.80s/it, loss=0.00402, lr=0.002, norm_target=8.83]Steps:   0%|          | 5/1000000 [01:08<3377:58:43, 12.16s/it, loss=0.00402, lr=0.002, norm_target=8.83]Steps:   0%|          | 5/1000000 [01:19<3377:58:43, 12.16s/it, loss=0.00641, lr=0.002, norm_target=8.83]Steps:   0%|          | 6/1000000 [01:19<3270:41:16, 11.77s/it, loss=0.00641, lr=0.002, norm_target=8.83]Steps:   0%|          | 6/1000000 [01:30<3270:41:16, 11.77s/it, loss=0.0443, lr=0.002, norm_target=8.83] Steps:   0%|          | 7/1000000 [01:30<3201:58:07, 11.53s/it, loss=0.0443, lr=0.002, norm_target=8.83]Steps:   0%|          | 7/1000000 [01:41<3201:58:07, 11.53s/it, loss=0.23, lr=0.002, norm_target=8.91]  Steps:   0%|          | 8/1000000 [01:41<3156:42:28, 11.36s/it, loss=0.23, lr=0.002, norm_target=8.91]Steps:   0%|          | 8/1000000 [01:52<3156:42:28, 11.36s/it, loss=0.233, lr=0.002, norm_target=8.91]Steps:   0%|          | 9/1000000 [01:52<3125:42:10, 11.25s/it, loss=0.233, lr=0.002, norm_target=8.91]Steps:   0%|          | 9/1000000 [02:03<3125:42:10, 11.25s/it, loss=0.232, lr=0.002, norm_target=8.91]Steps:   0%|          | 10/1000000 [02:03<3104:44:42, 11.18s/it, loss=0.232, lr=0.002, norm_target=8.91]Steps:   0%|          | 10/1000000 [02:14<3104:44:42, 11.18s/it, loss=0.0282, lr=0.002, norm_target=8.91]Steps:   0%|          | 11/1000000 [02:14<3091:00:20, 11.13s/it, loss=0.0282, lr=0.002, norm_target=8.91]Steps:   0%|          | 11/1000000 [02:25<3091:00:20, 11.13s/it, loss=0.271, lr=0.002, norm_target=9.06] Steps:   0%|          | 12/1000000 [02:25<3080:32:42, 11.09s/it, loss=0.271, lr=0.002, norm_target=9.06]Steps:   0%|          | 12/1000000 [02:36<3080:32:42, 11.09s/it, loss=0.149, lr=0.002, norm_target=9.06]Steps:   0%|          | 13/1000000 [02:36<3075:18:38, 11.07s/it, loss=0.149, lr=0.002, norm_target=9.06]Steps:   0%|          | 13/1000000 [02:47<3075:18:38, 11.07s/it, loss=0.0983, lr=0.002, norm_target=9.06]Steps:   0%|          | 14/1000000 [02:47<3072:31:01, 11.06s/it, loss=0.0983, lr=0.002, norm_target=9.06]Steps:   0%|          | 14/1000000 [02:58<3072:31:01, 11.06s/it, loss=0.0184, lr=0.002, norm_target=9.06]Steps:   0%|          | 15/1000000 [02:58<3069:52:55, 11.05s/it, loss=0.0184, lr=0.002, norm_target=9.06]Steps:   0%|          | 15/1000000 [03:09<3069:52:55, 11.05s/it, loss=0.0156, lr=0.002, norm_target=9.23]Steps:   0%|          | 16/1000000 [03:09<3066:53:48, 11.04s/it, loss=0.0156, lr=0.002, norm_target=9.23]Steps:   0%|          | 16/1000000 [03:20<3066:53:48, 11.04s/it, loss=0.0185, lr=0.002, norm_target=9.23]Steps:   0%|          | 17/1000000 [03:20<3064:41:46, 11.03s/it, loss=0.0185, lr=0.002, norm_target=9.23]Steps:   0%|          | 17/1000000 [03:31<3064:41:46, 11.03s/it, loss=0.364, lr=0.002, norm_target=9.23] Steps:   0%|          | 18/1000000 [03:31<3062:30:57, 11.03s/it, loss=0.364, lr=0.002, norm_target=9.23]Steps:   0%|          | 18/1000000 [03:42<3062:30:57, 11.03s/it, loss=0.021, lr=0.002, norm_target=9.23]Steps:   0%|          | 19/1000000 [03:42<3061:08:59, 11.02s/it, loss=0.021, lr=0.002, norm_target=9.23]Steps:   0%|          | 19/1000000 [03:53<3061:08:59, 11.02s/it, loss=0.00293, lr=0.002, norm_target=9.4]Steps:   0%|          | 20/1000000 [03:53<3061:05:29, 11.02s/it, loss=0.00293, lr=0.002, norm_target=9.4]

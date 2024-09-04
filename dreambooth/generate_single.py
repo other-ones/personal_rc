@@ -172,6 +172,9 @@ def main(args):
     tokenizer.add_tokens(mask_tokens)
     tokenizer.add_tokens(placeholder_token1)
     text_encoder.resize_token_embeddings(len(tokenizer))
+
+    
+
     text_encoder.text_model.encoder.requires_grad_(False)
     text_encoder.text_model.final_layer_norm.requires_grad_(False)
     text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)

@@ -228,43 +228,43 @@ def main():
         random.seed(args.seed)
 
     # Handle the repository creation
-    if accelerator.is_main_process:
-        viz_dir = os.path.join(exp_dir,'viz')
-        os.makedirs(viz_dir, exist_ok=True)
-        codepath=os.path.join(exp_dir,'src')
-        if os.path.exists(codepath) and 'tmp' not in codepath:
-            assert False
-        os.makedirs(codepath,exist_ok=True)
-        os.makedirs(codepath+'/captions',exist_ok=True)
-        os.system('cp *.py {}'.format(codepath))
-        os.system('cp ../datasets_pkgs {} -R'.format(codepath))
-        # os.system('cp ../datasets_pkgs/captions/{} {} -R'.format(args.prompt_type,codepath+'/captions'))
-        os.system('cp packages {} -R'.format(codepath))
-        caption_log_path=os.path.join(codepath,'log_captions.txt')
-        caption_log_file=open(caption_log_path,'w')
-        # copy clip
-        os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
-        target = os.readlink('clip_src/modeling_clip.py')
-        shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
-        target = os.readlink('clip_src/modeling_outputs.py')
-        shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
-        # copy clip
-        sample_dir=os.path.join(exp_dir,'samples')
-        ckpt_dir=os.path.join(exp_dir,'checkpoints')
-        os.makedirs(ckpt_dir,exist_ok=True)
-        os.makedirs(sample_dir, exist_ok=True)
-        # 1. command
-        command_path=os.path.join(codepath,'command.txt')
-        command_file=open(command_path,'w')
-        command_file.write('cwd\t{}\n'.format(os.getcwd()))
-        print(command_path,'command_path')
-        idx=0
-        while idx<len(sys.argv):
-            item=sys.argv[idx]
-            print(item,'item')
-            command_file.write('{}\n'.format(item))
-            idx+=1
-        command_file.close()
+    # if accelerator.is_main_process:
+    #     viz_dir = os.path.join(exp_dir,'viz')
+    #     os.makedirs(viz_dir, exist_ok=True)
+    #     codepath=os.path.join(exp_dir,'src')
+    #     # if os.path.exists(codepath) and 'tmp' not in codepath:
+    #     #     assert False
+    #     os.makedirs(codepath,exist_ok=True)
+    #     os.makedirs(codepath+'/captions',exist_ok=True)
+    #     os.system('cp *.py {}'.format(codepath))
+    #     os.system('cp ../datasets_pkgs {} -R'.format(codepath))
+    #     # os.system('cp ../datasets_pkgs/captions/{} {} -R'.format(args.prompt_type,codepath+'/captions'))
+    #     os.system('cp packages {} -R'.format(codepath))
+    #     caption_log_path=os.path.join(codepath,'log_captions.txt')
+    #     caption_log_file=open(caption_log_path,'w')
+    #     # copy clip
+    #     os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
+    #     target = os.readlink('clip_src/modeling_clip.py')
+    #     shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
+    #     target = os.readlink('clip_src/modeling_outputs.py')
+    #     shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
+    #     # copy clip
+    #     sample_dir=os.path.join(exp_dir,'samples')
+    #     ckpt_dir=os.path.join(exp_dir,'checkpoints')
+    #     os.makedirs(ckpt_dir,exist_ok=True)
+    #     os.makedirs(sample_dir, exist_ok=True)
+    #     # 1. command
+    #     command_path=os.path.join(codepath,'command.txt')
+    #     command_file=open(command_path,'w')
+    #     command_file.write('cwd\t{}\n'.format(os.getcwd()))
+    #     print(command_path,'command_path')
+    #     idx=0
+    #     while idx<len(sys.argv):
+    #         item=sys.argv[idx]
+    #         print(item,'item')
+    #         command_file.write('{}\n'.format(item))
+    #         idx+=1
+    #     command_file.close()
        
 
     # Load tokenizer
@@ -641,18 +641,7 @@ def main():
             # Only show the progress bar once on each machine.
             disable=not accelerator.is_local_main_process,
         )
-    # keep original embeddings as reference
-    # pipeline = DiffusionPipeline.from_pretrained(
-    #     args.pretrained_model_name_or_path,
-    #     text_encoder=accelerator.unwrap_model(text_encoder),
-    #     tokenizer=tokenizer,
-    #     unet=unet,
-    #     vae=vae,
-    #     safety_checker=None,
-    #     revision=args.revision,
-    #     variant=args.variant,
-    #     torch_dtype=weight_dtype,
-    # )
+
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
                             inspect.signature(
                                 accelerator.unwrap_model
@@ -694,9 +683,8 @@ def main():
                 masks64=torch.nn.functional.interpolate(masks,(64,64))
                 is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
                 raw_captions_ti=batch["raw_captions_ti"] # B,77 list of booleans (tensor)
-                
                 # 1. Load Batch
-                
+
                 # 2. Reconstruction Loss
                 latents = vae.encode(pixel_values.to(dtype=weight_dtype)).latent_dist.sample().detach()
                 latents = latents * vae.config.scaling_factor
@@ -706,10 +694,6 @@ def main():
                 timesteps = timesteps.long()
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
                 learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
-                # if args.normalize_target1:
-                #     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
-                # else:
-                #     target_emb=learned_embeds
                 bsz=len(latents)
                 encoder_hidden_states = text_encoder(input_ids,
                                                      is_keyword_tokens1=is_keyword_tokens,
@@ -730,7 +714,6 @@ def main():
                     model_pred=(model_pred*masks64)
                     target=(target*masks64)
                 loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
-                # loss=loss.mean()
                 
                 # 3. MLM Loss
                 loss_mlm=None
@@ -746,9 +729,6 @@ def main():
                     input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                     mlm_bsz=len(masked_idxs)
                     num_masked=torch.sum(masked_idxs.detach())
-                    # 
-                    # input_ids_non_mask=batch_mlm["input_ids_non_mask"]
-                    # mask_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
                                                             mask_embedding=mask_embeds.repeat(num_masked,1),
                                                             mask_idxs=masked_idxs,
@@ -789,159 +769,9 @@ def main():
             # if accelerator.sync_gradients:
             images = []
             if accelerator.is_main_process:
-                if global_step % args.checkpointing_steps == 0:
-                    if args.checkpoints_total_limit is not None:
-                        checkpoints = os.listdir(ckpt_dir)
-                        checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
-                        checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
-                        # before we save the new checkpoint, we need to have at _most_ `checkpoints_total_limit - 1` checkpoints
-                        if len(checkpoints) >= args.checkpoints_total_limit:
-                            num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
-                            removing_checkpoints = checkpoints[0:num_to_remove]
-                            logger.info(
-                                f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints",main_process_only=True
-                            )
-                            logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}",main_process_only=True)
-                            for removing_checkpoint in removing_checkpoints:
-                                removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
-                                shutil.rmtree(removing_checkpoint)
-                    learned_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
-                    learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.detach().cpu()}
-                    weight_name = f"learned_embeds_s{global_step}.pt"
-                    # weight_name_augmenter = f"augmenter_s{global_step}.pt"
-                    save_path = os.path.join(ckpt_dir, weight_name)
-                    # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
-                    # torch.save(learned_embeds_dict, save_path)
-                    del learned_embeds_saved
-                    # torch.save(augmenter.state_dict(), save_path_augmenter)
-                if ((global_step % args.log_steps == 0)) and accelerator.is_main_process:
-                    caption_log_file=open(caption_log_path,'a')
-                    for raw_caption_ti in raw_captions_ti:
-                        caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
-                        caption_log_file.flush()
-                    caption_log_file.write('\n')
-                    caption_log_file.flush()
-                    if args.lambda_mlm:
-                        for raw_caption_mlm in raw_captions_mlm:
-                            caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_mlm))
-                            caption_log_file.flush()
-                        caption_log_file.write('\n')
-                    caption_log_file.write('\n')
-                    caption_log_file.flush()
-                    caption_log_file.close()
-                if ((global_step % args.validation_steps == 0)):
-                    # visualize input
-                    input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
-                    input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                    if args.masked_loss:
-                        input_image=input_image*input_mask
-                    input_image=input_image.astype(np.uint8)
-                    input_image=Image.fromarray(input_image)
-                    input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
-                    if args.lambda_mlm and accelerator.is_main_process:
-                        # 1. MLM Result Logging
-                        viz_idx=0
-                        masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
-                        non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
-                        mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
-                        input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
-                        input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
-
-                        input_ids_pos=input_ids_pos[non_special_idxs]
-                        input_ids_masked=input_ids_masked[non_special_idxs]
-                        mlm_logits=mlm_logits[non_special_idxs]
-                        masked_idxs=masked_idxs[non_special_idxs]
-
-                        decoded=tokenizer.batch_decode(input_ids_pos)
-                        decoded_masked=tokenizer.batch_decode(input_ids_masked)
-                        decoded_logits=tokenizer.batch_decode(mlm_logits)
-                        decoded_list=[]
-                        decoded_masked_list=[]
-                        decoded_logits_list=[]
-                        for d1,d2,d3,m in zip(decoded,decoded_masked,decoded_logits,masked_idxs):
-                            if m:
-                                decoded_list.append('{:10}'.format('M[{}]'.format(d1)))
-                                decoded_masked_list.append('{:10}'.format(d2))
-                                # decoded_masked_list.append('{:12}'.format('M[{}]'.format(d2)))
-                                decoded_logits_list.append('{:10}'.format('M[{}]'.format(d3)))
-                            else:
-                                decoded_list.append('{:10}'.format(d1))
-                                decoded_masked_list.append('{:10}'.format(d2))
-                                decoded_logits_list.append('{:10}'.format(d3))
-                        decoded=' '.join(decoded_list)
-                        decoded_masked=' '.join(decoded_masked_list)
-                        decoded_logits=' '.join(decoded_logits_list)
-                        dots='-'*100
-                        print()
-                        print()
-                        print(dots)
-                        print(dots)
-                        print('Step\t\t|{}'.format(global_step))
-                        print('Raw\t\t|{}'.format(decoded))
-                        print('Masked\t\t|{}'.format(decoded_masked))
-                        print('Preds\t\t|{}'.format(decoded_logits))
-                        print(dots)
-                        print(dots)
-                        print()
-                        # 1. MLM Result Logging
-                    if not args.debug:
-                        # 2. Image Logging
-                        with torch.no_grad():
-                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
-                            # if args.normalize_target1:
-                            #     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
-                            # else:
-                            #     target_emb=learned_embeds
-                            # (tokenizer, args, accelerator, target_emb,pipeline,step)
-                            images,validation_prompts = log_validation(
-                                tokenizer=tokenizer, 
-                                args=args, 
-                                accelerator=accelerator, 
-                                target_emb=learned_embeds_val.clone(),
-                                pipeline=pipeline,
-                                step=global_step,
-                                generator=generator_cuda
-                            )
-                            del learned_embeds_val
-
-                        # save images
-                        # validation_files=os.listdir(args.train_data_dir)
-                        validation_files=sorted(os.listdir(args.train_data_dir1))
-                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
-
-                        # mod here
-                        num_images=len(images)
-                        num_cols=num_images
-                        num_rows=num_images//num_cols
-                        margin_bottom=150
-                        margin_right=10
-                        # merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
-                        # for ridx in range(num_rows):
-                        #     merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
-                        # for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
-                        #     row_idx=iidx//num_cols
-                        #     col_idx=iidx-(num_cols*row_idx)
-                        #     x0=(col_idx+1)*(512+margin_right)
-                        #     y0=row_idx*(512+margin_bottom)+512
-                        #     x1=x0+(512+margin_right)
-                        #     y1=y0+margin_bottom
-                        #     # print(image.size,'image.size')
-                        #     merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
-                        #     merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
-                        # merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
-                        # mod here
-
-
-                        if args.report_to=='wandb':
-                            if (global_step) % args.save_steps == 0:   
-                                wandb_image = wandb.Image(merged_viz, caption="img_{:06d}_result.jpg".format(global_step))
-                                run.log({"examples": wandb_image})
                 logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
                 with torch.no_grad():
                     target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1].clone()
-                    # if args.normalize_target1:
-                    #     norm_target=torch.norm(learned_embeds_scaled,p=1,dim=-1)
-                    # else:
                     norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
                     del target_embeds_log
                 if loss_mlm is not None:
@@ -966,14 +796,7 @@ def main():
                 break
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
-    # if accelerator.is_main_process:
-    #     weight_name = "learned_embeds_final.pt" 
-    #     # weight_name_augmenter= "learned_embeds_final.pt" 
-    #     save_path = os.path.join(ckpt_dir, weight_name)
-    #     # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
-    #     learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
-    #     torch.save(learned_embeds_dict, save_path)
-    #     # torch.save(augmenter.state_dict(), save_path_augmenter)
+    
 
         
 

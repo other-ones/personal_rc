@@ -10,8 +10,8 @@ info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'dog6': ('dog','dog','pet','living'),
     'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
     # 'poop_emoji':('toy','toy','nonliving','nonliving'),
@@ -39,18 +39,18 @@ info_map_01={
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -67,8 +67,10 @@ elif 'ubuntu' in hostname:
 target_devices=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             # 0, 
-            0.001,
-            # 0.0001,
+            # 0.001,
+            0.0001,
+            0.0005,
+            0.00005,
             # 0.002,
             ]
 masked_loss=0
@@ -91,14 +93,14 @@ fixte_list=[0]
 mask_prob_list=[0.15]
 seed=2940
 rep_id=1
-unet_dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
-emb_dir_name='single_capv7_ti_seed{}_rep{}'.format(seed,rep_id)
-log_dir='logs/train/{}'.format(emb_dir_name)
+dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
+log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4]
+lr_list=[1e-4,5e-4]
 mlm_batch_size=25
 train_target_step=1000
+print('TRAINING TI')
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     # lr_str=lr_str.replace('.','P')
@@ -106,7 +108,8 @@ for lr in lr_list:
         mask_prob_str=float_to_str(mask_prob)
         mask_prob_str=mask_prob_str.replace('.','')
         for port_idx,concept in enumerate(list(info_map.keys())):
-            unet_dir_path=os.path.join('saved_models/db_models',unet_dir_name)
+            print(concept,'concept')
+            unet_dir_path=os.path.join('saved_models/db_models',dir_name)
             unet_concept_path=os.path.join(unet_dir_path,concept)
             device_idx=stat_idx
             for lambda_mlm in lambda_mlm_list:
@@ -132,10 +135,10 @@ for lr in lr_list:
                 
                 resume_unet_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
                 resume_text_encoder_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(train_target_step,train_target_step))
-                output_dir=os.path.join('saved_models/db_models/{}'.format(emb_dir_name),concept)
+                output_dir=os.path.join('saved_models/db_models/{}'.format(dir_name),concept)
                 
                 if not os.path.exists(resume_unet_path):
-                    print(resume_unet_path,'not exists')
+                    print(resume_unet_path,'UNET not exists',concept)
                     continue
                 exp_path=os.path.join(output_dir,run_name)
                 if os.path.exists(exp_path):
@@ -172,8 +175,8 @@ for lr in lr_list:
                 command+='--resume_text_encoder_path={} \\\n'.format(resume_text_encoder_path)
                 command+='--train_batch_size=1 \\\n'
                 command+='--gradient_accumulation_steps=1 \\\n'
-                command+='--checkpoints_total_limit=10 \\\n'
-                command+='--checkpointing_steps=500 \\\n'
+                command+='--checkpoints_total_limit=20 \\\n'
+                command+='--checkpointing_steps=250 \\\n'
                 command+='--max_train_steps=3001 \\\n'
                 command+='--learning_rate={} \\\n'.format(lr)
                 command+='--lr_scheduler="constant" \\\n'
@@ -202,17 +205,15 @@ for lr in lr_list:
                 command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                 os.system(command)
                 print('STARTED')
-                exit()
                 time.sleep(15)
 
 
 
-
+print('\n\n')
 print('GENERATION')
 # GENERATION
-unet_dir_path=os.path.join('saved_models/db_models',unet_dir_name)
-emb_dir_path=os.path.join('saved_models/db_models',emb_dir_name)
-gen_log_dir='logs/generate/{}'.format(emb_dir_name)
+dir_path=os.path.join('saved_models/db_models',dir_name)
+gen_log_dir='logs/generate/{}'.format(dir_name)
 os.makedirs(gen_log_dir,exist_ok=True)    
 delay=30
 num_images_per_prompt=8
@@ -222,69 +223,79 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step=1000
-for concept in concepts:
-    if concept not in info_map:
-        continue
-    unet_concept_path=os.path.join(unet_dir_path,concept)
-    emb_concept_path=os.path.join(emb_dir_path,concept)
-    if not os.path.exists(concept_path):
-        continue
-    exps=os.listdir(concept_path)
-    for exp_idx,exp in enumerate(exps):
-        if not '_ti' in exp:
+gen_target_step_list=[500,1000,3000,2000]
+for gen_target_step in gen_target_step_list:
+    for concept in concepts:
+        if concept not in info_map:
             continue
-        unet_exp_name.replace('_ti','')
-        train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        resume_unet_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
-        resume_text_encoder_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(train_target_step,train_target_step))
-        learned_embed_path1=os.path.join(emb_concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds_s{:04d}.pt'.format(gen_target_step,gen_target_step))
-        if not os.path.exists(resume_unet_path):
-            print(resume_unet_path,'does not exist')
+        concept_path=os.path.join(dir_path,concept)
+        if not os.path.exists(concept_path):
+            print(concept_path,'not exists',concept)
             continue
-        exp_name=resume_unet_path.split('/')[-4]
-        exp_name+='_s1000'
-        output_dir=os.path.join('results/db_results/{}/{}'.format(emb_dir_name,concept))
-        dst_exp_path=os.path.join(output_dir,exp_name)
-        if os.path.exists(dst_exp_path):
-            print(dst_exp_path,'exists')
-            continue
-        while True:
-            stats=get_gpu_memory()
-            stat=stats[stat_idx%len(stats)]
-            if stat>2e4:
-                device_idx=stat_idx
+        exps=os.listdir(concept_path)
+        for exp_idx,exp in enumerate(exps):
+            if not '_ti' in exp:
+                continue
+            # unet_exp_name=exp.split('_lr')
+            unet_exp_name=exp.replace('lr5e4','lr1e6')
+            unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')
+            unet_exp_name=unet_exp_name.replace('_ti','')
+            train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
+            resume_unet_path=os.path.join(concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
+            resume_text_encoder_path=os.path.join(concept_path,unet_exp_name,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(train_target_step,train_target_step))
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds_s{:04d}.pt'.format(gen_target_step,gen_target_step))
+            if not os.path.exists(resume_unet_path):
+                print(resume_unet_path,'UNET does not exist')
+                continue
+            if not os.path.exists(learned_embed_path1):
+                print(learned_embed_path1,'EMB does not exist',concept)
+                continue
+            ti_exp_name=exp+'_s{}'.format(gen_target_step)
+            output_dir=os.path.join('results/db_results/{}/{}'.format(dir_name,concept))
+            dst_exp_path=os.path.join(output_dir,ti_exp_name)
+            if os.path.exists(dst_exp_path):
+                print(dst_exp_path,'exists')
+                continue
+            while True:
+                stats=get_gpu_memory()
+                found=False
+                for stat_idx in target_devices:
+                    stat=stats[stat_idx]    
+                    if stat>2e4 :
+                        device_idx=stat_idx
+                        found=True
+                        break
+                if found:
+                    break
+                print('sleep waiting for GENERATING {}'.format(ti_exp_name))
+                time.sleep(30)
                 stat_idx+=1
-                break
-            print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(exps)-exp_idx))
+                stat_idx=(stat_idx%len(stats))
+            print('GENERATION START\t{}\tDEVICE:{}'.format(ti_exp_name,device_idx))
+            log_path=os.path.join(gen_log_dir,ti_exp_name+'.out')
+            command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx],port_idx)
+            command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+            command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
+            command+='--placeholder_token1="<{}>" \\\n'.format(concept)
+            command+='--resolution=512 \\\n'
+            command+='--eval_batch_size=15 \\\n'
+            command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
+            command+='--output_dir="{}" \\\n'.format(output_dir)
+            command+='--seed={} \\\n'.format(seed)
+            command+='--mask_tokens="[MASK]" \\\n'
+            command+='--resume_unet_path="{}" \\\n'.format(resume_unet_path)
+            command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
+            command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
+            command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
+            command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
+            command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
+            command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
+            command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
+            command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
+            command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
+            os.system(command)
+            print('GENERATION STARTED')
+            port_idx+=1
             time.sleep(30)
-            stat_idx+=1
-            stat_idx=(stat_idx%len(stats))
-        print(exp_name,device_idx)
-        log_path=os.path.join(gen_log_dir,exp_name+'.out')
-        command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-        command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx],port_idx)
-        command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
-        command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-        command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-        command+='--resolution=512 \\\n'
-        command+='--eval_batch_size=15 \\\n'
-        command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
-        command+='--output_dir="{}" \\\n'.format(output_dir)
-        command+='--seed={} \\\n'.format(seed)
-        command+='--mask_tokens="[MASK]" \\\n'
-        command+='--resume_unet_path="{}" \\\n'.format(resume_unet_path)
-        command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
-        command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-        command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
-        command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
-        command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
-        command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
-        command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
-        command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
-        command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
-        os.system(command)
-        print('STARTED')
-        port_idx+=1
-        time.sleep(30)
 

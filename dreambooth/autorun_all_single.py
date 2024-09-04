@@ -8,11 +8,12 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
+    'teapot':('teapot','teapot','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
     # 'poop_emoji':('toy','toy','nonliving','nonliving'),
     # 'cat2':('cat','cat','pet','living'),
@@ -20,10 +21,10 @@ info_map_03={
     # 'dog3':  ('dog','dog','pet','living'),
     # 'pet_dog1':('dog','dog','pet','living'),
     # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
     # 'cat_statue': ('toy','toy','nonliving','nonliving'),
     # 'rc_car':('toy','toy','nonliving','nonliving'),
     # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -70,6 +71,7 @@ lambda_mlm_list=[
             0.001,
             0.0001,
             0.0005,
+            0.00005,
             # 0.002,
             ]
 masked_loss=0
@@ -140,7 +142,7 @@ for lr in lr_list:
                             break
                         print(run_name,'sleep',stat_idx,stat)
                         time.sleep(10)
-                    print(run_name,device_idx)
+                    print(exp_path,device_idx)
                     log_path=os.path.join(log_dir,run_name+'.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
@@ -184,7 +186,7 @@ for lr in lr_list:
                     # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
-                    print('STARTED')
+                    print('TRAIN STARTED')
                     time.sleep(15)
 
 

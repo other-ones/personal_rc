@@ -15,9 +15,9 @@ Mixed precision type: no
 
 /home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
   warnings.warn(
-{'thresholding', 'timestep_spacing', 'variance_type', 'clip_sample_range', 'dynamic_thresholding_ratio', 'prediction_type', 'sample_max_value'} was not found in config. Values will be initialized to default values.
+{'dynamic_thresholding_ratio', 'timestep_spacing', 'variance_type', 'thresholding', 'prediction_type', 'clip_sample_range', 'sample_max_value'} was not found in config. Values will be initialized to default values.
 {'scaling_factor'} was not found in config. Values will be initialized to default values.
-{'class_embed_type', 'addition_time_embed_dim', 'time_embedding_type', 'upcast_attention', 'resnet_time_scale_shift', 'dual_cross_attention', 'cross_attention_norm', 'mid_block_type', 'only_cross_attention', 'num_class_embeds', 'resnet_out_scale_factor', 'time_embedding_dim', 'transformer_layers_per_block', 'addition_embed_type', 'projection_class_embeddings_input_dim', 'class_embeddings_concat', 'addition_embed_type_num_heads', 'conv_out_kernel', 'resnet_skip_time_act', 'encoder_hid_dim', 'encoder_hid_dim_type', 'timestep_post_act', 'time_cond_proj_dim', 'conv_in_kernel', 'num_attention_heads', 'use_linear_projection', 'time_embedding_act_fn', 'mid_block_only_cross_attention'} was not found in config. Values will be initialized to default values.
+{'num_attention_heads', 'dual_cross_attention', 'only_cross_attention', 'timestep_post_act', 'time_embedding_type', 'time_cond_proj_dim', 'addition_time_embed_dim', 'addition_embed_type_num_heads', 'num_class_embeds', 'time_embedding_act_fn', 'use_linear_projection', 'transformer_layers_per_block', 'resnet_out_scale_factor', 'encoder_hid_dim', 'conv_in_kernel', 'conv_out_kernel', 'time_embedding_dim', 'class_embed_type', 'encoder_hid_dim_type', 'resnet_skip_time_act', 'resnet_time_scale_shift', 'projection_class_embeddings_input_dim', 'upcast_attention', 'addition_embed_type', 'class_embeddings_concat', 'mid_block_type', 'mid_block_only_cross_attention', 'cross_attention_norm'} was not found in config. Values will be initialized to default values.
 INFO:__main__:***** Running training *****
 INFO:__main__:  Num examples = 10000000
 INFO:__main__:  Num Epochs = 1
@@ -26,14 +26,14 @@ INFO:__main__:  Total train batch size (w. parallel, distributed & accumulation)
 INFO:__main__:  Gradient Accumulation steps = 4
 INFO:__main__:  Total optimization steps = 1000000
 set seed 2940
-saved_models/nj_models/single_capv7_prior_seed2940_rep2/teapot/ti_cnetv4_prior_mlm00001_teapot_mprob015_mbatch25_nj/src/command.txt command_path
+saved_models/nj_models/single_capv7_prior_seed2940_rep2/pet_dog1/ti_cnetv4_prior_mlm00001_pet_dog1_mprob015_mbatch25_nj/src/command.txt command_path
 nj_train.py item
 --pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 item
---train_data_dir1=/data/twkim/diffusion/personalization/collected/images/teapot item
+--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/pet_dog1 item
 --learnable_property=object item
---placeholder_token1=<teapot> item
---train_prior_concept1=teapot item
---eval_prior_concept1=teapot item
+--placeholder_token1=<pet_dog1> item
+--train_prior_concept1=dog item
+--eval_prior_concept1=dog item
 --resolution=512 item
 --train_batch_size=1 item
 --gradient_accumulation_steps=4 item
@@ -41,7 +41,7 @@ nj_train.py item
 --lr_scheduler=constant item
 --normalize_mask_embeds=0 item
 --lr_warmup_steps=0 item
---output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/teapot item
+--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/pet_dog1 item
 --seed=2940 item
 --mask_tokens=[MASK] item
 --lambda_mlm=0.0001 item
@@ -52,30 +52,30 @@ nj_train.py item
 --mlm_target=masked item
 --mlm_batch_size=25 item
 --scale_lr item
---eval_prompt_type=nonliving item
---train_prompt_type=nonliving item
+--eval_prompt_type=living item
+--train_prompt_type=pet item
 --silent=0 item
 --rev=0 item
 --normalize_target1=0 item
 --caption_root=../datasets_pkgs/captions/v7 item
---run_name=ti_cnetv4_prior_mlm00001_teapot_mprob015_mbatch25_nj item
+--run_name=ti_cnetv4_prior_mlm00001_pet_dog1_mprob015_mbatch25_nj item
 --include_prior_concept=1 item
 32 norm_num_groups
 320 block_out_channels[0]
 32 norm_num_groups
 [49409] mask_token_ids
 seeded
-captions_nonliving_relations	29376
-captions_nonliving_styles	378
-captions_nonliving_human_interactions	4176
-captions_nonliving_backgrounds	552
-captions_nonliving_creatives	117
+captions_pet_relations	29376
+captions_pet_styles	378
+captions_pet_backgrounds	552
+captions_pet_human_interactions	3528
+captions_pet_wearings	4560
 seeded
-captions_nonliving_relations	29376
-captions_nonliving_styles	378
-captions_nonliving_human_interactions	4176
-captions_nonliving_backgrounds	552
-captions_nonliving_creatives	117
+captions_pet_relations	29376
+captions_pet_styles	378
+captions_pet_backgrounds	552
+captions_pet_human_interactions	3528
+captions_pet_wearings	4560
 position_ids defined_key-clsnet
 final.weight defined_key-clsnet
 final.bias defined_key-clsnet
@@ -120,43 +120,43 @@ module.layer_norm2.bias saved_key-clsnet
 Steps:   0%|          | 0/1000000 [00:00<?, ?it/s]True accepts_keep_fp32_wrapper
 {'keep_fp32_wrapper': True} extra_args
 INFO:__main__:STEP 0 Running validation... 
- Generating 8 images with prompt: ['a <teapot> teapot in the jungle', 'a <teapot> teapot with a city in the background', 'a <teapot> teapot with a mountain in the background', 'a <teapot> teapot with the Eiffel Tower in the background', 'a <teapot> teapot floating on top of water', 'a <teapot> teapot floating in an ocean of milk', 'a <teapot> teapot on top of the sidewalk in a crowded street', 'a cube shaped <teapot> teapot'].
+ Generating 7 images with prompt: ['a <pet_dog1> dog in the jungle', 'a <pet_dog1> dog with a city in the background', 'a <pet_dog1> dog with a mountain in the background', 'a <pet_dog1> dog on top of a purple rug in a forest', 'a <pet_dog1> dog in a chef outfit', 'a <pet_dog1> dog in a police outfit', 'a cube shaped <pet_dog1> dog'].
 
 
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 Step		|0
-Raw		|vincent    van        gogh       is         M[auc]     tioning    <teapot>   teapot    
-Masked		|vincent    van        gogh       is         [MASK]     tioning    <teapot>   teapot    
-Preds		|an         c          gogh       is         M[ni]      ating      teapot     teapot    
+Raw		|a          close      -          up         photo      of         the        <pet_dog1> dog        at         las        vegas      strip     
+Masked		|a          close      -          up         photo      of         the        <pet_dog1> dog        at         las        vegas      strip     
+Preds		|a          close      -          up         photo      of         the        dog        dog        at         las        vegas      strip     
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
 
   0%|          | 0/25 [00:00<?, ?it/s][A
-  4%|▍         | 1/25 [00:00<00:09,  2.53it/s][A
-  8%|▊         | 2/25 [00:00<00:08,  2.74it/s][A
- 12%|█▏        | 3/25 [00:01<00:07,  2.81it/s][A
- 16%|█▌        | 4/25 [00:01<00:07,  2.85it/s][A
- 20%|██        | 5/25 [00:01<00:06,  2.88it/s][A
- 24%|██▍       | 6/25 [00:02<00:06,  2.88it/s][A
- 28%|██▊       | 7/25 [00:02<00:06,  2.89it/s][A
- 32%|███▏      | 8/25 [00:02<00:05,  2.90it/s][A
- 36%|███▌      | 9/25 [00:03<00:05,  2.90it/s][A
- 40%|████      | 10/25 [00:03<00:05,  2.90it/s][A
- 44%|████▍     | 11/25 [00:03<00:04,  2.91it/s][A
- 48%|████▊     | 12/25 [00:04<00:04,  2.91it/s][A
- 52%|█████▏    | 13/25 [00:04<00:04,  2.90it/s][A
- 56%|█████▌    | 14/25 [00:04<00:03,  2.90it/s][A
- 60%|██████    | 15/25 [00:05<00:03,  2.91it/s][A
- 64%|██████▍   | 16/25 [00:05<00:03,  2.90it/s][A
- 68%|██████▊   | 17/25 [00:05<00:02,  2.91it/s][A
- 72%|███████▏  | 18/25 [00:06<00:02,  2.91it/s][A
- 76%|███████▌  | 19/25 [00:06<00:02,  2.91it/s][A
- 80%|████████  | 20/25 [00:06<00:01,  2.90it/s][A
- 84%|████████▍ | 21/25 [00:07<00:01,  2.90it/s][A
- 88%|████████▊ | 22/25 [00:07<00:01,  2.90it/s][A
- 92%|█████████▏| 23/25 [00:07<00:00,  2.90it/s][A
- 96%|█████████▌| 24/25 [00:08<00:00,  2.90it/s][A
-100%|██████████| 25/25 [00:08<00:00,  2.90it/s][A100%|██████████| 25/25 [00:09<00:00,  2.63it/s]
-Steps:   0%|          | 0/1000000 [00:24<?, ?it/s, loss=0.179, loss_mlm=0.992, lr=0.002, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 1/1000000 [00:24<6899:32:32, 24.84s/it, loss=0.179, loss_mlm=0.992, lr=0.002, norm_mask=8.02, norm_target=8.42]
+  4%|▍         | 1/25 [00:00<00:08,  2.69it/s][A
+  8%|▊         | 2/25 [00:00<00:07,  2.98it/s][A
+ 12%|█▏        | 3/25 [00:00<00:07,  3.09it/s][A
+ 16%|█▌        | 4/25 [00:01<00:06,  3.14it/s][A
+ 20%|██        | 5/25 [00:01<00:06,  3.17it/s][A
+ 24%|██▍       | 6/25 [00:01<00:05,  3.18it/s][A
+ 28%|██▊       | 7/25 [00:02<00:05,  3.20it/s][A
+ 32%|███▏      | 8/25 [00:02<00:05,  3.20it/s][A
+ 36%|███▌      | 9/25 [00:02<00:04,  3.21it/s][A
+ 40%|████      | 10/25 [00:03<00:04,  3.21it/s][A
+ 44%|████▍     | 11/25 [00:03<00:04,  3.21it/s][A
+ 48%|████▊     | 12/25 [00:03<00:04,  3.21it/s][A
+ 52%|█████▏    | 13/25 [00:04<00:03,  3.21it/s][A
+ 56%|█████▌    | 14/25 [00:04<00:03,  3.21it/s][A
+ 60%|██████    | 15/25 [00:04<00:03,  3.21it/s][A
+ 64%|██████▍   | 16/25 [00:05<00:02,  3.21it/s][A
+ 68%|██████▊   | 17/25 [00:05<00:02,  3.21it/s][A
+ 72%|███████▏  | 18/25 [00:05<00:02,  3.21it/s][A
+ 76%|███████▌  | 19/25 [00:05<00:01,  3.21it/s][A
+ 80%|████████  | 20/25 [00:06<00:01,  3.21it/s][A
+ 84%|████████▍ | 21/25 [00:06<00:01,  3.21it/s][A
+ 88%|████████▊ | 22/25 [00:06<00:00,  3.21it/s][A
+ 92%|█████████▏| 23/25 [00:07<00:00,  3.21it/s][A
+ 96%|█████████▌| 24/25 [00:07<00:00,  3.21it/s][A
+100%|██████████| 25/25 [00:07<00:00,  3.21it/s][A100%|██████████| 25/25 [00:08<00:00,  2.91it/s]
+Steps:   0%|          | 0/1000000 [00:23<?, ?it/s, loss=0.228, loss_mlm=0.862, lr=0.002, norm_mask=8.02, norm_target=8.12]Steps:   0%|          | 1/1000000 [00:23<6527:22:57, 23.50s/it, loss=0.228, loss_mlm=0.862, lr=0.002, norm_mask=8.02, norm_target=8.12]Steps:   0%|          | 1/1000000 [00:34<6527:22:57, 23.50s/it, loss=0.617, loss_mlm=0.963, lr=0.002, norm_mask=8.02, norm_target=8.12]Steps:   0%|          | 2/1000000 [00:34<4539:09:25, 16.34s/it, loss=0.617, loss_mlm=0.963, lr=0.002, norm_mask=8.02, norm_target=8.12]

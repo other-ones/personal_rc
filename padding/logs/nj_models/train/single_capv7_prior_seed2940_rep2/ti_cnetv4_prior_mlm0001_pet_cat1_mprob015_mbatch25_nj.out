@@ -15,9 +15,9 @@ Mixed precision type: no
 
 /home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
   warnings.warn(
-{'timestep_spacing', 'thresholding', 'prediction_type', 'variance_type', 'dynamic_thresholding_ratio', 'sample_max_value', 'clip_sample_range'} was not found in config. Values will be initialized to default values.
+{'sample_max_value', 'clip_sample_range', 'thresholding', 'dynamic_thresholding_ratio', 'timestep_spacing', 'prediction_type', 'variance_type'} was not found in config. Values will be initialized to default values.
 {'scaling_factor'} was not found in config. Values will be initialized to default values.
-{'mid_block_type', 'encoder_hid_dim_type', 'use_linear_projection', 'time_embedding_dim', 'time_embedding_type', 'class_embeddings_concat', 'mid_block_only_cross_attention', 'time_embedding_act_fn', 'projection_class_embeddings_input_dim', 'class_embed_type', 'conv_in_kernel', 'dual_cross_attention', 'resnet_skip_time_act', 'num_class_embeds', 'time_cond_proj_dim', 'resnet_time_scale_shift', 'resnet_out_scale_factor', 'addition_embed_type', 'only_cross_attention', 'timestep_post_act', 'addition_time_embed_dim', 'transformer_layers_per_block', 'conv_out_kernel', 'num_attention_heads', 'encoder_hid_dim', 'upcast_attention', 'cross_attention_norm', 'addition_embed_type_num_heads'} was not found in config. Values will be initialized to default values.
+{'time_embedding_type', 'conv_in_kernel', 'conv_out_kernel', 'addition_embed_type', 'use_linear_projection', 'time_embedding_act_fn', 'class_embed_type', 'projection_class_embeddings_input_dim', 'time_cond_proj_dim', 'mid_block_only_cross_attention', 'cross_attention_norm', 'mid_block_type', 'only_cross_attention', 'class_embeddings_concat', 'time_embedding_dim', 'num_attention_heads', 'dual_cross_attention', 'addition_embed_type_num_heads', 'transformer_layers_per_block', 'encoder_hid_dim_type', 'addition_time_embed_dim', 'resnet_out_scale_factor', 'resnet_time_scale_shift', 'timestep_post_act', 'encoder_hid_dim', 'resnet_skip_time_act', 'upcast_attention', 'num_class_embeds'} was not found in config. Values will be initialized to default values.
 INFO:__main__:***** Running training *****
 INFO:__main__:  Num examples = 10000000
 INFO:__main__:  Num Epochs = 1
@@ -119,54 +119,44 @@ module.layer_norm2.weight saved_key-clsnet
 module.layer_norm2.bias saved_key-clsnet
 Steps:   0%|          | 0/1000000 [00:00<?, ?it/s]True accepts_keep_fp32_wrapper
 {'keep_fp32_wrapper': True} extra_args
-439510308 worker_seed
-439510306 worker_seed
-439510307 worker_seed
-439510309 worker_seed
-Traceback (most recent call last):
-  File "/home/twkim/project/rich_context/padding/nj_train.py", line 984, in <module>
-    main()
-  File "/home/twkim/project/rich_context/padding/nj_train.py", line 701, in main
-    latents = vae.encode(pixel_values.to(dtype=weight_dtype)).latent_dist.sample().detach()
-  File "/home/twkim/project/rich_context/padding/./packages/diffusers/utils/accelerate_utils.py", line 46, in wrapper
-    return method(self, *args, **kwargs)
-  File "/home/twkim/project/rich_context/padding/./packages/diffusers/models/autoencoder_kl.py", line 236, in encode
-    h = self.encoder(x)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/twkim/project/rich_context/padding/./packages/diffusers/models/vae.py", line 142, in forward
-    sample = self.mid_block(sample)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/twkim/project/rich_context/padding/./packages/diffusers/models/unet_2d_blocks.py", line 511, in forward
-    hidden_states = attn(hidden_states, temb=temb)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/twkim/project/rich_context/padding/./packages/diffusers/models/attention_processor.py", line 327, in forward
-    return self.processor(
-  File "/home/twkim/project/rich_context/padding/./packages/diffusers/models/attention_processor.py", line 1127, in __call__
-    query = attn.to_q(hidden_states)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/modules/linear.py", line 114, in forward
-    return F.linear(input, self.weight, self.bias)
-RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
-Steps:   0%|          | 0/1000000 [00:03<?, ?it/s]
-Traceback (most recent call last):
-  File "/home/twkim/anaconda3/envs/context/bin/accelerate", line 8, in <module>
-    sys.exit(main())
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 47, in main
-    args.func(args)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 1023, in launch_command
-    simple_launcher(args)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 643, in simple_launcher
-    raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmd)
-subprocess.CalledProcessError: Command '['/home/twkim/anaconda3/envs/context/bin/python', 'nj_train.py', '--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5', '--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/pet_cat1', '--learnable_property=object', '--placeholder_token1=<pet_cat1>', '--train_prior_concept1=cat', '--eval_prior_concept1=cat', '--resolution=512', '--train_batch_size=1', '--gradient_accumulation_steps=4', '--learning_rate=5e-4', '--lr_scheduler=constant', '--normalize_mask_embeds=0', '--lr_warmup_steps=0', '--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/pet_cat1', '--seed=2940', '--mask_tokens=[MASK]', '--lambda_mlm=0.001', '--freeze_mask_embedding=1', '--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt', '--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt', '--mask_prob=0.15', '--mlm_target=masked', '--mlm_batch_size=25', '--scale_lr', '--eval_prompt_type=living', '--train_prompt_type=pet', '--silent=0', '--rev=0', '--normalize_target1=0', '--caption_root=../datasets_pkgs/captions/v7', '--run_name=ti_cnetv4_prior_mlm0001_pet_cat1_mprob015_mbatch25_nj', '--include_prior_concept=1']' returned non-zero exit status 1.
+INFO:__main__:STEP 0 Running validation... 
+ Generating 7 images with prompt: ['a <pet_cat1> cat in the jungle', 'a <pet_cat1> cat with a city in the background', 'a <pet_cat1> cat with a mountain in the background', 'a <pet_cat1> cat on top of a purple rug in a forest', 'a <pet_cat1> cat in a chef outfit', 'a <pet_cat1> cat in a police outfit', 'a cube shaped <pet_cat1> cat'].
+
+
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+Step		|0
+Raw		|a          close      -          up         photo      of         the        <pet_cat1> cat        at         las        vegas      strip     
+Masked		|a          close      -          up         photo      of         the        <pet_cat1> cat        at         las        vegas      strip     
+Preds		|a          close      -          up         photo      of         the        cat        cat        at         las        vegas      strip     
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+
+  0%|          | 0/25 [00:00<?, ?it/s][A
+  4%|▍         | 1/25 [00:00<00:08,  2.69it/s][A
+  8%|▊         | 2/25 [00:00<00:07,  3.00it/s][A
+ 12%|█▏        | 3/25 [00:00<00:07,  3.12it/s][A
+ 16%|█▌        | 4/25 [00:01<00:06,  3.18it/s][A
+ 20%|██        | 5/25 [00:01<00:06,  3.21it/s][A
+ 24%|██▍       | 6/25 [00:01<00:05,  3.23it/s][A
+ 28%|██▊       | 7/25 [00:02<00:05,  3.24it/s][A
+ 32%|███▏      | 8/25 [00:02<00:05,  3.25it/s][A
+ 36%|███▌      | 9/25 [00:02<00:04,  3.25it/s][A
+ 40%|████      | 10/25 [00:03<00:04,  3.26it/s][A
+ 44%|████▍     | 11/25 [00:03<00:04,  3.26it/s][A
+ 48%|████▊     | 12/25 [00:03<00:03,  3.27it/s][A
+ 52%|█████▏    | 13/25 [00:04<00:03,  3.27it/s][A
+ 56%|█████▌    | 14/25 [00:04<00:03,  3.27it/s][A
+ 60%|██████    | 15/25 [00:04<00:03,  3.27it/s][A
+ 64%|██████▍   | 16/25 [00:04<00:02,  3.27it/s][A
+ 68%|██████▊   | 17/25 [00:05<00:02,  3.27it/s][A
+ 72%|███████▏  | 18/25 [00:05<00:02,  3.27it/s][A
+ 76%|███████▌  | 19/25 [00:05<00:01,  3.27it/s][A
+ 80%|████████  | 20/25 [00:06<00:01,  3.27it/s][A
+ 84%|████████▍ | 21/25 [00:06<00:01,  3.27it/s][A
+ 88%|████████▊ | 22/25 [00:06<00:00,  3.27it/s][A
+ 92%|█████████▏| 23/25 [00:07<00:00,  3.27it/s][A
+ 96%|█████████▌| 24/25 [00:07<00:00,  3.26it/s][A
+100%|██████████| 25/25 [00:07<00:00,  3.26it/s][A100%|██████████| 25/25 [00:08<00:00,  2.96it/s]
+Steps:   0%|          | 0/1000000 [00:24<?, ?it/s, loss=0.178, loss_mlm=0.857, lr=0.002, norm_mask=8.02, norm_target=8.24]Steps:   0%|          | 1/1000000 [00:24<6738:56:18, 24.26s/it, loss=0.178, loss_mlm=0.857, lr=0.002, norm_mask=8.02, norm_target=8.24]Steps:   0%|          | 1/1000000 [00:35<6738:56:18, 24.26s/it, loss=0.588, loss_mlm=0.966, lr=0.002, norm_mask=8.02, norm_target=8.24]Steps:   0%|          | 2/1000000 [00:35<4628:53:24, 16.66s/it, loss=0.588, loss_mlm=0.966, lr=0.002, norm_mask=8.02, norm_target=8.24]Steps:   0%|          | 2/1000000 [00:46<4628:53:24, 16.66s/it, loss=0.1, loss_mlm=0.625, lr=0.002, norm_mask=8.02, norm_target=8.24]  Steps:   0%|          | 3/1000000 [00:46<3936:22:12, 14.17s/it, loss=0.1, loss_mlm=0.625, lr=0.002, norm_mask=8.02, norm_target=8.24]Steps:   0%|          | 3/1000000 [00:58<3936:22:12, 14.17s/it, loss=0.0054, loss_mlm=0.94, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 4/1000000 [00:58<3612:45:32, 13.01s/it, loss=0.0054, loss_mlm=0.94, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 4/1000000 [01:09<3612:45:32, 13.01s/it, loss=0.00442, loss_mlm=0.649, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 5/1000000 [01:09<3431:28:14, 12.35s/it, loss=0.00442, loss_mlm=0.649, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 5/1000000 [01:20<3431:28:14, 12.35s/it, loss=0.00767, loss_mlm=1.02, lr=0.002, norm_mask=8.02, norm_target=8.36] Steps:   0%|          | 6/1000000 [01:20<3322:55:38, 11.96s/it, loss=0.00767, loss_mlm=1.02, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 6/1000000 [01:31<3322:55:38, 11.96s/it, loss=0.0407, loss_mlm=0.853, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 7/1000000 [01:31<3253:08:33, 11.71s/it, loss=0.0407, loss_mlm=0.853, lr=0.002, norm_mask=8.02, norm_target=8.36]Steps:   0%|          | 7/1000000 [01:42<3253:08:33, 11.71s/it, loss=0.19, loss_mlm=0.558, lr=0.002, norm_mask=8.02, norm_target=8.51]  Steps:   0%|          | 8/1000000 [01:42<3209:12:10, 11.55s/it, loss=0.19, loss_mlm=0.558, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 8/1000000 [01:54<3209:12:10, 11.55s/it, loss=0.207, loss_mlm=0.826, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 9/1000000 [01:54<3178:01:56, 11.44s/it, loss=0.207, loss_mlm=0.826, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 9/1000000 [02:05<3178:01:56, 11.44s/it, loss=0.226, loss_mlm=0.918, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 10/1000000 [02:05<3157:40:45, 11.37s/it, loss=0.226, loss_mlm=0.918, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 10/1000000 [02:16<3157:40:45, 11.37s/it, loss=0.0285, loss_mlm=0.558, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 11/1000000 [02:16<3142:28:35, 11.31s/it, loss=0.0285, loss_mlm=0.558, lr=0.002, norm_mask=8.02, norm_target=8.51]Steps:   0%|          | 11/1000000 [02:27<3142:28:35, 11.31s/it, loss=0.253, loss_mlm=1.07, lr=0.002, norm_mask=8.02, norm_target=8.66]  Steps:   0%|          | 12/1000000 [02:27<3132:45:25, 11.28s/it, loss=0.253, loss_mlm=1.07, lr=0.002, norm_mask=8.02, norm_target=8.66]Steps:   0%|          | 12/1000000 [02:38<3132:45:25, 11.28s/it, loss=0.129, loss_mlm=0.578, lr=0.002, norm_mask=8.02, norm_target=8.66]Steps:   0%|          | 13/1000000 [02:38<3125:48:12, 11.25s/it, loss=0.129, loss_mlm=0.578, lr=0.002, norm_mask=8.02, norm_target=8.66]Steps:   0%|          | 13/1000000 [02:50<3125:48:12, 11.25s/it, loss=0.0887, loss_mlm=1.12, lr=0.002, norm_mask=8.02, norm_target=8.66]Steps:   0%|          | 14/1000000 [02:50<3122:16:28, 11.24s/it, loss=0.0887, loss_mlm=1.12, lr=0.002, norm_mask=8.02, norm_target=8.66]Steps:   0%|          | 14/1000000 [03:01<3122:16:28, 11.24s/it, loss=0.02, loss_mlm=0.947, lr=0.002, norm_mask=8.02, norm_target=8.66] Steps:   0%|          | 15/1000000 [03:01<3119:30:13, 11.23s/it, loss=0.02, loss_mlm=0.947, lr=0.002, norm_mask=8.02, norm_target=8.66]Steps:   0%|          | 15/1000000 [03:12<3119:30:13, 11.23s/it, loss=0.0135, loss_mlm=1.13, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 16/1000000 [03:12<3116:23:37, 11.22s/it, loss=0.0135, loss_mlm=1.13, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 16/1000000 [03:23<3116:23:37, 11.22s/it, loss=0.0193, loss_mlm=0.673, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 17/1000000 [03:23<3114:19:33, 11.21s/it, loss=0.0193, loss_mlm=0.673, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 17/1000000 [03:34<3114:19:33, 11.21s/it, loss=0.313, loss_mlm=1.07, lr=0.002, norm_mask=8.02, norm_target=8.81]  Steps:   0%|          | 18/1000000 [03:34<3112:27:46, 11.21s/it, loss=0.313, loss_mlm=1.07, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 18/1000000 [03:46<3112:27:46, 11.21s/it, loss=0.0186, loss_mlm=0.693, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 19/1000000 [03:46<3141:59:16, 11.31s/it, loss=0.0186, loss_mlm=0.693, lr=0.002, norm_mask=8.02, norm_target=8.81]Steps:   0%|          | 19/1000000 [03:57<3141:59:16, 11.31s/it, loss=0.00317, loss_mlm=0.677, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 20/1000000 [03:57<3133:28:43, 11.28s/it, loss=0.00317, loss_mlm=0.677, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 20/1000000 [04:08<3133:28:43, 11.28s/it, loss=0.113, loss_mlm=0.989, lr=0.002, norm_mask=8.02, norm_target=8.97]  Steps:   0%|          | 21/1000000 [04:08<3127:42:25, 11.26s/it, loss=0.113, loss_mlm=0.989, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 21/1000000 [04:19<3127:42:25, 11.26s/it, loss=0.234, loss_mlm=0.907, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 22/1000000 [04:19<3121:48:52, 11.24s/it, loss=0.234, loss_mlm=0.907, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 22/1000000 [04:31<3121:48:52, 11.24s/it, loss=0.0765, loss_mlm=1.03, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 23/1000000 [04:31<3117:44:34, 11.22s/it, loss=0.0765, loss_mlm=1.03, lr=0.002, norm_mask=8.02, norm_target=8.97]Steps:   0%|          | 23/1000000 [04:42<3117:44:34, 11.22s/it, loss=0.129, loss_mlm=0.714, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 24/1000000 [04:42<3115:18:56, 11.22s/it, loss=0.129, loss_mlm=0.714, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 24/1000000 [04:53<3115:18:56, 11.22s/it, loss=0.122, loss_mlm=0.803, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 25/1000000 [04:53<3113:30:40, 11.21s/it, loss=0.122, loss_mlm=0.803, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 25/1000000 [05:04<3113:30:40, 11.21s/it, loss=0.0168, loss_mlm=0.746, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 26/1000000 [05:04<3112:20:32, 11.20s/it, loss=0.0168, loss_mlm=0.746, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 26/1000000 [05:15<3112:20:32, 11.20s/it, loss=0.0227, loss_mlm=0.98, lr=0.002, norm_mask=8.02, norm_target=9.13] Steps:   0%|          | 27/1000000 [05:15<3112:18:45, 11.20s/it, loss=0.0227, loss_mlm=0.98, lr=0.002, norm_mask=8.02, norm_target=9.13]Steps:   0%|          | 27/1000000 [05:27<3112:18:45, 11.20s/it, loss=0.019, loss_mlm=0.487, lr=0.002, norm_mask=8.02, norm_target=9.3] Steps:   0%|          | 28/1000000 [05:27<3112:51:52, 11.21s/it, loss=0.019, loss_mlm=0.487, lr=0.002, norm_mask=8.02, norm_target=9.3]Steps:   0%|          | 28/1000000 [05:38<3112:51:52, 11.21s/it, loss=0.234, loss_mlm=1.12, lr=0.002, norm_mask=8.02, norm_target=9.3] Steps:   0%|          | 29/1000000 [05:38<3111:49:31, 11.20s/it, loss=0.234, loss_mlm=1.12, lr=0.002, norm_mask=8.02, norm_target=9.3]Steps:   0%|          | 29/1000000 [05:49<3111:49:31, 11.20s/it, loss=0.117, loss_mlm=0.765, lr=0.002, norm_mask=8.02, norm_target=9.3]Steps:   0%|          | 30/1000000 [05:49<3112:28:42, 11.21s/it, loss=0.117, loss_mlm=0.765, lr=0.002, norm_mask=8.02, norm_target=9.3]Steps:   0%|          | 30/1000000 [06:00<3112:28:42, 11.21s/it, loss=0.283, loss_mlm=1.17, lr=0.002, norm_mask=8.02, norm_target=9.3] Steps:   0%|          | 31/1000000 [06:00<3111:25:20, 11.20s/it, loss=0.283, loss_mlm=1.17, lr=0.002, norm_mask=8.02, norm_target=9.3]Steps:   0%|          | 31/1000000 [06:11<3111:25:20, 11.20s/it, loss=0.163, loss_mlm=0.677, lr=0.002, norm_mask=8.02, norm_target=9.46]Steps:   0%|          | 32/1000000 [06:11<3111:14:23, 11.20s/it, loss=0.163, loss_mlm=0.677, lr=0.002, norm_mask=8.02, norm_target=9.46]Steps:   0%|          | 32/1000000 [06:23<3111:14:23, 11.20s/it, loss=0.255, loss_mlm=0.978, lr=0.002, norm_mask=8.02, norm_target=9.46]Steps:   0%|          | 33/1000000 [06:23<3110:46:01, 11.20s/it, loss=0.255, loss_mlm=0.978, lr=0.002, norm_mask=8.02, norm_target=9.46]Steps:   0%|          | 33/1000000 [06:34<3110:46:01, 11.20s/it, loss=0.0786, loss_mlm=0.882, lr=0.002, norm_mask=8.02, norm_target=9.46]Steps:   0%|          | 34/1000000 [06:34<3111:21:09, 11.20s/it, loss=0.0786, loss_mlm=0.882, lr=0.002, norm_mask=8.02, norm_target=9.46]Steps:   0%|          | 34/1000000 [06:45<3111:21:09, 11.20s/it, loss=0.04, loss_mlm=0.879, lr=0.002, norm_mask=8.02, norm_target=9.46]  Steps:   0%|          | 35/1000000 [06:45<3111:04:19, 11.20s/it, loss=0.04, loss_mlm=0.879, lr=0.002, norm_mask=8.02, norm_target=9.46]
