@@ -108,7 +108,7 @@ else:
 train_log_dir='logs/nj_models/train/{}'.format(dir_name)
 exclude_cap_types=None
 os.makedirs(train_log_dir,exist_ok=True) 
-num_devices=3
+num_devices=6
 while True:
     stats=get_gpu_memory()
     found=False

@@ -27,7 +27,7 @@ from huggingface_hub import create_repo, upload_folder
 from packaging import version
 from torch.utils.data import Dataset
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from datasets_pkgs.dataset_mlm_text import MLMDataset
+from datasets_pkgs.dataset_mlm_text_v6 import MLMDataset
 from torchvision import transforms
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer, CLIPVisionModel, AutoProcessor
@@ -83,8 +83,8 @@ def main():
     dict_args=vars(args)
     
     exp_dir=os.path.join(args.output_dir,args.run_name)    
-    logging_dir = os.path.join(exp_dir, args.logging_dir)
-    accelerator_project_config = ProjectConfiguration(project_dir=exp_dir, logging_dir=logging_dir)
+    # logging_dir = os.path.join(exp_dir, args.logging_dir)
+    accelerator_project_config = ProjectConfiguration(project_dir=exp_dir, logging_dir=None)
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
@@ -105,7 +105,7 @@ def main():
         os.makedirs(codepath,exist_ok=True)
         
         os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
+        os.system('cp ../datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
         # copy clip
         os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
@@ -378,8 +378,8 @@ def main():
 
     # We need to initialize the trackers we use, and also store our configuration.
     # The trackers initializes automatically on the main process.
-    if accelerator.is_main_process:
-        accelerator.init_trackers("textual_inversion", config=vars(args))
+    # if accelerator.is_main_process:
+    #     accelerator.init_trackers("textual_inversion", config=vars(args))
 
     # Train!
     total_batch_size = args.train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps

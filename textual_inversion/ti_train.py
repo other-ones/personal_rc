@@ -404,6 +404,7 @@ def main():
         check_tag=args.check_tag.split('-')
     else:
         check_tag=None
+        
     train_dataset = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
@@ -774,7 +775,7 @@ def main():
                         reduction='none'
                     )
                     # masked_idxs_flat
-                    if args.nonmask_weight!=1 and args.mlm_target!='masked':
+                    if args.nonmask_weight!=1 and args.mlm_target in ['non_special','all','non_padding']:
                         loss_mlm[nonmask_idxs_flat]*=args.nonmask_weight
                     loss_mlm=loss_mlm.mean()
                     loss=loss+(loss_mlm*args.lambda_mlm)

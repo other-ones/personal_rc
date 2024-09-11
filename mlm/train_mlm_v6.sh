@@ -19,7 +19,8 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v6.py \
   --visualize_steps=25 \
   --seed=7776 \
   --mask_tokens='[MASK]' \
-  --caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
+  --real_caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt' \
+  --synth_caption_root='../datasets_pkgs/captions/contextnet/all' \
   --run_name='sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150' \
   --mlm_weight=5 \
   --mlm_target='non_padding' \

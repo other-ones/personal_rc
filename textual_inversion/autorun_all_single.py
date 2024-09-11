@@ -107,10 +107,10 @@ mask_prob_list=[0.15]
 rev_list=[0]
 rep_id=1
 benchmark='dreambooth'
-# mlm_target_list=['non_special','masked']
-mlm_target_list=['masked']
+mlm_target_list=['masked','non_special']
+# mlm_target_list=['masked']
 
-nonmask_weight_list=[1]
+nonmask_weight_list=[0.1,0.5,1]
 if include_prior:
     dir_name='single_mtarget_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
 else:
@@ -122,14 +122,14 @@ exclude_cap_types=None
 os.makedirs(train_log_dir,exist_ok=True) 
 train_steps=3001
 mlm_batch=25
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
 # check_tags=['']
-for mlm_target in mlm_target_list:
+for mask_prob in mask_prob_list:
     for nonmask_weight in nonmask_weight_list:
         nonmask_weight_str=float_to_str(nonmask_weight)
         nonmask_weight_str=nonmask_weight_str.replace('.','')
         for check_tag in check_tags:
-            for mask_prob in mask_prob_list:
+            for mlm_target in mlm_target_list:
                 mask_prob_str=float_to_str(mask_prob)
                 mask_prob_str=mask_prob_str.replace('.','')
                 for cidx,concept in enumerate(list(info_map.keys())):

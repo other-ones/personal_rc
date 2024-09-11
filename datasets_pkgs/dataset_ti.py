@@ -347,7 +347,7 @@ class TextualInversionDataset(Dataset):
 
             for word_idx in range(len(words_mlm)):
                 mlm_word=words_mlm[word_idx]
-                if self.check_tag:
+                if self.check_tag is not None:
                     doc = self.nlp(mlm_word)
                     valid_mlm_tag=False
                     if mlm_word not in ['the','a','an']:
@@ -385,6 +385,7 @@ class TextualInversionDataset(Dataset):
                         masked_idxs.append(False)
                         input_ids_masked.append(tok_id)
                         mlm_labels.append(-100)
+                        
                     
 
 
