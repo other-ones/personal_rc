@@ -12,6 +12,7 @@ def parse_args(input_args=None):
     parser.add_argument("--normalize_mask_embeds",type=int,default=0)
     parser.add_argument("--eval_batch_size",type=int,default=4,help="Batch size (per device) for the evaluation dataloader.")
     parser.add_argument("--nsamples",type=int,default=4,help="Batch size (per device) for the evaluation dataloader.")
+    parser.add_argument("--context_version",type=str)
     parser.add_argument("--real_caption_path",type=str)
     parser.add_argument("--synth_caption_root",type=str)
     parser.add_argument("--trained_keys",type=str)
