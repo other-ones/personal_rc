@@ -140,7 +140,7 @@ class MLMDataset(Dataset):
             #     continue
             self.real_captions.append(caption)
         self.real_captions=np.array(self.real_captions)
-        self.num_instance+=len(self.captions)
+        self.num_instance+=len(self.real_captions)
         print(self.num_instance,'num_instance')
         
         
