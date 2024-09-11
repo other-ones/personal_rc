@@ -92,11 +92,6 @@ class CustomDiffusionDataset(Dataset):
             mask[
                 top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
             ] = 1.0
-            # print(mask.shape,'mask.shape')
-            # print(outer,'outer')
-            # print(inner,'inner')
-            # cv2.imwrite('mask.jpg',(mask*255).astype(np.uint8))
-            # exit()
         return instance_image, mask
 
     def __getitem__(self, index):
@@ -116,13 +111,13 @@ class CustomDiffusionDataset(Dataset):
                 else np.random.randint(int(1.2 * self.size), int(1.4 * self.size))
             )
         instance_image, mask = self.preprocess(instance_image, random_scale, self.interpolation)
+        example["instance_images"] = torch.from_numpy(instance_image).permute(2, 0, 1)
 
         if random_scale < 0.6 * self.size:
             instance_prompt = np.random.choice(["a far away ", "very small "]) + instance_prompt
         elif random_scale > self.size:
             instance_prompt = np.random.choice(["zoomed in ", "close up "]) + instance_prompt
 
-        example["instance_images"] = torch.from_numpy(instance_image).permute(2, 0, 1)
         example["mask"] = torch.from_numpy(mask)
         example["instance_prompt_ids"] = self.tokenizer(
             instance_prompt,

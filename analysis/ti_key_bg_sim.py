@@ -524,9 +524,6 @@ def main():
                 encoder_hidden_states=out[0]                
                 encoder_hidden_states_simple_bg=out_simple_bg[0]                
                 encoder_hidden_states_simple_concept=out_simple_concept[0]                
-                print(encoder_hidden_states.shape,'encoder_hidden_states.shape')
-                print(encoder_hidden_states_simple_bg.shape,'encoder_hidden_states_simple_bg.shape')
-                print(encoder_hidden_states_simple_concept.shape,'encoder_hidden_states_simple_concept.shape')
                 dst_file=open(os.path.join(exp_dir,'cos_sim.txt'),'w')
                 avg_list=[]
                 norm_list=[]
@@ -538,26 +535,30 @@ def main():
                 key_embeds=encoder_hidden_states[is_keyword_tokens1]
                 bg_embeds=encoder_hidden_states[is_bg_tokens]
                 bg_embeds_simple_bg=encoder_hidden_states_simple_bg[is_bg_tokens_simple]
+                print(key_embeds.shape,'key_embeds.shape')
+                print(bg_embeds.shape,'bg_embeds.shape')
                 for ke,be in zip(key_embeds,bg_embeds):
                     sim=cos_sim(ke,be)
                     key_bg_sim_list.append(sim.item())
                 for bes,be in zip(bg_embeds_simple_bg,bg_embeds):
                     sim=cos_sim(bes,be)
                     bg_sim_list.append(sim.item())
-
-                
-
                 # key_bg_sim=pairwise_cosine_similarity(key_embeds,bg_embeds).mean().item()
                 # key_bg_sim_simple_bg=pairwise_cosine_similarity(key_embeds,bg_embeds_simple_bg).mean().item()
-                print(np.mean(key_bg_sim_list),'key_bg_sim_list',exp_dir)
-                print(np.mean(bg_sim_list),'bg_sim_list',exp_dir)
+                print('{}\t{}\tKEY-BG'.format(args.run_name,np.mean(key_bg_sim_list)))
+                print('{}\t{}\tBG-BG'.format(args.run_name,np.mean(bg_sim_list)))
+                # print(np.mean(bg_sim_list),'bg_sim_list',exp_dir)
                 # print(key_bg_sim_simple_bg,'key_bg_sim_simple_bg',exp_dir)
-
                 
-                
-                # print(key_bg_sim_simple,'key_bg_sim_simple')
+                encoder_hidden_states_simple_concept=encoder_hidden_states_simple_concept.repeat(len(encoder_hidden_states),1,1)
+                sot_emb_simple_concept_list=encoder_hidden_states_simple_concept[:,0,:]
+                sot_emb_list=encoder_hidden_states[:,0,:]
+                sot_sim_list=[]
+                for sot_emb,sot_emb_simple in zip(sot_emb_list,sot_emb_simple_concept_list):
+                    sim=cos_sim(sot_emb,sot_emb_simple)
+                    sot_sim_list.append(sim.item())
+                print('{}\t{}'.format(args.run_name,np.mean(sot_sim_list)))
 
-                # sot_emb_simple_concept=encoder_hidden_states_simple_concept[0][0]
                 # for bidx,(ibt,ibt_simple) in enumerate(zip(is_bg_tokens,is_bg_tokens_simple)):
                 #     ik_list=is_keyword_tokens1[bidx]
                 #     text_emb=encoder_hidden_states[bidx]

@@ -1,21 +1,43 @@
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
-export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6/";
+export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/chair1/";
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export CUDA_VISIBLE_DEVICES=4;
-accelerate launch --main_process_port 2731  ti_generate.py \
+export CUDA_VISIBLE_DEVICES=7;
+accelerate launch --main_process_port 2737  ti_generate.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
-  --placeholder_token1="<dog6>" \
+  --placeholder_token1="<chair1>" \
   --resolution=512 \
-  --output_dir="results/tmp/dog6" \
   --seed=1234 \
   --mask_tokens="[MASK]" \
-  --learned_embed_path1='saved_models/ti_models/single_capv6_prior_seed2940_rep1/dog6/ti_cnetv4_prior_mlm0001_dog6_mprob015_mbatch25/checkpoints/learned_embeds_s3000.pt' \
-  --train_prior_concept1='character' \
-  --eval_prior_concept1='cartoon character' \
+  --learned_embed_path1='saved_models/ti_models/disen/chair1/tmp_prior_single_chair1_mlm0001_pot/checkpoints/learned_embeds_s3000.pt' \
+  --train_prior_concept1='pot' \
+  --eval_prior_concept1='pot' \
   --include_prior_concept=1 \
-  --eval_prompt_type='living' \
-  --eval_batch_size=1 \
+  --eval_prompt_type='nonliving' \
+  --eval_batch_size=15 \
   --num_images_per_prompt=15  \
   --benchmark_path='../datasets_pkgs/eval_prompts/dreambooth.json' \
-  --dst_exp_path=tmp
+  --target_image='kara-eads-xRyL63AwZFE-unsplash.jpg' \
+  --dst_exp_path=results/ti_results/disen/chair1/tmp_prior_single_chair1_mlm0001_pot_s3000
+
+export CUBLAS_WORKSPACE_CONFIG=:4096:8;
+export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/chair1/";
+export MODEL_NAME="runwayml/stable-diffusion-v1-5";
+export CUDA_VISIBLE_DEVICES=6;
+accelerate launch --main_process_port 2736  ti_generate.py \
+  --pretrained_model_name_or_path=$MODEL_NAME \
+  --train_data_dir1=$DATA_DIR \
+  --placeholder_token1="<chair1>" \
+  --resolution=512 \
+  --seed=1234 \
+  --mask_tokens="[MASK]" \
+  --learned_embed_path1='saved_models/ti_models/disen/chair1/tmp_prior_single_chair1_nomlm_pot/checkpoints/learned_embeds_s3000.pt' \
+  --train_prior_concept1='pot' \
+  --eval_prior_concept1='pot' \
+  --include_prior_concept=1 \
+  --eval_prompt_type='nonliving' \
+  --eval_batch_size=15 \
+  --num_images_per_prompt=15  \
+  --benchmark_path='../datasets_pkgs/eval_prompts/dreambooth.json' \
+  --target_image='kara-eads-xRyL63AwZFE-unsplash.jpg' \
+  --dst_exp_path=results/ti_results/disen/chair1/tmp_prior_single_chair1_nomlm_pot

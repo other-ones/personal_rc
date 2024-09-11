@@ -284,9 +284,9 @@ def collate_fn(examples,with_prior_preservation=False):
         if 'pixel_values' in examples[0]:
             # 1. pixel_values
             pixel_values = [example["pixel_values"] for example in examples]
-            masks = [example["masks"] for example in examples]
-            masks = torch.stack(masks)
-            masks = masks.to(memory_format=torch.contiguous_format).float()
+            # masks = [example["masks"] for example in examples]
+            # masks = torch.stack(masks)
+            # masks = masks.to(memory_format=torch.contiguous_format).float()
             # 2. input ids
             input_ids = [example["input_ids"] for example in examples]
             
@@ -314,7 +314,7 @@ def collate_fn(examples,with_prior_preservation=False):
             pixel_values=[]
             input_ids=[]
             is_keyword_tokens=[]
-            masks=[]
+            # masks=[]
             raw_captions_mlm = [example["raw_caption_mlm"] for example in examples]
             raw_captions_ti = []
             # 5. For MLM 
@@ -345,7 +345,7 @@ def collate_fn(examples,with_prior_preservation=False):
             "non_special_idxs": non_special_idxs,
             "is_keyword_tokens_mlm": is_keyword_tokens_mlm,
             "is_keyword_tokens": is_keyword_tokens,
-            "masks": masks,
+            # "masks": masks,
             "raw_captions_mlm": raw_captions_mlm,
             "raw_captions_ti": raw_captions_ti,
         }
@@ -849,21 +849,21 @@ def main(args):
     # Prepare everything with our `accelerator`.
     if args.lambda_mlm:
         if args.train_text_encoder:
-            unet, text_encoder, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader = accelerator.prepare(
-                unet, text_encoder, optimizer, train_dataloader, lr_scheduler,cls_net,mlm_loader
+            unet, text_encoder, optimizer, train_dataloader, lr_scheduler, cls_net, mlm_loader = accelerator.prepare(
+                unet, text_encoder, optimizer, train_dataloader, lr_scheduler, cls_net, mlm_loader
             )
-        else:
-            unet, optimizer, text_encoder,train_dataloader, lr_scheduler,cls_net,mlm_loader = accelerator.prepare(
-                unet, optimizer, text_encoder,train_dataloader, lr_scheduler,cls_net,mlm_loader
+        else: #for TI Fintuning
+            unet, text_encoder, optimizer, train_dataloader, lr_scheduler, cls_net, mlm_loader = accelerator.prepare(
+                unet, text_encoder, optimizer, train_dataloader, lr_scheduler, cls_net, mlm_loader
             )
-    else:
+    else:# NO MLM
         if args.train_text_encoder:
             unet, text_encoder, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
                 unet, text_encoder, optimizer, train_dataloader, lr_scheduler
             )
-        else:
-            unet, text_encoder, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
-                unet, text_encoder, optimizer, train_dataloader, lr_scheduler
+        else: #no_mlm, no text_encoder - never happens
+            unet, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
+                unet, optimizer, train_dataloader, lr_scheduler
             )
     # ADDED
     if args.lambda_mlm and args.cls_net_path is not None:
@@ -943,6 +943,8 @@ def main(args):
     logger.info(f"  Total optimization steps = {args.max_train_steps}")
     global_step = 0
     first_epoch = 0
+
+    # PIPELINE
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
                             inspect.signature(
                                 accelerator.unwrap_model
@@ -968,6 +970,7 @@ def main(args):
     # pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
     pipeline = pipeline.to(accelerator.device)
     pipeline.set_progress_bar_config(disable=False)
+    # PIPELINE
 
     # Potentially load in the weights and states from a previous save
     if args.resume_from_checkpoint:
@@ -1015,9 +1018,9 @@ def main(args):
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
                 is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
-                masks=batch["masks"]# B,77 list of booleans (tensor)
+                # masks=batch["masks"]# B,77 list of booleans (tensor)
+                # masks64=torch.nn.functional.interpolate(masks,(64,64))
                 raw_captions_ti=batch["raw_captions_ti"]
-                masks64=torch.nn.functional.interpolate(masks,(64,64))
                 
                 # Load Batch
                 model_input = vae.encode(pixel_values.to(dtype=weight_dtype)).latent_dist.sample()
@@ -1128,6 +1131,8 @@ def main(args):
                 # del learned_embeds
 
 
+
+                # Token Embeddings
                 if args.train_text_encoder: 
                     # # update everything
                     # index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
@@ -1160,7 +1165,7 @@ def main(args):
                             mask_token_ids
                         ] = orig_embeds_params[mask_token_ids]
                         assert len(orig_embeds_params[mask_token_ids])==1
-
+                # Token Embeddings
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
@@ -1261,9 +1266,9 @@ def main(args):
 
                         # visualize input
                         input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
-                        input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                        if args.masked_loss:
-                            input_image=input_image*input_mask
+                        # input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
+                        # if args.masked_loss:
+                        #     input_image=input_image*input_mask
                         input_image=input_image.astype(np.uint8)
                         input_image=Image.fromarray(input_image)
                         input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))

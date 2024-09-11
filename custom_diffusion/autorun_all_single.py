@@ -9,24 +9,25 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'teapot':('teapot','teapot','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'pet_cat1':('cat','cat','pet','living'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
 
-    'cat1': ('cat','cat','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
-
+    
+    
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
@@ -68,10 +69,10 @@ elif 'ubuntu' in hostname:
 
 target_devices=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0, 
             0.001,
-            0.0001,
-            0.0005,
+            0, 
+            # 0.0001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -93,13 +94,12 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 fixte_list=[0]
 mask_prob_list=[0.15]
-seed=7777
+seed=2940
 rep_id=1
 dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
-# for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[1e-6]
+lr_list=[1e-5]
 mlm_batch_size=25
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
@@ -114,7 +114,7 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='db_cnetv4'
+                    run_name='cd_cnetv4'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                     else:
@@ -125,7 +125,7 @@ for lr in lr_list:
                         run_name+='_mprob{}'.format(mask_prob_str)
                         run_name+='_mbatch{}'.format(mlm_batch_size)
                     run_name+='_lr{}'.format(lr_str)
-                    output_dir=os.path.join('saved_models/db_models/{}'.format(dir_name),concept)
+                    output_dir=os.path.join('saved_models/cd_models/{}'.format(dir_name),concept)
                     exp_path=os.path.join(output_dir,run_name)
                     if os.path.exists(exp_path):
                         print(exp_path,'exists')
@@ -143,11 +143,11 @@ for lr in lr_list:
                             break
                         print(run_name,'sleep',stat_idx,stat)
                         time.sleep(10)
-                    print(f"START {exp_path}\tDEVICE:{device_idx}")
+                    print(exp_path,device_idx)
                     log_path=os.path.join(log_dir,run_name+'.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                    command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
+                    command+='accelerate launch --main_process_port {} cd_train.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     command+='--initializer_token=sks \\\n'
@@ -159,7 +159,8 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
-                    command+='--max_train_steps=1001 \\\n'
+                    command+='--max_train_steps=1 \\\n'
+                    command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
@@ -173,6 +174,7 @@ for lr in lr_list:
                     command+='--mlm_batch_size={} \\\n'.format(mlm_batch_size)
                     command+='--mask_prob={} \\\n'.format(mask_prob)
                     command+='--silent=0 \\\n'
+                    command+='--scale_lr \\\n'
                     command+='--simple_caption=0 \\\n'
                     command+='--masked_loss={} \\\n'.format(masked_loss)
                     command+='--normalize_target1=0 \\\n'
@@ -182,12 +184,13 @@ for lr in lr_list:
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
                     if fixte==0: # do not fix text_encoder
-                        command+='--train_text_encoder \\\n'
+                        command+='--train_text_encoder=1 \\\n'
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
                     print('TRAIN STARTED')
+                    # exit()
                     time.sleep(15)
 
 
@@ -195,7 +198,7 @@ for lr in lr_list:
 
 print('GENERATION')
 # GENERATION
-dir_path=os.path.join('saved_models/db_models',dir_name)
+dir_path=os.path.join('saved_models/cd_models',dir_name)
 gen_log_dir='logs/generate/{}'.format(dir_name)
 os.makedirs(gen_log_dir,exist_ok=True)    
 delay=30
@@ -206,7 +209,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-target_step=1000
+get_target_step=0
 for concept in concepts:
     if concept not in info_map:
         continue
@@ -216,14 +219,14 @@ for concept in concepts:
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(target_step,target_step))
-        resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(target_step,target_step))
-        if not os.path.exists(resume_unet_path):
-            print(resume_unet_path,'does not exist')
+        resume_cd_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(get_target_step))
+        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embed.pt'.format(get_target_step))
+        if not os.path.exists(resume_cd_path):
+            print(resume_cd_path,'does not exist')
             continue
-        exp_name=resume_unet_path.split('/')[-4]
-        exp_name+='_s1000'
-        output_dir=os.path.join('results/db_results/{}/{}'.format(dir_name,concept))
+        exp_name=resume_cd_path.split('/')[-4]
+        exp_name+='_s{}'.format(get_target_step)
+        output_dir=os.path.join('results/cd_results/{}/{}'.format(dir_name,concept))
         dst_exp_path=os.path.join(output_dir,exp_name)
         if os.path.exists(dst_exp_path):
             print(dst_exp_path,'exists')
@@ -245,7 +248,7 @@ for concept in concepts:
         log_path=os.path.join(gen_log_dir,exp_name+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-        command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx])
+        command+='accelerate launch --main_process_port {} cd_generate.py \\\n'.format(ports[port_idx])
         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
         command+='--placeholder_token1="<{}>" \\\n'.format(concept)
@@ -255,8 +258,8 @@ for concept in concepts:
         command+='--output_dir="{}" \\\n'.format(output_dir)
         command+='--seed={} \\\n'.format(seed)
         command+='--mask_tokens="[MASK]" \\\n'
-        command+='--resume_unet_path="{}" \\\n'.format(resume_unet_path)
-        command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
+        command+='--resume_cd_path="{}" \\\n'.format(resume_cd_path)
+        command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
         command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
         command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
         command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
@@ -265,7 +268,7 @@ for concept in concepts:
         command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
         os.system(command)
-        print('GENERATION STARTED')
+        print('STARTED')
         port_idx+=1
         time.sleep(30)
 

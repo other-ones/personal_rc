@@ -89,6 +89,22 @@ def sort_by_mlm_and_s(items):
         int(x.split('_s')[1].split('\t')[0])    # Extract s<number>
     ))
     return sorted_items
+def extract_values(exp):
+    # Determine if "nomlm" is present
+    is_nomlm = 'nomlm' in exp
+    
+    # Extract mlm, lr, and step values using regex
+    mlm_match = re.search(r'_mlm(\d+)_', exp)
+    lr_match = re.search(r'_lr(\d+e\d+)_', exp)
+    s_match = re.search(r'_s(\d+)$', exp)
+    
+    # Default values if not found
+    mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
+    lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
+    step = int(s_match.group(1)) if s_match else float('inf')
+    
+    # Return a tuple for sorting
+    return (not is_nomlm, mlm, lr, step)
 if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser()
@@ -98,7 +114,13 @@ if __name__=='__main__':
     parser.add_argument('--sort',type=int,default=0)
     parser.add_argument('--exclude_attr_change',type=int,default=0)
     parser.add_argument('--exclude',type=str)
+    parser.add_argument('--ignore_legacy',type=int)
     args=parser.parse_args()
+    if args.ignore_legacy:
+        inp=input('IGNORE LEGACY RESULTS? (DINO) y/n')
+        if inp!='y':
+            print('Unintended argument passed')
+            exit()
     dir_path=args.dir_path
     if args.keywords:
         keywords=args.keywords.split('-')
@@ -107,6 +129,7 @@ if __name__=='__main__':
     dino_eval=DINOEvaluator(device='cuda:0')
     results=[]
     concepts=os.listdir(dir_path)
+
     for concept in concepts:
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
@@ -116,92 +139,96 @@ if __name__=='__main__':
             real_root=os.path.join('/data/twkim/diffusion/personalization/collected/images/',concept)
         # exps = sorted(exps, key=extract_mlm_step)
         concept_results=[]
-        exps=sorted(exps)[::-1]
-        for exp in exps:
-            if args.exclude is not None and args.exclude in exp:
-                continue
-            exp_path=os.path.join(concept_path,exp)
-            if keywords is not None:
-                valid=True
-                for keyword in keywords:
-                    if keyword not in exp_path:
-                        valid=False
-                        break
-            else:
-                valid=True
-            if not valid:
-                continue
-            caption_path=os.path.join(exp_path,'captions.json')
-            if not os.path.exists(caption_path):
-                continue
-            fsize=os.stat(caption_path).st_size
-            if fsize==0:
-                continue
-            if args.exclude_attr_change:
-                cap_data=json.load(open(caption_path))
-                prior,prompt_type=info_map[concept]
-                exclude_words=exclude_words_per_type[prompt_type]
-                exclude_list=[]
-                for fname in cap_data:
-                    caption=cap_data[fname]
-                    for word in exclude_words:
-                        if word in caption:
-                            exclude_list.append(fname)
+        # exps=sorted(exps)[::-1]
+        sorted_exps = sorted(exps, key=extract_values)
+        if any("_ti" in exp or "nomlm" in exp for exp in exps):
+            for exp in sorted_exps:
+                if args.exclude is not None and args.exclude in exp:
+                    continue
+                exp_path=os.path.join(concept_path,exp)
+                if keywords is not None:
+                    valid=True
+                    for keyword in keywords:
+                        if keyword not in exp_path:
+                            valid=False
                             break
-            else:
-                exclude_list=None
-            # log_path=os.path.join(exp_path,'result.txt')
-            if args.exclude_attr_change:
-                if args.grounded:
-                    score_name='masked_dino_noattr'
-                    fake_root=os.path.join(exp_path,'masked')
-                    log_path=os.path.join(exp_path,'result.txt')
-                    if not os.path.exists(log_path):
-                        continue
                 else:
-                    score_name='dino_noattr'
-                    fake_root=os.path.join(exp_path,'generated')
-            else:
-                if args.grounded:
-                    score_name='masked_dino'
-                    fake_root=os.path.join(exp_path,'masked')
-                    log_path=os.path.join(exp_path,'result.txt')
-                    if not os.path.exists(log_path):
-                        continue
+                    valid=True
+                if not valid:
+                    continue
+                caption_path=os.path.join(exp_path,'captions.json')
+                if not os.path.exists(caption_path):
+                    continue
+                fsize=os.stat(caption_path).st_size
+                if fsize==0:
+                    continue
+                if args.exclude_attr_change:
+                    cap_data=json.load(open(caption_path))
+                    prior,prompt_type=info_map[concept]
+                    exclude_words=exclude_words_per_type[prompt_type]
+                    exclude_list=[]
+                    for fname in cap_data:
+                        caption=cap_data[fname]
+                        for word in exclude_words:
+                            if word in caption:
+                                exclude_list.append(fname)
+                                break
                 else:
-                    score_name='dino'
-                    fake_root=os.path.join(exp_path,'generated')
-            dst_path=os.path.join(exp_path,'{}.json'.format(score_name))
-            if os.path.exists(dst_path):
-                read_data=json.load(open(dst_path))
-                result_line='{}\t{}'.format(exp,read_data[score_name])
+                    exclude_list=None
+                # log_path=os.path.join(exp_path,'result.txt')
+                if args.exclude_attr_change:
+                    if args.grounded:
+                        score_name='masked_dino_noattr'
+                        fake_root=os.path.join(exp_path,'masked')
+                        log_path=os.path.join(exp_path,'result.txt')
+                        if not os.path.exists(log_path):
+                            continue
+                    else:
+                        score_name='dino_noattr'
+                        fake_root=os.path.join(exp_path,'generated')
+                else:
+                    if args.grounded:
+                        score_name='masked_dino'
+                        fake_root=os.path.join(exp_path,'masked')
+                        log_path=os.path.join(exp_path,'result.txt')
+                        if not os.path.exists(log_path):
+                            print('log_path',exp)
+                            continue
+                    else:
+                        score_name='dino'
+                        fake_root=os.path.join(exp_path,'generated')
+                dst_path=os.path.join(exp_path,'{}.json'.format(score_name))
+                if os.path.exists(dst_path) and args.ignore_legacy==0:
+                    read_data=json.load(open(dst_path))
+                    result_line='{}\t{}'.format(exp,read_data[score_name])
+                    concept_results.append(result_line)
+                    continue
+                if not os.path.exists(fake_root):
+                    continue
+                src_images=[Image.open(os.path.join(real_root,item)).convert('RGB').resize((512,512)) for item in os.listdir(real_root)]
+                generated_images=[]
+                assert len(os.listdir(fake_root))==200,'gen200'
+                for item in os.listdir(fake_root):
+                    if not item.endswith(('.png','.jpg')):
+                        continue
+                    item_name=item.split('.')[0]
+                    if exclude_list is not None and item_name in exclude_list:
+                        # print(item_name)
+                        continue
+                    generated_images.append(Image.open(os.path.join(fake_root,item)))
+                if not len(generated_images):
+                    continue
+                score=dino_eval.img_to_img_similarity(src_images=src_images,generated_images=generated_images)
+                result_line='{}\t{}'.format(exp,score)
+                print(result_line)
                 concept_results.append(result_line)
-                continue
-            if not os.path.exists(fake_root):
-                continue
-            src_images=[Image.open(os.path.join(real_root,item)).convert('RGB').resize((512,512)) for item in os.listdir(real_root)]
-            generated_images=[]
-            for item in os.listdir(fake_root):
-                if not item.endswith(('.png','.jpg')):
-                    continue
-                item_name=item.split('.')[0]
-                if exclude_list is not None and item_name in exclude_list:
-                    # print(item_name)
-                    continue
-                generated_images.append(Image.open(os.path.join(fake_root,item)))
-            if not len(generated_images):
-                continue
-            score=dino_eval.img_to_img_similarity(src_images=src_images,generated_images=generated_images)
-            result_line='{}\t{}'.format(exp,score)
-            print(result_line)
-            concept_results.append(result_line)
-            dst_file=open(os.path.join(exp_path,'{}.json'.format(score_name)),'w')
-            dst_data={score_name:float(score)}
-            json.dump(dst_data,dst_file)
-        if args.sort:
-            concept_results = sort_by_mlm_and_s(concept_results)
-        if len(concept_results):
-            print(concept)
-        for item in concept_results:
-            print(item)
-        print()
+                dst_file=open(os.path.join(exp_path,'{}.json'.format(score_name)),'w')
+                dst_data={score_name:float(score)}
+                json.dump(dst_data,dst_file)
+            if args.sort:
+                concept_results = sort_by_mlm_and_s(concept_results)
+            if len(concept_results):
+                print(concept)
+            for item in concept_results:
+                print(item)
+            print()

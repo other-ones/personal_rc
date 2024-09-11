@@ -151,14 +151,13 @@ class TextualInversionDataset(Dataset):
         self.captions_simple=[]
         self.captions_simple_raw=[]
         for bg in BACKGROUNDS:
-            bg_words=[]
-            bg_splits=bg.split()
-            # if len(bg_splits)!=2:
-            #     continue
-            for item in bg.split():
-                bg_word='<bg>{}'.format(item)
-                bg_words.append(bg_word)
-            bg_new=' '.join(bg_words)
+            # bg_words=[]
+            # bg_splits=bg.split()
+            # for item in bg.split():
+            #     bg_word='<bg>{}'.format(item)
+            #     bg_words.append(bg_word)
+            # bg_new=' '.join(bg_words)
+            bg_new='<bg>{}'.format(bg)
             if prior_only:
                 caption="a picture of {} with {} in the background".format(prior_concept,bg_new)
                 caption_raw="a picture of {} with {} in the background".format(prior_concept,bg)

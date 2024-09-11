@@ -12,19 +12,18 @@ info_map_03={
     'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
@@ -67,10 +66,10 @@ elif 'ubuntu' in hostname:
 target_devices=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             # 0, 
-            # 0.001,
+            0.001,
             0.0001,
             0.0005,
-            0.00005,
+            # 0.00005,
             # 0.002,
             ]
 masked_loss=0
@@ -91,16 +90,17 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 fixte_list=[0]
 mask_prob_list=[0.15]
-seed=2940
+seed=7777
+seed=7777
 rep_id=1
 dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[1e-4,5e-4]
+lr_list=[5e-4,1e-4]
 mlm_batch_size=25
 train_target_step=1000
-print('TRAINING TI')
+print('\nTRAINING TI')
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     # lr_str=lr_str.replace('.','P')
@@ -155,7 +155,7 @@ for lr in lr_list:
                             break
                     if found:
                         break
-                    print(run_name,'sleep',stat_idx,stat)
+                    print(f"TRAIN SLEEP {run_name}")
                     time.sleep(10)
                 print(run_name,device_idx)
                 log_path=os.path.join(log_dir,run_name+'.out')
@@ -204,7 +204,7 @@ for lr in lr_list:
                 # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
                 command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                 os.system(command)
-                print('STARTED')
+                print('TRAIN STARTED')
                 time.sleep(15)
 
 
@@ -223,11 +223,11 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[500,1000,3000,2000]
+gen_target_step_list=[500,1000,2000,3000]
+gen_target_lr='5e4'
+gen_target_mlm='mlm000005'
 for gen_target_step in gen_target_step_list:
-    for concept in concepts:
-        if concept not in info_map:
-            continue
+    for concept in list(info_map.keys()):
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             print(concept_path,'not exists',concept)
@@ -236,6 +236,8 @@ for gen_target_step in gen_target_step_list:
         for exp_idx,exp in enumerate(exps):
             if not '_ti' in exp:
                 continue
+            # if not (gen_target_lr in exp and gen_target_mlm in exp):
+            #     continue
             # unet_exp_name=exp.split('_lr')
             unet_exp_name=exp.replace('lr5e4','lr1e6')
             unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')

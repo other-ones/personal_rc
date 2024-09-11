@@ -1,4 +1,3 @@
-import shutil
 from utils import render_caption
 import time
 
@@ -38,18 +37,20 @@ from diffusers import (
     StableDiffusionPipeline,
     UNet2DModel
 )
-
+from diffusers.models.attention_processor import (
+    CustomDiffusionAttnProcessor,
+    CustomDiffusionAttnProcessor2_0,
+    CustomDiffusionXFormersAttnProcessor,
+)
 from diffusers.optimization import get_scheduler
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer, CLIPVisionModel, AutoProcessor
 
-from lora_diffusion.xformers_utils import set_use_memory_efficient_attention_xformers
 from torch.utils.data import Dataset, SubsetRandomSampler
 from torchvision import transforms
 from pathlib import Path
 import random
 from PIL import Image
-from lora_diffusion import tune_lora_scale, patch_pipe
 import torchvision.transforms as T
 import inspect
 import socket
@@ -60,7 +61,6 @@ from torch import nn
 # ADDED
 torch.use_deterministic_algorithms(True)
 # ADDED
-
 
 def to_img(x, clip=True):
     x = 0.5 * (x + 1)
@@ -116,15 +116,15 @@ def main(args):
     )
     
     if args.seed is not None:
-        # set_seed(args.seed)
-        torch.manual_seed(args.seed)
-        torch.cuda.manual_seed(args.seed)
-        torch.cuda.manual_seed_all(args.seed)  # if use multi-GPU
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
-        np.random.seed(args.seed)
-        random.seed(args.seed)
-
+        set_seed(args.seed)
+    if args.learned_embed_path1 is not None:
+        exp_name=args.learned_embed_path1.split('/')[-3]
+        step=args.learned_embed_path1.split('-')[-1]
+    else:
+        exp_name=args.resume_cd_path.split('/')[-3]
+        step=args.resume_cd_path.split('-')[-1]
+    exp_name+='_s{}'.format(step)
+    # exp_dir=os.path.join(args.output_dir,exp_name)
     exp_dir=args.dst_exp_path
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
@@ -133,21 +133,14 @@ def main(args):
     if accelerator.is_main_process:
         print(exp_dir,'exp_dir')
         codepath=os.path.join(exp_dir,'src')
-        if os.path.exists(codepath) and 'tmp' not in codepath:
-            assert False
+        # if os.path.exists(codepath) and 'tmp' not in codepath:
+        #     assert False
         caption_path = os.path.join(exp_dir,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
         os.system('cp datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
-        # copy clip
-        os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
-        target = os.readlink('clip_src/modeling_clip.py')
-        shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
-        target = os.readlink('clip_src/modeling_outputs.py')
-        shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
-        # copy clip
         # 1. command
         command_path=os.path.join(codepath,'command.txt')
         command_file=open(command_path,'w')
@@ -175,29 +168,26 @@ def main(args):
         subfolder="text_encoder",
         revision=args.revision,
     )
-
     # HERE
     # mask_tokens = [args.mask_tokens]
+    # tokenizer.add_tokens(mask_tokens)
     placeholder_token1 = [args.placeholder_token1]
-    # placeholder_token2 = [args.placeholder_token2]
-    # if '_nomlm_' not in args.learned_embed_path1:
-    #     tokenizer.add_tokens(mask_tokens)
     tokenizer.add_tokens(placeholder_token1)
     placeholder_token_id1 = tokenizer.convert_tokens_to_ids(placeholder_token1)
+    if 'nomlm' not in  args.resume_cd_path:
+        mask_tokens = [args.mask_tokens]
+        tokenizer.add_tokens(mask_tokens)
+        mask_token_ids = tokenizer.convert_tokens_to_ids(mask_tokens)
+    else:
+        mask_token_ids=None
     text_encoder.resize_token_embeddings(len(tokenizer))
-    token_embeds = text_encoder.get_input_embeddings().weight.data
-    print(token_embeds.shape,'token_embeds.shape')
-    learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token1]
-    learned_embed1=learned_embed1[args.placeholder_token1]
-    # initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
-    # initializer_token_id = initializer_token_ids[0]
-    # prior_embed=token_embeds[initializer_token_id].detach().clone()
-    with torch.no_grad():
-        token_embeds[placeholder_token_id1] = learned_embed1 #
-        # token_embeds[placeholder_token_id2] = learned_embed2 #token_embeds[initializer_token_id].clone()
-    text_encoder.text_model.encoder.requires_grad_(False)
-    text_encoder.text_model.final_layer_norm.requires_grad_(False)
-    text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    text_encoder.requires_grad_(False)
+    # text_encoder.text_model.encoder.requires_grad_(False)
+    # text_encoder.text_model.final_layer_norm.requires_grad_(False)
+    # text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    # text_encoder.text_model.encoder.requires_grad_(False)
+    # text_encoder.text_model.final_layer_norm.requires_grad_(False)
+    # text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
     # HERE
     
     """VAE Initialization"""
@@ -208,9 +198,67 @@ def main(args):
         args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
     )
     """UNet Initialization"""
+
+    # Custom Diffusion Layers
+    st = unet.state_dict()
+    train_q_out = False if args.freeze_model == "crossattn_kv" else True
+    custom_diffusion_attn_procs = {}
+    attention_class = (
+        CustomDiffusionAttnProcessor2_0 if hasattr(F, "scaled_dot_product_attention") else CustomDiffusionAttnProcessor
+    )
+    train_kv = True
+    for name, _ in unet.attn_processors.items():
+        cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
+        if name.startswith("mid_block"):
+            hidden_size = unet.config.block_out_channels[-1]
+        elif name.startswith("up_blocks"):
+            block_id = int(name[len("up_blocks.")])
+            hidden_size = list(reversed(unet.config.block_out_channels))[block_id]
+        elif name.startswith("down_blocks"):
+            block_id = int(name[len("down_blocks.")])
+            hidden_size = unet.config.block_out_channels[block_id]
+        layer_name = name.split(".processor")[0]
+        weights = {
+            "to_k_custom_diffusion.weight": st[layer_name + ".to_k.weight"],
+            "to_v_custom_diffusion.weight": st[layer_name + ".to_v.weight"],
+        }
+        if train_q_out:
+            weights["to_q_custom_diffusion.weight"] = st[layer_name + ".to_q.weight"]
+            weights["to_out_custom_diffusion.0.weight"] = st[layer_name + ".to_out.0.weight"]
+            weights["to_out_custom_diffusion.0.bias"] = st[layer_name + ".to_out.0.bias"]
+        if cross_attention_dim is not None:
+            custom_diffusion_attn_procs[name] = attention_class(
+                train_kv=train_kv,
+                train_q_out=train_q_out,
+                hidden_size=hidden_size,
+                cross_attention_dim=cross_attention_dim,
+            ).to(accelerator.device)
+            custom_diffusion_attn_procs[name].load_state_dict(weights)
+        else:
+            custom_diffusion_attn_procs[name] = attention_class(
+                train_kv=False,
+                train_q_out=False,
+                hidden_size=hidden_size,
+                cross_attention_dim=cross_attention_dim,
+            )
+    unet.set_attn_processor(custom_diffusion_attn_procs)
+    # custom_diffusion_layers = AttnProcsLayers(pipe.unet.attn_processors)
+    del st
+
+    # Custom Diffusion Layers
+
+
+    
+
+
+
+
+
     print(inspect.getsourcefile(UNet2DConditionModel.from_pretrained), 'inspect')
     for param in unet.parameters():
         param.requires_grad = False
+
+
     vae.requires_grad_(False)
     weight_dtype = torch.float32
     if accelerator.mixed_precision == "fp16":
@@ -219,8 +267,8 @@ def main(args):
         weight_dtype = torch.bfloat16
     vae.to(accelerator.device, dtype=weight_dtype)
     text_encoder.to(accelerator.device, dtype=weight_dtype)
-    if accelerator.is_main_process:
-        accelerator.init_trackers("dreambooth", config=vars(args))
+    # if accelerator.is_main_process:
+    #     accelerator.init_trackers("dreambooth", config=vars(args))
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
                             inspect.signature(
                                 accelerator.unwrap_model
@@ -233,9 +281,6 @@ def main(args):
     )
 
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
-
-    if accelerator.is_main_process:
-        print('unet param loaded')
     (unet,
      noise_scheduler,
      text_encoder,
@@ -246,14 +291,36 @@ def main(args):
                     text_encoder,
                     vae,
                     )
-    # std_pipeline = StableDiffusionPipelineClsAug.from_pretrained( model_name,
-    #                         unet=accelerator.unwrap_model(unet, **extra_args),
-    #                         tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
-    #                         )
-    # std_scheduler = std_pipeline.scheduler
-    # std_fe_extractor = std_pipeline.feature_extractor
-    # del std_pipeline
-    # unet.eval()
+    
+    
+    
+    
+    if args.learned_embed_path1 is not None:
+        token_embeds = text_encoder.get_input_embeddings().weight.data
+        learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
+        print('load learned embeddings')
+        learned_embed1=learned_embed1[args.placeholder_token1]
+        learned_embed1=learned_embed1.to(accelerator.device)
+        # initial_embed=learned_embed1.clone().detach()
+        with torch.no_grad():
+            token_embeds[placeholder_token_id1] = learned_embed1.clone()
+        del learned_embed1
+    if args.resume_cd_path and args.resume_cd_path!='None':
+        saved_state_dict = torch.load(args.resume_cd_path, map_location=torch.device('cpu'))
+        print()
+        print()
+        defined_state_dict=unet.state_dict()
+        new_state_dict={}
+        for key in defined_state_dict:
+            # print(key,'defined')
+            if key in saved_state_dict:
+                new_state_dict[key]=saved_state_dict[key]
+            else:
+                new_state_dict[key]=defined_state_dict[key]
+        unet.load_state_dict(new_state_dict,strict=True)
+        print('unet parameters loaded')
+        del new_state_dict
+    
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
         inspect.signature(
             accelerator.unwrap_model
@@ -264,7 +331,6 @@ def main(args):
         if accepts_keep_fp32_wrapper
         else {}
     )
-    
     unet=unet.to(accelerator.device)
     pipeline = StableDiffusionPipeline(
             vae=accelerator.unwrap_model(vae, **extra_args),
@@ -276,61 +342,30 @@ def main(args):
             safety_checker=None,
             requires_safety_checker=False,
         )
+        
+        
     if args.include_prior_concept:
-        if args.rev:
-            placeholder='{} {}'.format(args.train_prior_concept1, args.placeholder_token1)
-        else:
-            placeholder='{} {}'.format(args.placeholder_token1, args.train_prior_concept1)
+        placeholder='{} {}'.format(args.placeholder_token1,args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
-    print(args.benchmark_path,'args.benchmark_path')
     eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
     eval_prompts=[item.format(placeholder) for item in eval_prompts]
     eval_prompts=eval_prompts*args.num_images_per_prompt
     batch_size=args.eval_batch_size
-
-    
     num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
-
-    # validation_files=os.listdir(args.train_data_dir1)
-    # validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512))
     count=0
-    if args.target_image is not None:
-        validation_target=Image.open(os.path.join(args.train_data_dir1,args.target_image)).resize((512,512)).convert('RGB')
-    else:
-        validation_files=sorted(os.listdir(args.train_data_dir1))
-        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
-    # validation_files=sorted(os.listdir(args.train_data_dir1))
-    # validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
+    validation_files=sorted(os.listdir(args.train_data_dir1))
+    validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
     caption_data={}
-    # print(learned_embed1.shape,'learned_embed1.shape')
-    # print(prior_embed.shape,'prior_embed.shape')
-    # prior_embed=prior_embed.to(accelerator.device)
-    learned_embed1=learned_embed1.to(accelerator.device)
-    
-    attn_mod_params={
-                    'calibrate_ppos1':args.calibrate_ppos1,
-                    'calibrate_ppos2':args.calibrate_ppos2,
-                    'calibrate_pneg1':args.calibrate_pneg1,
-                    'calibrate_pneg2':args.calibrate_pneg2,
-                    'calibrate_kpos1':args.calibrate_kpos1,
-                    'calibrate_kpos2':args.calibrate_kpos2,
-                    'calibrate_kneg1':args.calibrate_kneg1,
-                    'calibrate_kneg2':args.calibrate_kneg2,
-                }
-
     with torch.no_grad():
-        generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
-        if args.normalize_target1:
-            target_emb1=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
-        else:
-            target_emb1=learned_embed1
+        target_emb1=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
         for batch_idx in range(num_batches):
             prompts=eval_prompts[batch_idx*batch_size:(batch_idx+1)*batch_size]
             if not len(prompts):
                 break
+
+
             is_keyword_tokens_list=[]
-            is_prior1_list=[]
             for prompt in prompts:
                 is_keyword_tokens=[False]
                 is_prior1=[False]
@@ -341,46 +376,30 @@ def main(args):
                     num_tokens=len(word_token_ids)
                     for tok_id in word_token_ids:
                         tok_decoded=tokenizer.decode(tok_id)
-                        # print(tok_decoded,args.placeholder_token1==tok_decoded,cap_word)
-                        # print(tok_decoded,args.placeholder_token1==cap_word,cap_word)
                         if args.placeholder_token1 == tok_decoded:
                             is_keyword_tokens.append(True)
                         else:
                             is_keyword_tokens.append(False)
-                        # prior1
-                        if tok_decoded==args.train_prior_concept1:
-                            is_prior1.append(True)
-                        else:
-                            is_prior1.append(False)
                 for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
                     is_keyword_tokens.append(False)
-                for _ in range(len(is_prior1),tokenizer.model_max_length):
-                    is_prior1.append(False)
                 assert len(is_keyword_tokens)==tokenizer.model_max_length
-                assert len(is_prior1)==tokenizer.model_max_length
-                if sum(is_keyword_tokens)!=1:
-                    print(prompt,'prompt')
-                    print(args.placeholder_token1,'placeholder_token1')
-                    print(args.train_prior_concept1,'train_prior_concept1')
-                    print(sum(is_keyword_tokens),'sum(is_keyword_tokens)')
-                assert sum(is_keyword_tokens)==1
-                assert sum(is_prior1)==len(args.train_prior_concept1.split())
+
+                # if sum(is_keyword_tokens)!=1:
+                #     print(prompt,'prompt')
+                #     print(args.placeholder_token1,'placeholder_token1')
+                #     print(args.train_prior_concept1,'train_prior_concept1')
+                #     print(sum(is_keyword_tokens),'sum(is_keyword_tokens)')
+                
                 is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
-                is_prior1=torch.BoolTensor(is_prior1)
                 is_keyword_tokens_list.append(is_keyword_tokens)
-                is_prior1_list.append(is_prior1)
             is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)
-            is_prior1_list=torch.stack(is_prior1_list)
+            print(sample_dir,'sample_dir')
             images = pipeline(prompt=prompts, 
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
                             is_keyword_tokens1=is_keyword_tokens_list,
                             inj_embeddings1=target_emb1.repeat(len(prompts),1),
-                            # is_prior1=is_prior1_list,
-                            # attn_mod_params=attn_mod_params,
-                            generator=generator,
-                            # add_pe=args.add_pe,
                             ).images
             
             # 
@@ -417,10 +436,6 @@ def main(args):
             print(batch_idx+1,num_batches,render_delay)
             print(merged_viz.size,'merged_viz.size',len(images),'len(images)')
             merged_viz.save(os.path.join(merged_dir,'merged_{:03d}.jpg'.format(batch_idx+1)))
-            torch.cuda.empty_cache()
-            # 
-
-
             
     json.dump(caption_data,caption_file,indent=1)
     accelerator.wait_for_everyone()

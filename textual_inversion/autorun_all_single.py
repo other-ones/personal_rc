@@ -13,18 +13,18 @@ info_map_03={
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -98,7 +98,7 @@ ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 target_devices=[0,1,2,3,4,5,6,7]
 seed=2940
-include_prior=1
+include_prior=0
 delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
@@ -198,7 +198,7 @@ for mlm_batch in mlm_batch_list:
                     if exclude_cap_types is not None:
                         command+='--exclude_cap_types={} \\\n'.format(exclude_cap_types)
                     command+='--normalize_target1=0 \\\n'
-                    command+='--caption_root="../datasets_pkgs/captions/v8" \\\n'
+                    command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
                     command+='--run_name="{}" \\\n'.format(run_name)
                     command+='--report_to="wandb" \\\n'
                     command+='--project_name="TI MLM SINGLE" \\\n'

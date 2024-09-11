@@ -1,4 +1,5 @@
-# import torchvision
+import random
+import torchvision
 import re
 import random
 import time
@@ -17,12 +18,9 @@ from PIL import Image,ImageDraw
 import string
 import albumentations as A
 from packaging import version
-# torch.use_deterministic_algorithms(True)
-# Added
 
 # Added
-
-
+# Added
 Image.MAX_IMAGE_PIXELS = 1000000000
 alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95
 alphabet_dic = {}
@@ -46,7 +44,7 @@ roi_mask_transforms = transforms.Compose(
 
 
 # Generate captions by combining elements from each list with different formats
-prefixes=sorted(list(set([
+prefixes=sorted([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -74,9 +72,9 @@ prefixes=sorted(list(set([
     "a photo of the large {}",
     "a photo of a cool {}",
     "a photo of a small {}",
-])))
+])
 
-mlm_prefixes=sorted(list(set([
+mlm_prefixes=sorted([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -89,7 +87,7 @@ mlm_prefixes=sorted(list(set([
     "a close-up photo of the {}",
     "a rendition of the {}",
     "a rendition of a {}",
-])))
+])
 
 if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
     PIL_INTERPOLATION = {
@@ -108,54 +106,76 @@ else:
         "nearest": PIL.Image.NEAREST,
     }
 
-class TextualInversionDataset(Dataset):
+class CustomDiffusionDataset(Dataset):
     def __init__(
         self,
         data_root,
         tokenizer,
         include_prior_concept,
         size=512,
-        interpolation="bicubic",
-        flip_p=0,
+        interpolation="bilinear",
+        flip_p=0.5,
         center_crop=False,
         exclude_suffix=True,
         mlm_target='all',
         mask_prob=0.15,
         mask_token_ids=None,
         get_images=True,
+        prompt_type=None,
         train_prior_concept1=None,
         placeholder_token=None,
         caption_root=None,
-        rev=None,
+        class_num=None,
+        class_data_root=None,
+        class_prompt=None,
+        simple_caption=False,
+        rev=False,
         seed=None,
+        aug=True,
         exclude_cap_types=None,
-        prompt_type=None,
-        use_det_alg=False,
-        target_image=None,
-    ):  
+        mask_size=64,
 
-        # randomness
+    ):  
+        self.mask_size=mask_size
+        self.aug=aug
+        self.instance_prompt="photo of a {}"
+        self.rev=rev
+        self.exclude_cap_types=exclude_cap_types
         if seed:
             torch.manual_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
             torch.cuda.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)  # if use multi-GPU
-            # if use_det_alg:
-            #     torch.use_deterministic_algorithms(True)
-            # else:
-            #     torch.use_deterministic_algorithms(False)
-            
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
             print('seeded')
-        # randomness
-        self.rev=rev
+
+        
+        self.instance_images_path = sorted(list(Path(data_root).iterdir()))
+        self.num_instance_images = len(self.instance_images_path)
+        self.simple_caption=simple_caption
+        if class_data_root is not None:
+            self.class_data_root = Path(class_data_root)
+            self.class_data_root.mkdir(parents=True, exist_ok=True)
+            self.class_images_path = sorted(list(self.class_data_root.iterdir()))
+            if class_num is not None:
+                self.num_class_images = min(len(self.class_images_path), class_num)
+            else:
+                self.num_class_images = len(self.class_images_path)
+            # self._length = max(self.num_class_images, self.num_instance_images)
+            self.class_prompt = class_prompt
+        else:
+            self.class_prompt = None
+            self.class_data_root = None
+            self.class_images_path = None
+
+
+        self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
         caption_dir_path=os.path.join(caption_root,prompt_type)
         cap_file_list=sorted(os.listdir(caption_dir_path))
         self.captions={}
-        max_length=0
         invalid_counts=0
         for cap_file in cap_file_list:
             fname=cap_file.split('.')[0]
@@ -168,24 +188,21 @@ class TextualInversionDataset(Dataset):
             if not valid:
                 continue
             cap_file_path=os.path.join(caption_dir_path,cap_file)
-            self.captions[fname]=sorted(list(set(open(cap_file_path).readlines())))
+            self.captions[fname]=sorted(open(cap_file_path).readlines())
             print('{}\t{}'.format(fname,len(self.captions[fname])))
-            if max_length<len(self.captions[fname]):
-                max_length=len(self.captions[fname])
+        # self._length=max_length
         if exclude_cap_types is not None:
             if len(exclude_cap_types)!=invalid_counts:
                 print(invalid_counts,'invalid_counts',exclude_cap_types,'exclude_cap_types')
             assert len(exclude_cap_types)==invalid_counts,'len(exclude_cap_types)==invalid_counts'
-        # self._length=max_length*100
-        # self._length=25
         self._length=int(1e7)
         self.caption_types=sorted(list(self.captions.keys()))
         
         self.get_images = get_images
-        if mask_token_ids:
+        if mask_token_ids is not None:
             mask_token_ids = mask_token_ids[0]
-        self.mask_token_ids = mask_token_ids
-            
+        self.mask_token_ids=mask_token_ids
+
         self.mask_prob = mask_prob
         self.mlm_target = mlm_target
         self.exclude_suffix = exclude_suffix
@@ -196,16 +213,20 @@ class TextualInversionDataset(Dataset):
         self.size = size
         self.center_crop = center_crop
         self.flip_p = flip_p
-        self.image_paths=[]
-        for file_path in os.listdir(self.data_root):
-            if (target_image is not None) and (target_image.split('.')[0] not in file_path):
-                continue
-            self.image_paths.append(os.path.join(self.data_root,file_path))
-        self.image_paths=sorted(self.image_paths)
-        assert len(self.image_paths),'len>0'
-        # self.image_paths = sorted([os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)])
+        self.image_paths = sorted([os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)])
         self.num_images = len(self.image_paths)
+        self.flip = transforms.RandomHorizontalFlip(p=self.flip_p)
+        self.image_transforms = transforms.Compose(
+            [
+                self.flip,
+                transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.CenterCrop(size) if center_crop else transforms.RandomCrop(size),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ]
+        )
         # self._length = self.num_images * repeats
+
         self.interpolation = {
             "linear": PIL_INTERPOLATION["linear"],
             "bilinear": PIL_INTERPOLATION["bilinear"],
@@ -217,10 +238,28 @@ class TextualInversionDataset(Dataset):
 
     def __len__(self):
         return self._length
-
+    def preprocess(self, image, scale, resample):
+        outer, inner = self.size, scale
+        factor = self.size // self.mask_size
+        if scale > self.size:
+            outer, inner = scale, self.size
+        top, left = np.random.randint(0, outer - inner + 1), np.random.randint(0, outer - inner + 1)
+        image = image.resize((scale, scale), resample=resample)
+        image = np.array(image).astype(np.uint8)
+        image = (image / 127.5 - 1.0).astype(np.float32)
+        instance_image = np.zeros((self.size, self.size, 3), dtype=np.float32)
+        mask = np.zeros((self.size // factor, self.size // factor))
+        if scale > self.size:
+            instance_image = image[top : top + inner, left : left + inner, :]
+            mask = np.ones((self.size // factor, self.size // factor))
+        else:
+            instance_image[top : top + inner, left : left + inner, :] = image
+            mask[
+                top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
+            ] = 1.0
+        return instance_image, mask
     def __getitem__(self, index):
         example = {}
-        # 1. Image
         if self.include_prior_concept:
             if self.rev:
                 # dog <dog6>
@@ -230,47 +269,73 @@ class TextualInversionDataset(Dataset):
                 placeholder='{} {}'.format(self.placeholder_token,self.train_prior_concept1)
         else:
             placeholder=self.placeholder_token
+        # 1. Image
         if self.get_images:
+            # 1) Personal Image
             img_path=self.image_paths[index % (len(self.image_paths))]
-            mask_path=img_path.replace('/images/','/masks/')
-            mask_path=mask_path.replace('.jpg','.png')
-            mask_path=mask_path.replace('.jpeg','.png')
-            mask=cv2.imread(mask_path,-1)
-            mask=cv2.resize(mask,(512,512),cv2.INTER_NEAREST)
             image = Image.open(img_path)
             if not image.mode == "RGB":
                 image = image.convert("RGB")
-
-            if np.random.rand()<0.5:
-                image=image.transpose(Image.FLIP_LEFT_RIGHT)
-                mask=cv2.flip(mask,1)
-           
-            # default to score-sde preprocessing
-            img = np.array(image).astype(np.uint8)
-            if self.center_crop: #NO
-                crop = min(img.shape[0], img.shape[1])
-                (
-                    h,
-                    w,
-                ) = (
-                    img.shape[0],
-                    img.shape[1],
+            image = self.flip_transform(image)
+            random_scale = self.size
+            if self.aug:
+                random_scale = (
+                    np.random.randint(self.size // 3, self.size + 1)
+                    if np.random.uniform() < 0.66
+                    else np.random.randint(int(1.2 * self.size), int(1.4 * self.size))
                 )
-                img = img[(h - crop) // 2 : (h + crop) // 2, (w - crop) // 2 : (w + crop) // 2]
-
-            image = Image.fromarray(img)
-            image = image.resize((self.size, self.size), resample=self.interpolation)
-            # image = self.flip_transform(image)
-            image = np.array(image).astype(np.uint8)
-            image = (image / 127.5 - 1.0).astype(np.float32)
+            image, mask = self.preprocess(image, random_scale, self.interpolation)
+            # image = Image.fromarray(img)
             example["pixel_values"] = torch.from_numpy(image).permute(2, 0, 1)
-            mask_tensor=torch.from_numpy(mask).unsqueeze(-1).permute(2, 0, 1) # binary mask
-            example["masks"] = mask_tensor
+            example["mask"] = torch.from_numpy(mask)
+
+
+
+
+            # 1) Prior Image
+            if self.class_images_path:
+                class_image = Image.open(self.class_images_path[index % self.num_class_images])
+                if not class_image.mode == "RGB":
+                    class_image = class_image.convert("RGB")
+                class_image=self.image_transforms(class_image)
+                example["class_images"] = class_image
+                example["class_mask"] = torch.ones_like(example["mask"])
+                class_text_inputs=self.tokenizer(
+                    self.class_prompt,
+                    truncation=True,
+                    padding="max_length",
+                    max_length=self.tokenizer.model_max_length,
+                    return_tensors="pt",
+                )
+                example["class_prompt_ids"] = class_text_inputs.input_ids[0]
+                is_keyword_tokens_prior=[False]
+                text_words_prior=self.class_prompt.split()
+                for word_idx in range(len(text_words_prior)):
+                    cap_word=text_words_prior[word_idx]
+                    word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
+                    num_tokens=len(word_token_ids)
+                    for tok_id in word_token_ids:
+                        if self.placeholder_token == cap_word:
+                            is_keyword_tokens_prior.append(True)
+                        else:
+                            is_keyword_tokens_prior.append(False)
+                for _ in range(len(is_keyword_tokens_prior),self.tokenizer.model_max_length):
+                    is_keyword_tokens_prior.append(False)
+                assert sum(is_keyword_tokens_prior)==0
+                assert len(is_keyword_tokens_prior)==self.tokenizer.model_max_length
+                is_keyword_tokens_prior=torch.BoolTensor(is_keyword_tokens_prior)
+                example["is_keyword_tokens_prior"]=is_keyword_tokens_prior
+
 
             # 2. Caption for TI
-            text = random.choice(prefixes).format(placeholder)
+            # instance_prompt="photo of a <new1> cat"
+            text= self.instance_prompt.format(placeholder)
+            if random_scale < 0.6 * self.size:
+                text = np.random.choice(["a far away ", "very small "]) + text
+            elif random_scale > self.size:
+                text = np.random.choice(["zoomed in ", "close up "]) + text
+            # print(text,'text')
             example["raw_caption_ti"]=text
-
             example["input_ids"] = self.tokenizer(
                 text,
                 padding="max_length",
@@ -284,7 +349,6 @@ class TextualInversionDataset(Dataset):
                 cap_word=text_words[word_idx]
                 word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
-                
                 for tok_id in word_token_ids:
                     tok_decoded=self.tokenizer.decode(tok_id)
                     if self.placeholder_token == tok_decoded:
@@ -299,6 +363,8 @@ class TextualInversionDataset(Dataset):
             assert sum(is_keyword_tokens)==1
             example["is_keyword_tokens"]=torch.BoolTensor(is_keyword_tokens)
 
+            
+            
             # mlm data
             example["raw_caption_mlm"]=[]
             example["input_ids_pos"]=[]
@@ -313,9 +379,8 @@ class TextualInversionDataset(Dataset):
             sampled_type=np.random.choice(self.caption_types)
             mlm_caption=self.captions[sampled_type][index%len(self.captions[sampled_type])]
             mlm_caption=mlm_caption.strip()
-            # print(index,'index',sampled_type,'sampled_type',mlm_caption,'mlm_caption')
             mlm_caption=mlm_caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
-            if 'interactions' not in sampled_type and 'creatives' not in sampled_type and 'specific' not in sampled_type:
+            if 'interactions' not in sampled_type and 'creatives' not in sampled_type:
                 mlm_prefix=np.random.choice(mlm_prefixes)
                 mlm_caption=mlm_prefix.format(mlm_caption)
             example["raw_caption_mlm"]=mlm_caption
@@ -326,6 +391,7 @@ class TextualInversionDataset(Dataset):
                     max_length=self.tokenizer.model_max_length,
                     return_tensors="pt",
                 ).input_ids[0]
+
 
             words_mlm=mlm_caption.split()
             is_keyword_tokens_mlm=[False] # first token for <startoftext>
@@ -342,9 +408,8 @@ class TextualInversionDataset(Dataset):
                 num_tokens=len(word_token_ids)
                 non_special_idxs+=([True]*num_tokens)
                 for tok_id in word_token_ids:
-                    # 1) input ids and indices for mask token
                     tok_decoded=self.tokenizer.decode(tok_id)
-                    
+                    # 1) input ids and indices for mask token
                     if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
                         masked_idxs.append(True)
                         input_ids_masked.append(self.mask_token_ids)
@@ -359,14 +424,12 @@ class TextualInversionDataset(Dataset):
                     else:
                         is_keyword_tokens_mlm.append(False)
                         mlm_labels.append(tok_id)
+            
 
             # 3) is_keyword_tokens_mlm - keyword indices for MLM
             for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
                 is_keyword_tokens_mlm.append(False)
             assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
-            if sum(is_keyword_tokens_mlm)!=1:
-                print(mlm_caption,'mlm_caption')
-                print(sum(is_keyword_tokens_mlm),'sum(is_keyword_tokens_mlm)')
             assert sum(is_keyword_tokens_mlm)==1
             example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
 

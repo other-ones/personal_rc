@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--target_image',type=str)
     parser.add_argument('--use_det_alg',type=int,default=1)
     parser.add_argument('--train_prior_concept1',type=str)
     parser.add_argument('--eval_prior_concept1',type=str)

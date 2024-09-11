@@ -299,15 +299,14 @@ def main():
     else:
         mask_token_ids=None
     placeholder_token_ids = tokenizer.convert_tokens_to_ids(placeholder_tokens)
-    initializer_token_ids = tokenizer.encode(args.train_prior_concept1, add_special_tokens=False)
-    assert len(initializer_token_ids)==1,args.train_prior_concept1
-    initializer_token_id = initializer_token_ids[0]
+    
     text_encoder.resize_token_embeddings(len(tokenizer))
     token_embeds = text_encoder.get_input_embeddings().weight.data
-    # print(token_embeds.shape,'token_embeds.shape')
-    prior_embed=token_embeds[initializer_token_id].detach().clone().unsqueeze(0)
     # Initializer
     if args.initialize_token:
+        initializer_token_ids = tokenizer.encode(args.initializer_token, add_special_tokens=False)
+        assert len(initializer_token_ids)==1,args.initializer_token
+        initializer_token_id = initializer_token_ids[0]
         with torch.no_grad():
             for token_id in placeholder_token_ids:
                 token_embeds[token_id] = token_embeds[initializer_token_id].clone()
@@ -421,6 +420,7 @@ def main():
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
         use_det_alg=args.use_det_alg,
+        target_image=args.target_image,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -683,7 +683,7 @@ def main():
     pipeline.set_progress_bar_config(disable=False)
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     import time
-    prior_embed=prior_embed.to(accelerator.device)
+    # prior_embed=prior_embed.to(accelerator.device)
     
 
     for epoch in range(first_epoch, args.num_train_epochs):
@@ -907,8 +907,11 @@ def main():
 
                         # save images
                         # validation_files=os.listdir(args.train_data_dir)
-                        validation_files=sorted(os.listdir(args.train_data_dir1))
-                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
+                        if args.target_image is not None:
+                            validation_target=Image.open(os.path.join(args.train_data_dir1,args.target_image)).resize((512,512)).convert('RGB')
+                        else:
+                            validation_files=sorted(os.listdir(args.train_data_dir1))
+                            validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
 
                         # mod here
                         num_images=len(images)

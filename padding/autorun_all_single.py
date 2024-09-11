@@ -108,7 +108,7 @@ else:
 train_log_dir='logs/nj_models/train/{}'.format(dir_name)
 exclude_cap_types=None
 os.makedirs(train_log_dir,exist_ok=True) 
-num_devices=5
+num_devices=3
 while True:
     stats=get_gpu_memory()
     found=False
@@ -175,7 +175,7 @@ for mlm_batch in mlm_batch_list:
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                     command+='--resolution=512 \\\n'
-                    command+='--train_batch_size=1 \\\n'
+                    command+='--train_batch_size=2 \\\n'
                     command+='--gradient_accumulation_steps=4 \\\n'
                     command+='--learning_rate=5e-4 \\\n'
                     command+='--lr_scheduler="constant" \\\n'

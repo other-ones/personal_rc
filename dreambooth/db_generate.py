@@ -55,7 +55,7 @@ hostname = socket.gethostname()
 
 from configs import parse_args
 from torch import nn
-
+torch.use_deterministic_algorithms(True)
 
 def to_img(x, clip=True):
     x = 0.5 * (x + 1)
@@ -321,7 +321,7 @@ def main(args):
             if not len(prompts):
                 break
             is_keyword_tokens_list=[]
-            is_prior1_list=[]
+            # is_prior1_list=[]
             for prompt in prompts:
                 is_keyword_tokens=[False]
                 is_prior1=[False]
@@ -357,9 +357,9 @@ def main(args):
                 is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
                 is_prior1=torch.BoolTensor(is_prior1)
                 is_keyword_tokens_list.append(is_keyword_tokens)
-                is_prior1_list.append(is_prior1)
+                # is_prior1_list.append(is_prior1)
             is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)
-            is_prior1_list=torch.stack(is_prior1_list)
+            # is_prior1_list=torch.stack(is_prior1_list)
             print(sample_dir,'sample_dir')
             images = pipeline(prompt=prompts, 
                             num_inference_steps=50, 

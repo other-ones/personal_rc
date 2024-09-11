@@ -869,7 +869,7 @@ def main(args):
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
                 is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
-                # masks=batch["masks"]# B,77 list of booleans (tensor)
+                masks=batch["masks"]# B,77 list of booleans (tensor)
                 # masks64=torch.nn.functional.interpolate(masks,(64,64))
                 # for MLM
                 batch_mlm=load_mlm_batch(mlm_loader)
@@ -1087,8 +1087,6 @@ def main(args):
                     # visualize input
                     input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
                     input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                    if args.masked_loss:
-                        input_image=input_image*input_mask
                     input_image=input_image.astype(np.uint8)
                     input_image=Image.fromarray(input_image)
                     input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))

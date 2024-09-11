@@ -44,7 +44,7 @@ roi_mask_transforms = transforms.Compose(
 
 
 # Generate captions by combining elements from each list with different formats
-prefixes=sorted([
+prefixes=sorted(set([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -72,9 +72,9 @@ prefixes=sorted([
     "a photo of the large {}",
     "a photo of a cool {}",
     "a photo of a small {}",
-])
+]))
 
-mlm_prefixes=sorted([
+mlm_prefixes=sorted(set([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -87,7 +87,7 @@ mlm_prefixes=sorted([
     "a close-up photo of the {}",
     "a rendition of the {}",
     "a rendition of a {}",
-])
+]))
 
 if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
     PIL_INTERPOLATION = {
@@ -147,13 +147,13 @@ class DreamboothDataset(Dataset):
             print('seeded')
 
         
-        self.instance_images_path = list(Path(data_root).iterdir())
+        self.instance_images_path = sorted(list(Path(data_root).iterdir()))
         self.num_instance_images = len(self.instance_images_path)
         self.simple_caption=simple_caption
         if class_data_root is not None:
             self.class_data_root = Path(class_data_root)
             self.class_data_root.mkdir(parents=True, exist_ok=True)
-            self.class_images_path = list(self.class_data_root.iterdir())
+            self.class_images_path = sorted(list(self.class_data_root.iterdir()))
             if class_num is not None:
                 self.num_class_images = min(len(self.class_images_path), class_num)
             else:
@@ -169,7 +169,7 @@ class DreamboothDataset(Dataset):
         self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
         caption_dir_path=os.path.join(caption_root,prompt_type)
-        cap_file_list=os.listdir(caption_dir_path)
+        cap_file_list=sorted(os.listdir(caption_dir_path))
         self.captions={}
         invalid_counts=0
         for cap_file in cap_file_list:
@@ -183,7 +183,7 @@ class DreamboothDataset(Dataset):
             if not valid:
                 continue
             cap_file_path=os.path.join(caption_dir_path,cap_file)
-            self.captions[fname]=open(cap_file_path).readlines()
+            self.captions[fname]=sorted(list(set(open(cap_file_path).readlines()))) #CHECK
             print('{}\t{}'.format(fname,len(self.captions[fname])))
         # self._length=max_length
         if exclude_cap_types is not None:
@@ -191,7 +191,7 @@ class DreamboothDataset(Dataset):
                 print(invalid_counts,'invalid_counts',exclude_cap_types,'exclude_cap_types')
             assert len(exclude_cap_types)==invalid_counts,'len(exclude_cap_types)==invalid_counts'
         self._length=int(1e7)
-        self.caption_types=list(self.captions.keys())
+        self.caption_types=sorted(list(self.captions.keys()))
         
         self.get_images = get_images
         if mask_token_ids is not None:
@@ -208,7 +208,7 @@ class DreamboothDataset(Dataset):
         self.size = size
         self.center_crop = center_crop
         self.flip_p = flip_p
-        self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
+        self.image_paths = sorted([os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)])
         self.num_images = len(self.image_paths)
         # self._length = self.num_images * repeats
 
@@ -420,6 +420,7 @@ class DreamboothDataset(Dataset):
             input_ids_masked.append(self.tokenizer.eos_token_id)
             for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
                 input_ids_masked.append(self.tokenizer.pad_token_id)
+            print(input_ids_masked,'input_ids_masked')
             input_ids_masked=torch.LongTensor(input_ids_masked)
             example["input_ids_masked"]=input_ids_masked
 
