@@ -114,7 +114,7 @@ class DreamboothDataset(Dataset):
         include_prior_concept,
         size=512,
         interpolation="bicubic",
-        flip_p=0,
+        flip_p=0.5,
         center_crop=False,
         exclude_suffix=True,
         mlm_target='all',
@@ -378,10 +378,13 @@ class DreamboothDataset(Dataset):
             words_mlm=mlm_caption.split()
             is_keyword_tokens_mlm=[False] # first token for <startoftext>
             masked_idxs=[False]
-            if self.mlm_target=='non_special': # if non-special only then bos is not learned
-                mlm_labels=[-100]
-            else:
+            # if self.mlm_target=='non_special': # if non-special only then bos is not learned
+            # else:
+            #     mlm_labels=[self.tokenizer.bos_token_id]
+            if self.mlm_target in ['all','non_padding']:
                 mlm_labels=[self.tokenizer.bos_token_id]
+            else:
+                mlm_labels=[-100]
             input_ids_masked=[self.tokenizer.bos_token_id]
             non_special_idxs=[False]
             for word_idx in range(len(words_mlm)):
@@ -395,17 +398,20 @@ class DreamboothDataset(Dataset):
                     if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
                         masked_idxs.append(True)
                         input_ids_masked.append(self.mask_token_ids)
+                        mlm_labels.append(tok_id)
                     else:
                         masked_idxs.append(False)
                         input_ids_masked.append(tok_id)
+                        if self.mlm_target in ['all','non_padding']:
+                            mlm_labels.append(tok_id)
+                        else:
+                            mlm_labels.append(-100)
                     # 2) keyword indices and labels for MLM
                     if self.placeholder_token == tok_decoded:
                         assert num_tokens==1
                         is_keyword_tokens_mlm.append(True)
-                        mlm_labels.append(-100)
                     else:
                         is_keyword_tokens_mlm.append(False)
-                        mlm_labels.append(tok_id)
             
 
             # 3) is_keyword_tokens_mlm - keyword indices for MLM
@@ -420,19 +426,19 @@ class DreamboothDataset(Dataset):
             input_ids_masked.append(self.tokenizer.eos_token_id)
             for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
                 input_ids_masked.append(self.tokenizer.pad_token_id)
-            print(input_ids_masked,'input_ids_masked')
             input_ids_masked=torch.LongTensor(input_ids_masked)
             example["input_ids_masked"]=input_ids_masked
 
             # 5) mlm_labels
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-            if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token
+            if self.mlm_target =='all': #if all learned (bos+eos+nonspecial) then add eos token
                 mlm_labels.append(self.tokenizer.eos_token_id)
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 if self.mlm_target=='all':
                     mlm_labels.append(self.tokenizer.pad_token_id)
-                else: # non_padding/non_special/masked
+                else: # masked
                     mlm_labels.append(-100)
+            assert len(mlm_labels)==self.tokenizer.model_max_length
             mlm_labels=torch.LongTensor(mlm_labels)
             example['mlm_labels']=mlm_labels
 

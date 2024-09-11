@@ -15,9 +15,9 @@ Mixed precision type: no
 
 /home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
   warnings.warn(
-{'prediction_type', 'dynamic_thresholding_ratio', 'thresholding', 'variance_type', 'timestep_spacing', 'clip_sample_range', 'sample_max_value'} was not found in config. Values will be initialized to default values.
+{'sample_max_value', 'timestep_spacing', 'variance_type', 'dynamic_thresholding_ratio', 'prediction_type', 'thresholding', 'clip_sample_range'} was not found in config. Values will be initialized to default values.
 {'scaling_factor'} was not found in config. Values will be initialized to default values.
-{'encoder_hid_dim_type', 'transformer_layers_per_block', 'addition_embed_type', 'num_class_embeds', 'timestep_post_act', 'conv_in_kernel', 'time_cond_proj_dim', 'only_cross_attention', 'cross_attention_norm', 'resnet_skip_time_act', 'mid_block_only_cross_attention', 'time_embedding_act_fn', 'class_embed_type', 'dual_cross_attention', 'addition_time_embed_dim', 'time_embedding_dim', 'class_embeddings_concat', 'mid_block_type', 'time_embedding_type', 'encoder_hid_dim', 'resnet_out_scale_factor', 'num_attention_heads', 'projection_class_embeddings_input_dim', 'resnet_time_scale_shift', 'conv_out_kernel', 'upcast_attention', 'addition_embed_type_num_heads', 'use_linear_projection'} was not found in config. Values will be initialized to default values.
+{'time_embedding_act_fn', 'addition_time_embed_dim', 'time_cond_proj_dim', 'only_cross_attention', 'time_embedding_dim', 'num_class_embeds', 'upcast_attention', 'dual_cross_attention', 'class_embed_type', 'cross_attention_norm', 'mid_block_type', 'conv_out_kernel', 'projection_class_embeddings_input_dim', 'use_linear_projection', 'addition_embed_type', 'resnet_skip_time_act', 'num_attention_heads', 'timestep_post_act', 'conv_in_kernel', 'time_embedding_type', 'transformer_layers_per_block', 'class_embeddings_concat', 'mid_block_only_cross_attention', 'resnet_time_scale_shift', 'addition_embed_type_num_heads', 'encoder_hid_dim', 'encoder_hid_dim_type', 'resnet_out_scale_factor'} was not found in config. Values will be initialized to default values.
 INFO:__main__:***** Running training *****
 INFO:__main__:  Num examples = 10000000
 INFO:__main__:  Num Epochs = 1
@@ -85,33 +85,7 @@ module.layer_norm2.weight saved_key-clsnet
 module.layer_norm2.bias saved_key-clsnet
 Steps:   0%|          | 0/1000000 [00:00<?, ?it/s]True accepts_keep_fp32_wrapper
 {'keep_fp32_wrapper': True} extra_args
-/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/autograd/__init__.py:251: UserWarning: Error detected in LogSoftmaxBackward0. Traceback of forward call that caused the error:
-  File "/home/twkim/project/rich_context/padding/nj_train.py", line 807, in <module>
-    main()
-  File "/home/twkim/project/rich_context/padding/nj_train.py", line 741, in main
-    loss_mlm = F.cross_entropy(
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/nn/functional.py", line 3053, in cross_entropy
-    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index, label_smoothing)
- (Triggered internally at ../torch/csrc/autograd/python_anomaly_mode.cpp:114.)
-  Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-439510306 worker_seed
-439510307 worker_seed
-439510308 worker_seed
-439510309 worker_seed
-Traceback (most recent call last):
-  File "/home/twkim/project/rich_context/padding/nj_train.py", line 807, in <module>
-    main()
-  File "/home/twkim/project/rich_context/padding/nj_train.py", line 750, in main
-    accelerator.backward(loss)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/accelerator.py", line 1966, in backward
-    loss.backward(**kwargs)
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/_tensor.py", line 492, in backward
-    torch.autograd.backward(
-  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/autograd/__init__.py", line 251, in backward
-    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 364.00 MiB. GPU 0 has a total capacty of 23.69 GiB of which 126.75 MiB is free. Process 2818409 has 13.44 GiB memory in use. Including non-PyTorch memory, this process has 10.12 GiB memory in use. Of the allocated memory 9.32 GiB is allocated by PyTorch, and 124.39 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
-Steps:   0%|          | 0/1000000 [00:05<?, ?it/s]
-Traceback (most recent call last):
+Steps:   0%|          | 0/1000000 [00:15<?, ?it/s, loss=0.193, loss_mlm=0.992, lr=0.004, norm_mask=8.02, norm_target=8.42]Steps:   0%|          | 1/1000000 [00:15<4192:35:15, 15.09s/it, loss=0.193, loss_mlm=0.992, lr=0.004, norm_mask=8.02, norm_target=8.42]Traceback (most recent call last):
   File "/home/twkim/anaconda3/envs/context/bin/accelerate", line 8, in <module>
     sys.exit(main())
   File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 47, in main
@@ -120,4 +94,12 @@ Traceback (most recent call last):
     simple_launcher(args)
   File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 643, in simple_launcher
     raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmd)
-subprocess.CalledProcessError: Command '['/home/twkim/anaconda3/envs/context/bin/python', 'nj_train.py', '--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5', '--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/teapot', '--learnable_property=object', '--placeholder_token1=<teapot>', '--train_prior_concept1=teapot', '--eval_prior_concept1=teapot', '--resolution=512', '--train_batch_size=2', '--gradient_accumulation_steps=4', '--learning_rate=5e-4', '--lr_scheduler=constant', '--normalize_mask_embeds=0', '--lr_warmup_steps=0', '--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/teapot', '--seed=2940', '--mask_tokens=[MASK]', '--lambda_mlm=0.0001', '--freeze_mask_embedding=1', '--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt', '--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt', '--mask_prob=0.15', '--mlm_target=masked', '--mlm_batch_size=25', '--scale_lr', '--eval_prompt_type=nonliving', '--train_prompt_type=nonliving', '--silent=0', '--rev=0', '--normalize_target1=0', '--caption_root=../datasets_pkgs/captions/v7', '--run_name=ti_cnetv4_prior_mlm00001_teapot_mprob015_mbatch25_nj', '--include_prior_concept=1']' returned non-zero exit status 1.
+subprocess.CalledProcessError: Command '['/home/twkim/anaconda3/envs/context/bin/python', 'nj_train.py', '--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5', '--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/teapot', '--learnable_property=object', '--placeholder_token1=<teapot>', '--train_prior_concept1=teapot', '--eval_prior_concept1=teapot', '--resolution=512', '--train_batch_size=2', '--gradient_accumulation_steps=4', '--learning_rate=5e-4', '--lr_scheduler=constant', '--normalize_mask_embeds=0', '--lr_warmup_steps=0', '--output_dir=saved_models/nj_models/single_capv7_prior_seed2940_rep2/teapot', '--seed=2940', '--mask_tokens=[MASK]', '--lambda_mlm=0.0001', '--freeze_mask_embedding=1', '--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt', '--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt', '--mask_prob=0.15', '--mlm_target=masked', '--mlm_batch_size=25', '--scale_lr', '--eval_prompt_type=nonliving', '--train_prompt_type=nonliving', '--silent=0', '--rev=0', '--normalize_target1=0', '--caption_root=../datasets_pkgs/captions/v7', '--run_name=ti_cnetv4_prior_mlm00001_teapot_mprob015_mbatch25_nj', '--include_prior_concept=1']' died with <Signals.SIGKILL: 9>.
+489724170 worker_seed
+489724171 worker_seed
+489724168 worker_seed
+439510308 worker_seed
+489724169 worker_seed
+439510309 worker_seed
+439510306 worker_seed
+439510307 worker_seed

@@ -1,3 +1,5 @@
+from spacy import symbols
+import spacy
 # import torchvision
 import re
 import random
@@ -19,7 +21,7 @@ import albumentations as A
 from packaging import version
 # torch.use_deterministic_algorithms(True)
 # Added
-
+import spacy
 # Added
 
 
@@ -132,8 +134,10 @@ class TextualInversionDataset(Dataset):
         prompt_type=None,
         use_det_alg=False,
         target_image=None,
+        check_tag=None,
     ):  
-
+        self.check_tag=check_tag
+        self.nlp = spacy.load("en_core_web_sm")
         # randomness
         if seed:
             torch.manual_seed(seed)
@@ -330,35 +334,68 @@ class TextualInversionDataset(Dataset):
             words_mlm=mlm_caption.split()
             is_keyword_tokens_mlm=[False] # first token for <startoftext>
             masked_idxs=[False]
-            if self.mlm_target=='non_special': # if non-special only then bos is not learned
-                mlm_labels=[-100]
-            else:
+            if self.mlm_target in ['all','non_padding']:
                 mlm_labels=[self.tokenizer.bos_token_id]
+            else:
+                # masked/non_special
+                mlm_labels=[-100]
             input_ids_masked=[self.tokenizer.bos_token_id]
             non_special_idxs=[False]
+
+
+
+
             for word_idx in range(len(words_mlm)):
                 mlm_word=words_mlm[word_idx]
+                if self.check_tag:
+                    doc = self.nlp(mlm_word)
+                    valid_mlm_tag=False
+                    if mlm_word not in ['the','a','an']:
+                        for token in doc:
+                            pos_tag = token.pos_
+                            if pos_tag in self.check_tag:
+                                valid_mlm_tag=True
+                                break
+                else:
+                    valid_mlm_tag=True
+                    
                 word_token_ids=self.tokenizer.encode(mlm_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
                 non_special_idxs+=([True]*num_tokens)
                 for tok_id in word_token_ids:
                     # 1) input ids and indices for mask token
                     tok_decoded=self.tokenizer.decode(tok_id)
-                    
-                    if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
-                        masked_idxs.append(True)
-                        input_ids_masked.append(self.mask_token_ids)
+                    if valid_mlm_tag:
+                        if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
+                            masked_idxs.append(True)
+                            input_ids_masked.append(self.mask_token_ids)
+                            mlm_labels.append(tok_id)
+                        else:
+                            masked_idxs.append(False)
+                            input_ids_masked.append(tok_id)
+                            if self.mlm_target in ['all','non_padding','non_special']:
+                                # all/non_padding/non_special
+                                mlm_labels.append(tok_id)
+                            else:
+                                # masked
+                                mlm_labels.append(-100)
                     else:
+                        # if non-target tag,
+                        # do not contribute to mlm loss
                         masked_idxs.append(False)
                         input_ids_masked.append(tok_id)
+                        mlm_labels.append(-100)
+                    
+
+
+
+
                     # 2) keyword indices and labels for MLM
                     if self.placeholder_token == tok_decoded:
                         assert num_tokens==1
                         is_keyword_tokens_mlm.append(True)
-                        mlm_labels.append(-100)
                     else:
                         is_keyword_tokens_mlm.append(False)
-                        mlm_labels.append(tok_id)
 
             # 3) is_keyword_tokens_mlm - keyword indices for MLM
             for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
@@ -378,15 +415,23 @@ class TextualInversionDataset(Dataset):
             input_ids_masked=torch.LongTensor(input_ids_masked)
             example["input_ids_masked"]=input_ids_masked
 
+
+
+
+
             # 5) mlm_labels
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-            if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token
+            if self.mlm_target in ['all','non_padding']: 
                 mlm_labels.append(self.tokenizer.eos_token_id)
+            else:
+                # masked/non_special
+                pass
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 if self.mlm_target=='all':
                     mlm_labels.append(self.tokenizer.pad_token_id)
-                else: # non_padding/non_special/masked
+                else: # non_padding/masked/non_special
                     mlm_labels.append(-100)
+            assert len(mlm_labels)==self.tokenizer.model_max_length
             mlm_labels=torch.LongTensor(mlm_labels)
             example['mlm_labels']=mlm_labels
 

@@ -492,7 +492,7 @@ def main(args):
             assert False
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
+        os.system('cp ../datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
         caption_log_path=os.path.join(codepath,'log_captions.txt')
         caption_log_file=open(caption_log_path,'w')

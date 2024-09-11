@@ -62,8 +62,10 @@ if '03' in hostname:
     info_map=info_map_03
 elif 'ubuntu' in hostname:
     info_map=info_map_01
+    
+    
 
-target_devices=[0,1,2,3,4,5,6,7]
+target_devices=[0,1,2,3,4,6,7]
 lambda_mlm_list=[
             # 0, 
             0.001,

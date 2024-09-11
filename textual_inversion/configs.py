@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--check_tag',type=str)
     parser.add_argument('--target_image',type=str)
     parser.add_argument('--use_det_alg',type=int,default=1)
     parser.add_argument('--train_prior_concept1',type=str)
@@ -29,7 +30,7 @@ def parse_args():
     parser.add_argument('--dst_exp_path',type=str)
     parser.add_argument('--run_name',type=str)
     parser.add_argument('--mask_tokens',type=str)
-    parser.add_argument('--mlm_weight',type=float,default=1)
+    parser.add_argument('--nonmask_weight',type=float,default=1)
     parser.add_argument('--freeze_mask_embedding',type=int,default=1)
     parser.add_argument('--mlm_batch_size',type=int,default=50)
     parser.add_argument('--cls_net_path',type=str)
