@@ -292,7 +292,7 @@ def main():
     )
     
     train_dataset = MLMDataset(
-        real_caption_path=args.caption_path,
+        real_caption_path=args.real_caption_path,
         synth_caption_root=args.synth_caption_root,
         tokenizer=tokenizer,
         mask_tokens=args.mask_tokens,
