@@ -30,6 +30,7 @@ accelerate launch --num_processes=2 --main_process_port=7354 train_mlm_v6.py \
   --normalize_mask_embeds=0 \
   --report_to="wandb" \
   --project_name='ContextNetV6 Train' 
+  # asd
 
 
 
