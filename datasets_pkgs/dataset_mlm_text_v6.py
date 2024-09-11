@@ -103,7 +103,7 @@ class MLMDataset(Dataset):
     def __init__(
             self,
             real_caption_path='/data/dataset/coco/karpathy/coco_caption_raw.txt',
-            synth_caption_root='captions/v7/all',
+            synth_caption_root='../datasets_pkgs/captions/contextnet/all',
             tokenizer=None,
             mask_tokens=None,
             mask_token_ids=None,
@@ -111,7 +111,9 @@ class MLMDataset(Dataset):
             min_length=5,
             mlm_target='non_special',
             whole_word_mask=True,
+            synth_prob=0.3
     ):
+        self.synth_prob=synth_prob
         self.mask_token_ids=mask_token_ids
         self.whole_word_mask=whole_word_mask
         self.mlm_target=mlm_target
@@ -147,7 +149,7 @@ class MLMDataset(Dataset):
         return self.num_instance#len(self.db_list)
     def __getitem__(self, index):
         example = {}
-        if np.random.rand()<0.7:
+        if np.random.rand()<(1-self.synth_prob):
             sampled_caption=self.real_captions[index%(len(self.real_captions))]
         else:
             sampled_type=np.random.choice(self.synth_cap_types)
