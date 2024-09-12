@@ -65,7 +65,7 @@ elif 'ubuntu' in hostname:
     
     
 
-target_devices=[0,1,2,3,4,6,7]
+target_devices=[6,7]
 lambda_mlm_list=[
             # 0, 
             0.001,
