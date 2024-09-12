@@ -191,6 +191,8 @@ for lr in lr_list:
                     command+='--output_dir="{}" \\\n'.format(output_dir)
                     command+='--seed={} \\\n'.format(seed)
                     command+='--mask_tokens="[MASK]" \\\n'
+                    if check_tag:
+                        command+='--check_tag={} \\\n'.format(check_tag)
                     command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
                     command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
                     command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
