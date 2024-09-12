@@ -126,13 +126,13 @@ for lr in lr_list:
                         run_name+='_mprob{}'.format(mask_prob_str)
                         run_name+='_mbatch{}'.format(mlm_batch_size)
                         run_name+='_mtarget_masked'
-                        run_name+='_lr{}'.format(lr_str)
                         run_name+='_ti'
                         if check_tag:
                             run_name+='_tagged'
 
                     else:
                         run_name+="_nomlm_{}".format(concept)
+                    run_name+='_lr{}'.format(lr_str)
 
                     unet_exp_name=run_name.replace('lr5e4','lr1e6')
                     unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')
