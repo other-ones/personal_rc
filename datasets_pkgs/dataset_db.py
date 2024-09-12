@@ -1,3 +1,5 @@
+from spacy import symbols
+import spacy
 import random
 import torchvision
 import re
@@ -135,6 +137,7 @@ class DreamboothDataset(Dataset):
         check_tag=None,
 
     ):  
+        self.nlp=spacy.load("en_core_web_sm")
         self.check_tag=check_tag
         self.rev=rev
         self.exclude_cap_types=exclude_cap_types

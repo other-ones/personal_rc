@@ -6,6 +6,7 @@ def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
     parser.add_argument('--initializer_token',type=str)
+    parser.add_argument('--check_tag',type=str)
     parser.add_argument('--calibrate_ppos1',type=float,default=0)
     parser.add_argument('--dst_exp_path',type=str)
     parser.add_argument('--benchmark_path',type=str)
