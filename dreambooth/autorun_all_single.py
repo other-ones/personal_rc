@@ -119,6 +119,8 @@ for lr in lr_list:
                         run_name='db_cnetv4'
                         if lambda_mlm:
                             run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+                            run_name+='_mprob{}'.format(mask_prob_str)
+                            run_name+='_mbatch{}'.format(mlm_batch_size)
                             run_name+='_mtarget_masked'
                             if check_tag:
                                 run_name+='_tagged'
@@ -126,9 +128,6 @@ for lr in lr_list:
                             run_name+="_nomlm_{}".format(concept)
                         if fixte:
                             run_name+='_fixte'
-                        if lambda_mlm:
-                            run_name+='_mprob{}'.format(mask_prob_str)
-                            run_name+='_mbatch{}'.format(mlm_batch_size)
                         run_name+='_lr{}'.format(lr_str)
                         output_dir=os.path.join('saved_models/db_models/{}'.format(dir_name),concept)
                         exp_path=os.path.join(output_dir,run_name)
