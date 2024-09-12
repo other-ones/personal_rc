@@ -9,9 +9,9 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog6': ('dog','dog','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
 
     # 'pet_cat1':('cat','cat','pet','living'),
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -74,8 +74,9 @@ concepts=list(info_map.keys())
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             # 0,
+            0.005,
             0.001,
-            0.0001,
+            # 0.0001,
             0.0005,
             # 0.0002,
             # 0.005,
@@ -103,14 +104,13 @@ target_devices=[0,1,2,3,4,5,6,7]
 seed=2940
 include_prior=1
 delay=25
-mask_prob_list=[0.15]
+mask_prob_list=[0.25]
 rev_list=[0]
 rep_id=1
 benchmark='dreambooth'
-mlm_target_list=['masked','non_special']
-# mlm_target_list=['masked']
-
-nonmask_weight_list=[0.1,0.5,1]
+# mlm_target_list=['masked','non_special']
+mlm_target_list=['masked']
+nonmask_weight_list=[1]
 if include_prior:
     dir_name='single_mtarget_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
 else:
@@ -243,7 +243,7 @@ num_images_per_prompt=8
 port_idx=0
 include_prior_concept=1
 ppos_list=[0]
-
+exclude_key='mtarget_nonspec'
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
@@ -259,6 +259,8 @@ for cidx,concept in enumerate(concepts):
                 rev=1
             else:
                 rev=0
+            if exclude_key in exp:
+                continue
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
             learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(target_step))
             if not os.path.exists(learned_embed_path1):

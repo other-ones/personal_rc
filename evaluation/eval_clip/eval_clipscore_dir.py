@@ -17,19 +17,22 @@ from clipscore import cal_clipscore
 def extract_values(exp):
     # Determine if "nomlm" is present
     is_nomlm = 'nomlm' in exp
-    
+
+    # Determine if "tagged" is present
+    tagged = 'tagged' in exp
+
     # Extract mlm, lr, and step values using regex
     mlm_match = re.search(r'_mlm(\d+)_', exp)
     lr_match = re.search(r'_lr(\d+e\d+)_', exp)
     s_match = re.search(r'_s(\d+)$', exp)
-    
+
     # Default values if not found
     mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
     lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
     step = int(s_match.group(1)) if s_match else float('inf')
-    
-    # Return a tuple for sorting
-    return (not is_nomlm, mlm, lr, step)
+
+    # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
+    return (not is_nomlm, mlm, lr, step, tagged)
 def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
     image_list=[]
     image_ids=[]
