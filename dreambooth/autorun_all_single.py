@@ -92,7 +92,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 fixte_list=[0]
-mask_prob_list=[0.15]
+mask_prob_list=[0.25]
 seed=7777
 rep_id=1
 dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
@@ -101,7 +101,7 @@ os.makedirs(log_dir,exist_ok=True)
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-6]
 mlm_batch_size=25
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     lr_str=lr_str.replace('.','P')
