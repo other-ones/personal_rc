@@ -60,7 +60,7 @@ info_map_01={
 }
 if '03' in hostname:
     target_devices=[6,7]
-elif 'ubuntu' in hostname:
+elif '04' in hostname:
     target_devices=[0,6,7]
     
     
