@@ -154,8 +154,9 @@ class MLMDataset(Dataset):
         else:
             sampled_type=np.random.choice(self.synth_cap_types)
             sampled_caption=self.synth_captions[sampled_type][index%(len(self.synth_captions[sampled_type]))]
-            prefix=np.random.choice(mlm_prefixes)
-            sampled_caption=prefix.format(sampled_caption)
+            if 'interaction' in sampled_type:
+                prefix=np.random.choice(mlm_prefixes)
+                sampled_caption=prefix.format(sampled_caption)
 
 
         example['raw_caption']=sampled_caption

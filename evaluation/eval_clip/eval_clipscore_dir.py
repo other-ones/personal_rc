@@ -118,6 +118,18 @@ if __name__ == "__main__":
                 if args.exclude is not None and args.exclude in exp:
                         continue
                 exp_path=os.path.join(concept_path,exp)
+                if keywords is not None:
+                    valid=True
+                    for keyword in keywords:
+                        if keyword not in exp_path:
+                            valid=False
+                            break
+                else:
+                    valid=True
+                if 'nomlm' in exp:
+                    valid=True
+                if not valid:
+                    continue
                 pred_root=os.path.join(exp_path,'generated')
                 result_path=os.path.join(exp_path, 'clip.json')
                 model_name=pred_root.split('/')[-2]

@@ -9,8 +9,8 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
     # 'dog6': ('dog','dog','pet','living'),
 
     # 'pet_cat1':('cat','cat','pet','living'),
@@ -74,10 +74,11 @@ concepts=list(info_map.keys())
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             # 0,
-            0.005,
+            # 0.005,
             0.001,
+            # 0.002,
             # 0.0001,
-            0.0005,
+            # 0.0005,
             # 0.0002,
             # 0.005,
             # 0.01,
@@ -104,7 +105,7 @@ target_devices=[0,1,2,3,4,5,6,7]
 seed=2940
 include_prior=1
 delay=25
-mask_prob_list=[0.25]
+mask_prob_list=[0.25,0.3]
 rev_list=[0]
 rep_id=1
 benchmark='dreambooth'
