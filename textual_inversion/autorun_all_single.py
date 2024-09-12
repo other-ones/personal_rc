@@ -11,7 +11,7 @@ info_map_03={
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'teapot':('teapot','teapot','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
-    # 'dog6': ('dog','dog','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
 
     # 'pet_cat1':('cat','cat','pet','living'),
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -78,9 +78,9 @@ lambda_mlm_list=[
             0.001,
             # 0.002,
             # 0.0001,
-            # 0.0005,
+            0.0005,
             # 0.0002,
-            # 0.005,
+            0.005,
             # 0.01,
             # 0.0002,
             ]

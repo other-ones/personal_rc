@@ -39,8 +39,8 @@ accelerate launch --main_process_port 4235  db_train.py \
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
-export CUDA_VISIBLE_DEVICES=0;
-accelerate launch --main_process_port 4235  db_train.py \
+export CUDA_VISIBLE_DEVICES=6;
+accelerate launch --main_process_port 4234  db_train.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
   --placeholder_token1="<dog6>" \
@@ -72,4 +72,5 @@ accelerate launch --main_process_port 4235  db_train.py \
   --simple_caption=0 \
   --caption_root='../datasets_pkgs/captions/v7' \
   --run_name='tmp_mlm0001_dog6' \
-  --train_text_encoder 
+  --train_text_encoder \
+  --check_tag='VERB-ADJ-ADV-PROPN-ADP-NOUN'
