@@ -194,7 +194,7 @@ for lr in lr_list:
                         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                         os.system(command)
                         print('TRAIN STARTED')
-                        time.sleep(15)
+                        time.sleep(25)
 
 
 
