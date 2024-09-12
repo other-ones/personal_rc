@@ -6,26 +6,26 @@ import socket
 hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map_03={
+info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'pet_cat1':('cat','cat','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'pet_cat1':('cat','cat','pet','living'),
 
-    'cat1': ('cat','cat','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
 
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -61,17 +61,17 @@ info_map_01={
     # 'barn': ('barn','barn'),
     # 'flower1':('flower','flower'),
 }
-if '03' in hostname:
-    info_map=info_map_03
-elif 'ubuntu' in hostname:
-    info_map=info_map_01
+# if '03' in hostname:
+#     info_map=info_map_03
+# elif 'ubuntu' in hostname:
+#     info_map=info_map_01
 
 target_devices=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             0, 
             0.001,
-            0.0001,
-            0.0005,
+            # 0.0001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -95,7 +95,7 @@ fixte_list=[0]
 mask_prob_list=[0.15]
 seed=7777
 rep_id=1
-dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):

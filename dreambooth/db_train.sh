@@ -1,19 +1,19 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
-export CUDA_VISIBLE_DEVICES=0;
+export CUDA_VISIBLE_DEVICES=7;
 accelerate launch --main_process_port 4235  db_train.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
   --placeholder_token1="<dog6>" \
-  --initializer_token="dog" \
+  --initializer_token="sks" \
   --train_prior_concept1="dog" \
   --eval_prior_concept1="dog" \
   --resolution=512 \
   --train_batch_size=1 \
   --gradient_accumulation_steps=1 \
   --max_train_steps=1001 \
-  --learning_rate=1e-3 \
+  --learning_rate=1e-6 \
   --lr_scheduler="constant" \
   --lr_warmup_steps=0 \
   --output_dir="saved_models/tmp" \
@@ -33,10 +33,7 @@ accelerate launch --main_process_port 4235  db_train.py \
   --class_prompt1="a picture of a dog" \
   --class_data_dir1="priors/samples_dog" \
   --simple_caption=0 \
-  --caption_root='../datasets_pkgs/captions/v7' \
-  --debug \
-  --initialize_token=1
-  # --train_text_encoder \
+  --caption_root='../datasets_pkgs/captions/v7' 
 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
@@ -74,8 +71,5 @@ accelerate launch --main_process_port 4235  db_train.py \
   --class_data_dir1="priors/samples_dog" \
   --simple_caption=0 \
   --caption_root='../datasets_pkgs/captions/v7' \
-  --debug \
   --run_name='tmp_mlm0001_dog6' \
-  --train_text_encoder \
-  --initialize_token=1
-
+  --train_text_encoder 
