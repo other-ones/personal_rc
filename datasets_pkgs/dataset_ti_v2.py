@@ -198,9 +198,17 @@ class TextualInversionDataset(Dataset):
         self.train_prior_concept1 = train_prior_concept1
         self.placeholder_token = placeholder_token
 
-        self.placeholder_token_id=self.tokenizer.encode(placeholder_token)
+        self.placeholder_token_id=self.tokenizer.encode(placeholder_token,add_special_tokens=False)
+        print(placeholder_token,'placeholder_token')
         assert len(self.placeholder_token_id)==1
         self.placeholder_token_id=self.placeholder_token_id[0]
+
+        self.prior_token_id=self.tokenizer.encode(train_prior_concept1,add_special_tokens=False)
+        print(train_prior_concept1,'train_prior_concept1')
+        assert len(self.prior_token_id)==1
+        self.prior_token_id=self.prior_token_id[0]
+
+
         self.size = size
         self.center_crop = center_crop
         self.flip_p = flip_p
@@ -222,7 +230,9 @@ class TextualInversionDataset(Dataset):
         }[interpolation]
 
         self.flip_transform = transforms.RandomHorizontalFlip(p=self.flip_p)
-
+        self.invalid_mask_token_ids=[self.tokenizer.pad_token_id, self.tokenizer.eos_token_id, self.tokenizer.bos_token_id,self.placeholder_token_id,self.prior_token_id]
+        # self.invalid_mask_token_ids=[self.placeholder_token_id,self.prior_token_id]
+        # self.invalid_mask_token_ids=[self.placeholder_token_id]
     def __len__(self):
         return self._length
 
@@ -335,11 +345,16 @@ class TextualInversionDataset(Dataset):
                     return_tensors="np",
                 ).input_ids[0] #77,
             example["input_ids_pos"]=torch.LongTensor(input_ids_pos)
-            mask_candidate_idxs=[i for i, x in enumerate(input_ids_pos) if x not in {self.tokenizer.pad_token_id, self.tokenizer.eos_token_id, self.tokenizer.bos_token_id,self.placeholder_token_id}]
-
+            mask_candidate_idxs=[i for i, x in enumerate(input_ids_pos) if x not in self.invalid_mask_token_ids]
+            
 
             num_mask_tokens=max(1,int(len(mask_candidate_idxs)*self.mask_prob))
+            # print(num_mask_tokens,'num_mask_tokens')
             sampled_mask_idxs=np.random.choice(mask_candidate_idxs,num_mask_tokens)
+            # input_ids_masked
+            input_ids_masked=np.copy(input_ids_pos)
+            input_ids_masked[sampled_mask_idxs]=self.mask_token_ids
+
             # masked idxs
             masked_idxs=np.zeros_like(input_ids_pos)
             masked_idxs[sampled_mask_idxs]=1
@@ -352,6 +367,7 @@ class TextualInversionDataset(Dataset):
             # non_special_idxs (for logging)
             non_special_idxs = [x not in {self.tokenizer.pad_token_id, self.tokenizer.eos_token_id, self.tokenizer.bos_token_id} for i, x in enumerate(input_ids_pos)]
             
+            example["input_ids_masked"]=torch.Tensor(input_ids_masked).long()
             example["masked_idxs"]=torch.Tensor(masked_idxs).bool()
             example["is_keyword_tokens_mlm"]=torch.Tensor(is_keyword_tokens_mlm).bool()
             example["mlm_labels"]=torch.Tensor(mlm_labels).long()

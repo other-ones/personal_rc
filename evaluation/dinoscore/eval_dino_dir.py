@@ -89,6 +89,7 @@ def sort_by_mlm_and_s(items):
         int(x.split('_s')[1].split('\t')[0])    # Extract s<number>
     ))
     return sorted_items
+
 def extract_values(exp):
     # Determine if "nomlm" is present
     is_nomlm = 'nomlm' in exp
@@ -100,14 +101,16 @@ def extract_values(exp):
     mlm_match = re.search(r'_mlm(\d+)_', exp)
     lr_match = re.search(r'_lr(\d+e\d+)_', exp)
     s_match = re.search(r'_s(\d+)$', exp)
+    mprob_match = re.search(r'_mprob(\d+)_', exp)
 
     # Default values if not found
     mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
     lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
     step = int(s_match.group(1)) if s_match else float('inf')
+    mprob = (mprob_match.group(1))[::-1] if mprob_match else 'inf'
 
     # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
-    return (not is_nomlm, mlm, lr, step, tagged)
+    return (not is_nomlm,tagged, mprob, mlm, lr, step)
 if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser()
@@ -203,7 +206,7 @@ if __name__=='__main__':
                         score_name='dino'
                         fake_root=os.path.join(exp_path,'generated')
                 dst_path=os.path.join(exp_path,'{}.json'.format(score_name))
-                if os.path.exists(dst_path) and args.ignore_legacy==0:
+                if os.path.exists(dst_path) and (not args.ignore_legacy):
                     read_data=json.load(open(dst_path))
                     result_line='{}\t\t{}'.format(exp,read_data[score_name])
                     concept_results.append(result_line)
