@@ -6,7 +6,7 @@ import socket
 hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map_03={
+info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     # 'dog6': ('dog','dog','pet','living'),
@@ -59,13 +59,12 @@ info_map_01={
     # 'flower1':('flower','flower'),
 }
 if '03' in hostname:
-    info_map=info_map_03
+    target_devices=[6,7]
 elif 'ubuntu' in hostname:
-    info_map=info_map_01
+    target_devices=[0,6,7]
     
     
 
-target_devices=[6,7]
 lambda_mlm_list=[
             # 0, 
             0.001,
