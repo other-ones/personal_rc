@@ -1,3 +1,5 @@
+import numpy as np
+import torch
 from transformers import CLIPTokenizer, T5ForConditionalGeneration
 
 
@@ -10,13 +12,23 @@ tokenizer = CLIPTokenizer.from_pretrained(pretrained_model_name_or_path, subfold
 # attentions: Optional[Tuple[torch.FloatTensor]] = None
 # cross_attentions: Optional[Tuple[torch.FloatTensor]] = None
 caption='a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a '
-caption='a a a a a a a a a a a '
+caption='a a a a a a a b a a a '
 input_ids = tokenizer(caption, 
                     #   return_tensors="pt",
                       padding="max_length",
                       truncation=True,
-                      max_length=tokenizer.model_max_length).input_ids  # Batch size 1
+                      add_special_tokens=True,
+                      return_tensors="np",
+                      max_length=tokenizer.model_max_length).input_ids[0]  # Batch size 1
+
 print(tokenizer.pad_token_id,'pad_token_id')
 print(tokenizer.eos_token_id,'eos_token_id')
-print(len(input_ids),'input_ids')
+print(len(input_ids),'input_ids',input_ids.shape)
 print(input_ids,'input_ids')
+
+indexes = [i for i, x in enumerate(input_ids) if x not in {tokenizer.pad_token_id, tokenizer.eos_token_id, tokenizer.bos_token_id}]
+print(indexes)
+print(input_ids)
+print(input_ids[indexes])
+print(torch.LongTensor(input_ids))
+print(tokenizer.encode("a",add_special_tokens=False,))

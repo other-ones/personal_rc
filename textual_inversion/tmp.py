@@ -1,6 +1,4 @@
 import numpy as np
-np.random.seed(1234)
-print(np.random.randint(10000))
-print(np.random.randint(10000))
-print(np.random.choice(np.arange(10000)))
-print(np.random.choice(np.arange(10000)))
+input_ids_pos=np.arange(10)
+non_special_idxs = [x not in {0, 2, 4} for i, x in enumerate(input_ids_pos)]
+print(non_special_idxs)
