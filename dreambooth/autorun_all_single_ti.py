@@ -92,9 +92,8 @@ ports=np.arange(1111,2222)
 fixte_list=[0]
 mask_prob_list=[0.15]
 seed=7777
-seed=7777
 rep_id=1
-dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
