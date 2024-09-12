@@ -8,22 +8,22 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'dog6': ('dog','dog','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'pet_cat1':('cat','cat','pet','living'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat1': ('cat','cat','pet','living'),
-    'cat2':('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
@@ -125,21 +125,20 @@ for lr in lr_list:
                     unet_exp_name='db_cnetv4'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-                        unet_exp_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
+                        run_name+='_mprob{}'.format(mask_prob_str)
+                        run_name+='_mbatch{}'.format(mlm_batch_size)
                         run_name+='_mtarget_masked'
+                        run_name+='_lr{}'.format(lr_str)
+                        run_name+='_ti'
                         if check_tag:
                             run_name+='_tagged'
+
                     else:
                         run_name+="_nomlm_{}".format(concept)
-                        unet_exp_name+="_nomlm_{}".format(concept)
-                    if lambda_mlm:
-                        run_name+='_mprob{}'.format(mask_prob_str)
-                        unet_exp_name+='_mprob{}'.format(mask_prob_str)
-                        run_name+='_mbatch{}'.format(mlm_batch_size)
-                        unet_exp_name+='_mbatch{}'.format(mlm_batch_size)
-                    run_name+='_lr{}'.format(lr_str)
-                    unet_exp_name+='_lr1e6'.format(lr_str)
-                    run_name+='_ti'
+
+                    unet_exp_name=run_name.replace('lr5e4','lr1e6')
+                    unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')
+                    unet_exp_name=unet_exp_name.replace('_ti','')
                     
                     resume_unet_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
                     resume_text_encoder_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(train_target_step,train_target_step))
@@ -182,7 +181,9 @@ for lr in lr_list:
                     command+='--resume_unet_path={} \\\n'.format(resume_unet_path)
                     command+='--resume_text_encoder_path={} \\\n'.format(resume_text_encoder_path)
                     command+='--train_batch_size=1 \\\n'
-                    command+='--gradient_accumulation_steps=1 \\\n'
+                    command+='--scale_lr \\\n'
+                    command+='--gradient_accumulation_steps=4 \\\n'
+                    # command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpoints_total_limit=20 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
                     command+='--max_train_steps=3001 \\\n'
