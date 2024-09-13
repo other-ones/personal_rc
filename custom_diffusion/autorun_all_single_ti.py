@@ -68,8 +68,9 @@ elif '04' in hostname:
 lambda_mlm_list=[
             # 0, 
             0.001,
+            0.005,
             # 0.0001,
-            # 0.0005,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -93,8 +94,7 @@ mask_prob_list=[0.25]
 seed=7777
 rep_id=1
 dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
-log_dir='logs/train/{}'.format(dir_name)
-os.makedirs(log_dir,exist_ok=True)   
+
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[5e-4,1e-4]
 mlm_batch_size=25
@@ -112,6 +112,8 @@ for lr in lr_list:
         for check_tag in check_tags:
             for port_idx,concept in enumerate(list(info_map.keys())):
                 print(concept,'concept')
+                log_dir='logs/train/{}/{}'.format(dir_name,concept)
+                os.makedirs(log_dir,exist_ok=True)   
                 unet_dir_path=os.path.join('saved_models/cd_models',dir_name)
                 unet_concept_path=os.path.join(unet_dir_path,concept)
                 device_idx=stat_idx
@@ -221,8 +223,7 @@ print('\n\n')
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/cd_models',dir_name)
-gen_log_dir='logs/generate/{}'.format(dir_name)
-os.makedirs(gen_log_dir,exist_ok=True)    
+
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -236,6 +237,8 @@ gen_target_lr='5e4'
 gen_target_mlm='mlm000005'
 for gen_target_step in gen_target_step_list:
     for concept in list(info_map.keys()):
+        gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
+        os.makedirs(gen_log_dir,exist_ok=True)    
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             print(concept_path,'not exists',concept)

@@ -96,8 +96,7 @@ mask_prob_list=[0.25]
 seed=7777
 rep_id=1
 dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
-log_dir='logs/train/{}'.format(dir_name)
-os.makedirs(log_dir,exist_ok=True)   
+
 lr_list=[1e-5]
 mlm_batch_size=25
 # ['VERB', 'ADJ','ADV','PROPN','ADP','NOUN']
@@ -111,6 +110,8 @@ for check_tag in check_tags:
             mask_prob_str=float_to_str(mask_prob)
             mask_prob_str=mask_prob_str.replace('.','')
             for port_idx,concept in enumerate(list(info_map.keys())):
+                log_dir='logs/train/{}/{}'.format(dir_name,concept)
+                os.makedirs(log_dir,exist_ok=True)   
                 device_idx=stat_idx
                 for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
@@ -200,8 +201,7 @@ for check_tag in check_tags:
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/cd_models',dir_name)
-gen_log_dir='logs/generate/{}'.format(dir_name)
-os.makedirs(gen_log_dir,exist_ok=True)    
+
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -210,24 +210,26 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-get_target_step=0
+gen_target_step=500
 
 for concept in concepts:
     if concept not in info_map:
         continue
+    gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
+    os.makedirs(gen_log_dir,exist_ok=True)    
     concept_path=os.path.join(dir_path,concept)
     if not os.path.exists(concept_path):
         continue
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        resume_cd_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(get_target_step))
-        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embed.pt'.format(get_target_step))
+        resume_cd_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(gen_target_step))
+        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_target_step))
         if not os.path.exists(resume_cd_path):
             print(resume_cd_path,'does not exist')
             continue
         exp_name=resume_cd_path.split('/')[-4]
-        exp_name+='_s{}'.format(get_target_step)
+        exp_name+='_s{}'.format(gen_target_step)
         output_dir=os.path.join('results/cd_results/{}/{}'.format(dir_name,concept))
         dst_exp_path=os.path.join(output_dir,exp_name)
         if os.path.exists(dst_exp_path):

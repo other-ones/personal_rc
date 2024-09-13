@@ -858,7 +858,8 @@ def main(args):
         )
     # Potentially load in the weights and states from a previous save
     if args.resume_cd_path and args.resume_cd_path!='None':
-        cd_layers_path=os.path.join(args.resume_cd_path,'custom_diffusion.pt')
+        # cd_layers_path=os.path.join(args.resume_cd_path,'custom_diffusion.pt')
+        cd_layers_path=args.resume_cd_path
         saved_state_dict = torch.load(cd_layers_path, map_location=torch.device('cpu'))
         for key in saved_state_dict:
             print(key,'saved')
