@@ -721,8 +721,8 @@ def main():
                 #     target_emb=learned_embeds
                 bsz=len(latents)
                 encoder_hidden_states = text_encoder(input_ids,
-                                                     is_keyword_tokens1=is_keyword_tokens,
-                                                     inj_embeddings1=learned_embeds.repeat(bsz,1),
+                                                    #  is_keyword_tokens1=is_keyword_tokens,
+                                                    #  inj_embeddings1=learned_embeds.repeat(bsz,1),
                                                     #  add_pe=args.add_pe,
                                                      )[0].to(dtype=weight_dtype)
                 
@@ -759,10 +759,10 @@ def main():
                     # input_ids_non_mask=batch_mlm["input_ids_non_mask"]
                     # mask_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                                            mask_embedding=mask_embeds.repeat(num_masked,1),
-                                                            mask_idxs=masked_idxs,
-                                                            is_keyword_tokens1=is_keyword_tokens_mlm,
-                                                            inj_embeddings1=learned_embeds.repeat(mlm_bsz,1),
+                                                            # mask_embedding=mask_embeds.repeat(num_masked,1),
+                                                            # mask_idxs=masked_idxs,
+                                                            # is_keyword_tokens1=is_keyword_tokens_mlm,
+                                                            # inj_embeddings1=learned_embeds.repeat(mlm_bsz,1),
                                                             # add_pe=args.add_pe,
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
