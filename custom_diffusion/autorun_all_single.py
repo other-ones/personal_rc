@@ -74,6 +74,8 @@ elif '07' in hostname:
 elif '04' in hostname:
     target_devices=[4,5,6,7]
     host_suffix='04'
+else:
+    assert False
 lambda_mlm_list=[
             0.001,
             0, 
