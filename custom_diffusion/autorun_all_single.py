@@ -62,6 +62,33 @@ info_map_01={
     # 'barn': ('barn','barn'),
     # 'flower1':('flower','flower'),
 }
+info_map_04={
+    # train_prior/eval_prior/train_prompt_type/eval_prompt_type
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
+
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+
+    # 'red_cartoon':('character','cartoon character','pet','living'),
+    # 'candle':('candle','candle','nonliving','nonliving'),
+    # 'can':('can','can','nonliving','nonliving'),
+    # 'pink_sunglasses':('sunglasses','sunglasses'),
+    # 'barn': ('barn','barn'),
+    # 'flower1':('flower','flower'),
+}
 if '03' in hostname:
     target_devices=[0,1,2,3,4,5,6,7]
     host_suffix='03'
@@ -74,6 +101,7 @@ elif '07' in hostname:
 elif '04' in hostname:
     target_devices=[4,5,6,7]
     host_suffix='04'
+    info_map=info_map_04
 else:
     assert False
 lambda_mlm_list=[
