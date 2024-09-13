@@ -95,6 +95,8 @@ seed=7777
 rep_id=1
 if '04' in hostname:
     host_suffix='04'
+elif '07' in hostname:
+    host_suffix='07'
 else:
     assert False
 dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
