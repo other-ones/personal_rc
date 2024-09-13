@@ -210,7 +210,7 @@ for lr in lr_list:
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
                     # command+='--report_to="wandb" \\\n'
-                    # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
+                    # command+='--project_name="CD MLM SINGLE" \\\n'
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
                     print('TRAIN STARTED')

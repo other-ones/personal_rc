@@ -95,7 +95,7 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 lr_list=[1e-5]
@@ -185,15 +185,14 @@ for check_tag in check_tags:
                     command+='--class_prompt1="a picture of a {}" \\\n'.format(train_prior)
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
-                    # if fixte==0: # do not fix text_encoder
                     command+='--train_text_encoder=0 \\\n'
                     # command+='--report_to="wandb" \\\n'
-                    # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
+                    # command+='--project_name="CD MLM SINGLE" \\\n'
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
                     print('TRAIN STARTED')
                     # exit()
-                    time.sleep(15)
+                    time.sleep(25)
 
 
 
