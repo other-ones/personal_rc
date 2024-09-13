@@ -493,7 +493,7 @@ class CustomDiffusionDataset(Dataset):
                 mlm_labels.append(self.tokenizer.eos_token_id)
             else:
                 # masked/non_special
-                pass
+                mlm_labels.append(-100)
 
 
 
