@@ -982,11 +982,11 @@ def main(args):
 
 
 
-                learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                if args.normalize_target1:
-                    target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
-                else:
-                    target_emb=learned_embeds
+                # learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                # if args.normalize_target1:
+                #     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
+                # else:
+                #     target_emb=learned_embeds
                 encoder_hidden_states = text_encoder(
                                                     input_ids,
                                                     # is_keyword_tokens1=is_keyword_tokens,
