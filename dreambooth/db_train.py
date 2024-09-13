@@ -1169,47 +1169,49 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
+                progress_bar.update(1)
+                global_step += 1
+                # [1] CHECKPOINTING
+                if (global_step % args.checkpointing_steps == 0 or global_step==1) and not args.debug:
+                    # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
+                    if args.checkpoints_total_limit is not None:
+                        checkpoints = os.listdir(ckpt_dir)
+                        checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
+                        checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
+
+                        # before we save the new checkpoint, we need to have at _most_ `checkpoints_total_limit - 1` checkpoints
+                        if len(checkpoints) >= args.checkpoints_total_limit:
+                            num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
+                            removing_checkpoints = checkpoints[0:num_to_remove]
+
+                            logger.info(
+                                f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
+                            )
+                            logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
+
+                            for removing_checkpoint in removing_checkpoints:
+                                removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
+                                shutil.rmtree(removing_checkpoint)
+
+                    save_dir = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
+                    os.makedirs(save_dir,exist_ok=True)
+                    
+                    if args.resume_unet_path is None:
+                        save_path_unet=os.path.join(save_dir,'unet_s{:04d}.pt'.format(global_step))
+                        torch.save(unet.state_dict(),save_path_unet)
+                        save_path_text_encoder=os.path.join(save_dir,'text_encoder_s{:04d}.pt'.format(global_step))
+                        torch.save(text_encoder.state_dict(),save_path_text_encoder)
+                    else: #ti training
+                        learned_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                        learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.cpu()}
+                        weight_name = "learned_embeds_s{:04d}.pt".format(global_step)
+                        save_path = os.path.join(save_dir, weight_name)
+                        torch.save(learned_embeds_dict, save_path)
+                        del learned_embeds_saved
+                    logger.info(f"Saved state to {save_dir}")
+                # [1] CHECKPOINTING
                 if accelerator.is_main_process:
-                    if global_step % args.checkpointing_steps == 0 and not args.debug:
-                        # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
-                        if args.checkpoints_total_limit is not None:
-                            checkpoints = os.listdir(ckpt_dir)
-                            checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
-                            checkpoints = sorted(checkpoints, key=lambda x: int(x.split("-")[1]))
-
-                            # before we save the new checkpoint, we need to have at _most_ `checkpoints_total_limit - 1` checkpoints
-                            if len(checkpoints) >= args.checkpoints_total_limit:
-                                num_to_remove = len(checkpoints) - args.checkpoints_total_limit + 1
-                                removing_checkpoints = checkpoints[0:num_to_remove]
-
-                                logger.info(
-                                    f"{len(checkpoints)} checkpoints already exist, removing {len(removing_checkpoints)} checkpoints"
-                                )
-                                logger.info(f"removing checkpoints: {', '.join(removing_checkpoints)}")
-
-                                for removing_checkpoint in removing_checkpoints:
-                                    removing_checkpoint = os.path.join(ckpt_dir, removing_checkpoint)
-                                    shutil.rmtree(removing_checkpoint)
-
-                        save_dir = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
-                        os.makedirs(save_dir,exist_ok=True)
-                        
-                        if args.resume_unet_path is None:
-                            save_path_unet=os.path.join(save_dir,'unet_s{:04d}.pt'.format(global_step))
-                            torch.save(unet.state_dict(),save_path_unet)
-                            save_path_text_encoder=os.path.join(save_dir,'text_encoder_s{:04d}.pt'.format(global_step))
-                            torch.save(text_encoder.state_dict(),save_path_text_encoder)
-                        else: #ti training
-                            learned_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                            learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.cpu()}
-                            weight_name = "learned_embeds_s{:04d}.pt".format(global_step)
-                            save_path = os.path.join(save_dir, weight_name)
-                            torch.save(learned_embeds_dict, save_path)
-                            del learned_embeds_saved
-                        logger.info(f"Saved state to {save_dir}")
-
-                    images = []
-
+                    # [2] CAPTION LOGGING
                     if ((global_step % args.log_steps == 0)) and accelerator.is_main_process:
                         caption_log_file=open(caption_log_path,'a')
                         for raw_caption_ti in raw_captions_ti:
@@ -1225,54 +1227,18 @@ def main(args):
                         caption_log_file.write('\n')
                         caption_log_file.flush()
                         caption_log_file.close()
-                    if global_step % args.validation_steps == 0:
-                        with torch.no_grad():
-                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                            images,validation_prompts = log_validation(
-                                unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
-                                tokenizer,
-                                unwrap_model(unet),
-                                vae,
-                                args,
-                                accelerator,
-                                weight_dtype,
-                                global_step,
-                                learned_embeds_val.clone(),
-                                generator=generator_cuda,
-                                pipeline=pipeline
-                            )
-                            del learned_embeds_val
-                        validation_files=sorted(os.listdir(args.train_data_dir1))
-                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
-                        num_images=len(images)
-                        num_cols=num_images
-                        num_rows=num_images//num_cols
-                        margin_bottom=150
-                        margin_right=10
-                        merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
-                        for ridx in range(num_rows):
-                            merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
-                        for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
-                            row_idx=iidx//num_cols
-                            col_idx=iidx-(num_cols*row_idx)
-                            x0=(col_idx+1)*(512+margin_right)
-                            y0=row_idx*(512+margin_bottom)+512
-                            x1=x0+(512+margin_right)
-                            y1=y0+margin_bottom
-                            merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
-                            merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
-                        merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
-                        torch.cuda.empty_cache()
+                    # [2] CAPTION LOGGING
 
-                        # visualize input
+
+                    if global_step % args.validation_steps == 0:
+                        # [3] INPUT LOGGING
                         input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
-                        # input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                        # if args.masked_loss:
-                        #     input_image=input_image*input_mask
                         input_image=input_image.astype(np.uint8)
                         input_image=Image.fromarray(input_image)
                         input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
-                        # visualize input
+                        # [3] INPUT LOGGING
+
+                        # [4] MLM LOGGING
                         if args.lambda_mlm:
                             # 1. MLM Result Logging
                             viz_idx=0
@@ -1318,8 +1284,49 @@ def main(args):
                             print(dots)
                             print(dots)
                             print()
-                            # 1. MLM Result Logging
-                
+                        # [4] MLM LOGGING
+
+                        # [5] VALIDTION
+                        with torch.no_grad():
+                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                            images,validation_prompts = log_validation(
+                                unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
+                                tokenizer,
+                                unwrap_model(unet),
+                                vae,
+                                args,
+                                accelerator,
+                                weight_dtype,
+                                global_step,
+                                learned_embeds_val.clone(),
+                                generator=generator_cuda,
+                                pipeline=pipeline
+                            )
+                            del learned_embeds_val
+                        validation_files=sorted(os.listdir(args.train_data_dir1))
+                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
+                        num_images=len(images)
+                        num_cols=num_images
+                        num_rows=num_images//num_cols
+                        margin_bottom=150
+                        margin_right=10
+                        merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
+                        for ridx in range(num_rows):
+                            merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
+                        for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
+                            row_idx=iidx//num_cols
+                            col_idx=iidx-(num_cols*row_idx)
+                            x0=(col_idx+1)*(512+margin_right)
+                            y0=row_idx*(512+margin_bottom)+512
+                            x1=x0+(512+margin_right)
+                            y1=y0+margin_bottom
+                            merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
+                            merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
+                        merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
+                        # [5] VALIDTION
+
+            # sync_grad
+            # [6] PBAR PRINTING
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             with torch.no_grad():
                 target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
@@ -1337,9 +1344,8 @@ def main(args):
                 del mask_embeds_log
             logs['norm_target']=norm_target.item()
             progress_bar.set_postfix(**logs)
+            # [6] PBAR PRINTING
             accelerator.log(logs, step=global_step)
-            progress_bar.update(1)
-            global_step += 1
             if global_step >= args.max_train_steps:
                 break
 
