@@ -165,7 +165,7 @@ for check_tag in check_tags:
                         command+='--resolution=512 \\\n'
                         command+='--train_batch_size=1 \\\n'
                         command+='--gradient_accumulation_steps=1 \\\n'
-                        command+='--max_train_steps=1 \\\n'
+                        command+='--max_train_steps=501 \\\n'
                         command+='--validation_steps=100 \\\n'
                         command+='--learning_rate={} \\\n'.format(lr)
                         command+='--lr_scheduler="constant" \\\n'
