@@ -426,7 +426,7 @@ class TextualInversionDataset(Dataset):
                 mlm_labels.append(self.tokenizer.eos_token_id)
             else:
                 # masked/non_special
-                pass
+                mlm_labels.append(-100)
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 if self.mlm_target=='all':
                     mlm_labels.append(self.tokenizer.pad_token_id)
