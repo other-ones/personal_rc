@@ -11,7 +11,7 @@ info_map_03={
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     # 'dog6': ('dog','dog','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    'cat1': ('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
 
     # 'pet_cat1':('cat','cat','pet','living'),
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -112,10 +112,12 @@ benchmark='dreambooth'
 # mlm_target_list=['masked','non_special']
 mlm_target_list=['masked']
 nonmask_weight_list=[1]
+train_batch_size=1
+learning_rate='1e-3'
 if include_prior:
-    dir_name='single_batch4_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_batch{}_capv7_prior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
 else:
-    dir_name='single_batch4_capv7_noprior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_batch{}_capv7_noprior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
 train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
@@ -190,10 +192,10 @@ for mask_prob in mask_prob_list:
                         command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                         command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                         command+='--resolution=512 \\\n'
-                        command+='--train_batch_size=4 \\\n'
+                        command+='--train_batch_size={} \\\n'.format(train_batch_size)
                         command+='--gradient_accumulation_steps=1 \\\n'
                         command+='--max_train_steps={} \\\n'.format(train_steps)
-                        command+='--learning_rate=5e-4 \\\n'
+                        command+='--learning_rate={} \\\n'.format(learning_rate)
                         command+='--lr_scheduler="constant" \\\n'
                         command+='--initializer_token={} \\\n'.format(train_prior)
                         command+='--normalize_mask_embeds=0 \\\n'
