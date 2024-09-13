@@ -8,7 +8,7 @@ print(hostname,'hostname')
 # concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'duck_toy':('toy','duck toy','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'cat1': ('cat','cat','pet','living'),
@@ -289,7 +289,7 @@ for cidx,concept in enumerate(concepts):
             exp_name=exp
             exp_name+='_s{}'.format(target_step)
             exp_name+='_ppos{}'.format(ppos_str)
-            output_dir=os.path.join('results/ti_results/{}/{}'.format(dir_name,concept))
+            output_dir=os.path.join('results/ti_results_re/{}/{}'.format(dir_name,concept))
             exp_path=os.path.join(output_dir,exp_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
