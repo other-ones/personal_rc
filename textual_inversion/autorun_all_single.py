@@ -113,7 +113,7 @@ ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
-include_prior=0
+include_prior=1
 delay=25
 mask_prob_list=[0.25]
 rev_list=[0]
@@ -269,7 +269,6 @@ target_step=3000
 delay=30
 num_images_per_prompt=8
 port_idx=0
-include_prior_concept=1
 exclude_key='mtarget_nonspec'
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
@@ -294,7 +293,7 @@ for cidx,concept in enumerate(concepts):
             continue
         exp_name=exp
         exp_name+='_s{}'.format(target_step)
-        output_dir=os.path.join('results/ti_results_re/{}/{}'.format(dir_name,concept))
+        output_dir=os.path.join('results/ti_results/{}/{}'.format(dir_name,concept))
         exp_path=os.path.join(output_dir,exp_name)
         if os.path.exists(exp_path):
             print(exp_path,'exists')
@@ -336,7 +335,7 @@ for cidx,concept in enumerate(concepts):
         command+='--rev={} \\\n'.format(rev)
         command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
         command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
-        command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior_concept,log_path)
+        command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
         os.system(command)
         print('GENERATION STARTED')
         port_idx+=1

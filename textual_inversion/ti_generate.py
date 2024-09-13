@@ -364,7 +364,8 @@ def main(args):
                     print(args.train_prior_concept1,'train_prior_concept1')
                     print(sum(is_keyword_tokens),'sum(is_keyword_tokens)')
                 assert sum(is_keyword_tokens)==1
-                assert sum(is_prior1)==len(args.train_prior_concept1.split())
+                if args.include_prior_concept:
+                    assert sum(is_prior1)==len(args.train_prior_concept1.split())
                 is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
                 is_prior1=torch.BoolTensor(is_prior1)
                 is_keyword_tokens_list.append(is_keyword_tokens)
