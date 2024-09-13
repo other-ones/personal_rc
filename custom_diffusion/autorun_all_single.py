@@ -6,11 +6,11 @@ import socket
 hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map_03={
+info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
     # 'dog6': ('dog','dog','pet','living'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'pet_cat1':('cat','cat','pet','living'),
 
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -72,7 +72,7 @@ lambda_mlm_list=[
             0.001,
             0, 
             # 0.0001,
-            # 0.0005,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -102,7 +102,7 @@ os.makedirs(log_dir,exist_ok=True)
 lr_list=[1e-5]
 mlm_batch_size=25
 # ['VERB', 'ADJ','ADV','PROPN','ADP','NOUN']
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+check_tags=['']
 # target_tags=''
 for check_tag in check_tags:
     for lr in lr_list:
