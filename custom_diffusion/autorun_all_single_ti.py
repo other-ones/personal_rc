@@ -8,11 +8,11 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
     # 'dog6': ('dog','dog','pet','living'),
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     # 'pet_cat1':('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
     # 'poop_emoji':('toy','toy','nonliving','nonliving'),
     # 'cat1': ('cat','cat','pet','living'),
@@ -93,7 +93,11 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
+if '04' in hostname:
+    host_suffix='04'
+else:
+    assert False
+dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
 
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[5e-4,1e-4]
@@ -121,7 +125,7 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_cnetv4'
+                    run_name='cd_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -234,8 +238,6 @@ benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
 gen_target_step_list=[1000,2000,3000]
-gen_target_lr='5e4'
-gen_target_mlm='mlm000005'
 for gen_target_step in gen_target_step_list:
     for concept in list(info_map.keys()):
         gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
