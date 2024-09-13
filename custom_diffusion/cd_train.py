@@ -505,6 +505,16 @@ def main(args):
                 token_embeds[token_id] = initial_embed.clone()
         print(args.initializer_token,'initializer_token')
         print(initial_embed.shape,'initial_embed.shape')
+    if args.learned_embed_path1 is not None:
+        learned_embed1=torch.load(args.learned_embed_path1)#[args.placeholder_token]
+        print('TI EMB LOADED')
+        learned_embed1=learned_embed1[args.placeholder_token1]
+        # learned_embed1=learned_embed1.to(accelerator.device)
+        with torch.no_grad():
+            token_embeds[placeholder_token_id1] = learned_embed1.clone()
+        initial_embed=learned_embed1.clone().detach()
+        del learned_embed1
+
     # with torch.no_grad():
     #     for token_id in mask_token_ids:
     #         token_embeds[token_id] = mask_embeds.clone()
@@ -875,6 +885,7 @@ def main(args):
         unet.load_state_dict(new_state_dict,strict=True)
         print('unet parameters loaded')
         del new_state_dict
+        learned_embed_path1=args.learned_embed_path1
     # if not args.train_text_encoder and text_encoder is not None:
     #     text_encoder.to(accelerator.device, dtype=weight_dtype)
     # ADDED
