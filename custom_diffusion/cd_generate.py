@@ -398,8 +398,8 @@ def main(args):
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
-                            is_keyword_tokens1=is_keyword_tokens_list,
-                            inj_embeddings1=target_emb1.repeat(len(prompts),1),
+                            # is_keyword_tokens1=is_keyword_tokens_list,
+                            # inj_embeddings1=target_emb1.repeat(len(prompts),1),
                             ).images
             
             # 
