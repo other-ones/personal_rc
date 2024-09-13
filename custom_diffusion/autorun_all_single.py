@@ -8,23 +8,23 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
     
     
@@ -71,8 +71,8 @@ elif '04' in hostname:
 lambda_mlm_list=[
             0.001,
             0, 
-            0.0001,
-            0.0005,
+            # 0.0001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
