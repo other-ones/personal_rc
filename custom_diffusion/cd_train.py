@@ -205,8 +205,8 @@ def log_validation(
                             num_inference_steps=25, 
                             generator=generator,
                             verbose=True,
-                            inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
-                            is_keyword_tokens1=is_keyword_tokens_list1,
+                            # inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
+                            # is_keyword_tokens1=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     # for tracker in accelerator.trackers:
@@ -515,6 +515,9 @@ def main(args):
         initial_embed=learned_embed1.clone().detach()
         del learned_embed1
         initial_embed=initial_embed.to(accelerator.device)
+
+        
+    initial_embed=initial_embed.clone().detach()
 
     # with torch.no_grad():
     #     for token_id in mask_token_ids:
@@ -1265,7 +1268,7 @@ def main(args):
                         # [5] VALIDTION
                         if not args.debug:
                             with torch.no_grad():
-                                learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
+                                learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                                 images,validation_prompts = log_validation(
                                         # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
                                         accelerator.unwrap_model(text_encoder),
@@ -1278,7 +1281,7 @@ def main(args):
                                         global_step,
                                         pipeline=pipeline,
                                         generator=generator_cuda,
-                                        target_emb=learned_embeds_val,
+                                        target_emb=learned_embeds_val.clone().detach(),
                                     )
                                 del learned_embeds_val
                             validation_files=sorted(os.listdir(args.train_data_dir1))
