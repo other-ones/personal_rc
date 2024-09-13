@@ -1083,7 +1083,11 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
-                if global_step % args.checkpointing_steps == 0:
+                progress_bar.update(1)
+                global_step += 1
+
+                # [1] CHECKPOINTING
+                if (global_step % args.checkpointing_steps == 0 or global_step==1):
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit >0:
@@ -1107,14 +1111,6 @@ def main(args):
                         save_path = os.path.join(ckpt_dir, f"checkpoint-{global_step}")
                         os.makedirs(save_path,exist_ok=True)
                         unet = unet.to(torch.float32)
-                        # save_new_embed(
-                        #     text_encoder,
-                        #     placeholder_token_id1,
-                        #     accelerator,
-                        #     args,
-                        #     save_path,
-                        #     safe_serialization=False,
-                        # )
                         learned_embeds_saved=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
                         learned_embeds_dict = {args.placeholder_token1: learned_embeds_saved.cpu()}
                         weight_name = "learned_embeds_s{:04d}.pt".format(global_step)
@@ -1133,108 +1129,123 @@ def main(args):
                             if args.train_text_encoder:
                                 save_path_text_encoder = os.path.join(ckpt_dir, f"checkpoint-{global_step}/text_encoder.pt")
                                 torch.save(text_encoder.state_dict(),save_path_text_encoder)
-            if ((global_step % args.log_steps == 0)) and accelerator.is_main_process:
-                caption_log_file=open(caption_log_path,'a')
-                for raw_caption_ti in raw_captions_ti:
-                    caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
-                    caption_log_file.flush()
-                caption_log_file.write('\n')
-                caption_log_file.flush()
-                if args.lambda_mlm:
-                    for raw_caption_mlm in raw_captions_mlm:
-                        caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_mlm))
+                # [1] CHECKPOINTING
+
+
+                if accelerator.is_main_process:
+                    # [2] CAPTION LOGGING
+                    if ((global_step % args.log_steps == 0) or global_step==1):
+                        caption_log_file=open(caption_log_path,'a')
+                        for raw_caption_ti in raw_captions_ti:
+                            caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
+                            caption_log_file.flush()
+                        caption_log_file.write('\n')
                         caption_log_file.flush()
-                    caption_log_file.write('\n')
-                caption_log_file.write('\n')
-                caption_log_file.flush()
-                caption_log_file.close()
-            if accelerator.is_main_process:
-                images = []
+                        if args.lambda_mlm:
+                            for raw_caption_mlm in raw_captions_mlm:
+                                caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_mlm))
+                                caption_log_file.flush()
+                            caption_log_file.write('\n')
+                        caption_log_file.write('\n')
+                        caption_log_file.flush()
+                        caption_log_file.close()
+                    # [2] CAPTION LOGGING
+                    
+                    
+                    if (global_step % args.validation_steps == 0  or global_step==1):
+                        # [3] INPUT LOGGING
+                        input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
+                        input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
+                        input_image=input_image.astype(np.uint8)
+                        input_image=Image.fromarray(input_image)
+                        input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
+                        # [3] INPUT LOGGING
 
-                if global_step % args.validation_steps == 0:
-                    images,validation_prompts = log_validation(
-                            # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
-                            accelerator.unwrap_model(text_encoder),
-                            tokenizer,
-                            unwrap_model(unet),
-                            vae,
-                            args,
-                            accelerator,
-                            weight_dtype,
-                            global_step,
-                            pipeline=pipeline,
-                        )
-                    validation_files=sorted(os.listdir(args.train_data_dir1))
-                    validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
-                    num_images=len(images)
-                    num_cols=num_images
-                    num_rows=num_images//num_cols
-                    margin_bottom=150
-                    margin_right=10
-                    merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
-                    for ridx in range(num_rows):
-                        merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
-                    for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
-                        row_idx=iidx//num_cols
-                        col_idx=iidx-(num_cols*row_idx)
-                        x0=(col_idx+1)*(512+margin_right)
-                        y0=row_idx*(512+margin_bottom)+512
-                        x1=x0+(512+margin_right)
-                        y1=y0+margin_bottom
-                        merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
-                        merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
-                    merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
-                    # visualize input
-                    input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
-                    input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                    input_image=input_image.astype(np.uint8)
-                    input_image=Image.fromarray(input_image)
-                    input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
-                    if args.lambda_mlm:
-                        # 1. MLM Result Logging
-                        viz_idx=0
-                        masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
-                        non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
-                        mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
-                        input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
-                        input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
 
-                        input_ids_pos=input_ids_pos[non_special_idxs]
-                        input_ids_masked=input_ids_masked[non_special_idxs]
-                        mlm_logits=mlm_logits[non_special_idxs]
-                        masked_idxs=masked_idxs[non_special_idxs]
+                        # [4] MLM LOGGING
+                        if args.lambda_mlm:
+                            # 1. MLM Result Logging
+                            viz_idx=0
+                            masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
+                            non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
+                            mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
+                            input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
+                            input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
 
-                        decoded=tokenizer.batch_decode(input_ids_pos)
-                        decoded_masked=tokenizer.batch_decode(input_ids_masked)
-                        decoded_logits=tokenizer.batch_decode(mlm_logits)
-                        decoded_list=[]
-                        decoded_masked_list=[]
-                        decoded_logits_list=[]
-                        for d1,d2,d3,m in zip(decoded,decoded_masked,decoded_logits,masked_idxs):
-                            if m:
-                                decoded_list.append('{:10}'.format('M[{}]'.format(d1)))
-                                decoded_masked_list.append('{:10}'.format(d2))
-                                # decoded_masked_list.append('{:12}'.format('M[{}]'.format(d2)))
-                                decoded_logits_list.append('{:10}'.format('M[{}]'.format(d3)))
-                            else:
-                                decoded_list.append('{:10}'.format(d1))
-                                decoded_masked_list.append('{:10}'.format(d2))
-                                decoded_logits_list.append('{:10}'.format(d3))
-                        decoded=' '.join(decoded_list)
-                        decoded_masked=' '.join(decoded_masked_list)
-                        decoded_logits=' '.join(decoded_logits_list)
-                        dots='-'*100
-                        print()
-                        print()
-                        print(dots)
-                        print(dots)
-                        print('Step\t\t|{}'.format(global_step))
-                        print('Raw\t\t|{}'.format(decoded))
-                        print('Masked\t\t|{}'.format(decoded_masked))
-                        print('Preds\t\t|{}'.format(decoded_logits))
-                        print(dots)
-                        print(dots)
-                        print()
+                            input_ids_pos=input_ids_pos[non_special_idxs]
+                            input_ids_masked=input_ids_masked[non_special_idxs]
+                            mlm_logits=mlm_logits[non_special_idxs]
+                            masked_idxs=masked_idxs[non_special_idxs]
+
+                            decoded=tokenizer.batch_decode(input_ids_pos)
+                            decoded_masked=tokenizer.batch_decode(input_ids_masked)
+                            decoded_logits=tokenizer.batch_decode(mlm_logits)
+                            decoded_list=[]
+                            decoded_masked_list=[]
+                            decoded_logits_list=[]
+                            for d1,d2,d3,m in zip(decoded,decoded_masked,decoded_logits,masked_idxs):
+                                if m:
+                                    decoded_list.append('{:10}'.format('M[{}]'.format(d1)))
+                                    decoded_masked_list.append('{:10}'.format(d2))
+                                    # decoded_masked_list.append('{:12}'.format('M[{}]'.format(d2)))
+                                    decoded_logits_list.append('{:10}'.format('M[{}]'.format(d3)))
+                                else:
+                                    decoded_list.append('{:10}'.format(d1))
+                                    decoded_masked_list.append('{:10}'.format(d2))
+                                    decoded_logits_list.append('{:10}'.format(d3))
+                            decoded=' '.join(decoded_list)
+                            decoded_masked=' '.join(decoded_masked_list)
+                            decoded_logits=' '.join(decoded_logits_list)
+                            dots='-'*100
+                            print()
+                            print()
+                            print(dots)
+                            print(dots)
+                            print('Step\t\t|{}'.format(global_step))
+                            print('Raw\t\t|{}'.format(decoded))
+                            print('Masked\t\t|{}'.format(decoded_masked))
+                            print('Preds\t\t|{}'.format(decoded_logits))
+                            print(dots)
+                            print(dots)
+                            print()
+                        # [4] MLM LOGGING
+
+                        # [5] VALIDTION
+                        images,validation_prompts = log_validation(
+                                # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
+                                accelerator.unwrap_model(text_encoder),
+                                tokenizer,
+                                unwrap_model(unet),
+                                vae,
+                                args,
+                                accelerator,
+                                weight_dtype,
+                                global_step,
+                                pipeline=pipeline,
+                            )
+                        validation_files=sorted(os.listdir(args.train_data_dir1))
+                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
+                        num_images=len(images)
+                        num_cols=num_images
+                        num_rows=num_images//num_cols
+                        margin_bottom=150
+                        margin_right=10
+                        merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
+                        for ridx in range(num_rows):
+                            merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
+                        for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
+                            row_idx=iidx//num_cols
+                            col_idx=iidx-(num_cols*row_idx)
+                            x0=(col_idx+1)*(512+margin_right)
+                            y0=row_idx*(512+margin_bottom)+512
+                            x1=x0+(512+margin_right)
+                            y1=y0+margin_bottom
+                            merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
+                            merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
+                        merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
+                        # [5] VALIDTION
+                    
+                    
 
             if accelerator.sync_gradients:
                 #
