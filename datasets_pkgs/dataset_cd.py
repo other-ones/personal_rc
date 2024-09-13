@@ -20,6 +20,8 @@ import albumentations as A
 from packaging import version
 
 # Added
+from spacy import symbols
+import spacy
 # Added
 Image.MAX_IMAGE_PIXELS = 1000000000
 alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95
@@ -136,6 +138,7 @@ class CustomDiffusionDataset(Dataset):
         mask_size=64,
 
     ):  
+        self.nlp=spacy.load("en_core_web_sm")
         self.mask_size=mask_size
         self.aug=aug
         self.instance_prompt="photo of a {}"
