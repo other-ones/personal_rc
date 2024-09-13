@@ -90,6 +90,8 @@ def log_validation(
     weight_dtype,
     global_step,
     pipeline,
+    generator,
+    target_emb,
 ):
     
     if args.include_prior_concept:
@@ -169,6 +171,27 @@ def log_validation(
     # else:
     # pipeline_args = {"prompt": args.validation_prompt}
 
+    is_keyword_tokens_list1=[]
+    for prompt in validation_prompts:
+        is_keyword_tokens1=[False]
+        text_words=prompt.split()
+        for word_idx in range(len(text_words)):
+            cap_word=text_words[word_idx]
+            word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
+            num_tokens=len(word_token_ids)
+            for tok_id in word_token_ids:
+                tok_decoded=tokenizer.decode(tok_id)
+                if args.placeholder_token1 == tok_decoded:
+                    is_keyword_tokens1.append(True)
+                else:
+                    is_keyword_tokens1.append(False)
+        for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
+            is_keyword_tokens1.append(False)
+        assert len(is_keyword_tokens1)==tokenizer.model_max_length
+        is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
+        is_keyword_tokens_list1.append(is_keyword_tokens1)
+
+
     # run inference
     generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
     images = []
@@ -178,10 +201,12 @@ def log_validation(
         autocast_ctx = torch.autocast(accelerator.device.type)
     with autocast_ctx:
         with torch.no_grad():
-            torch.cuda.empty_cache()
             images = pipeline(validation_prompts, 
                             num_inference_steps=25, 
                             generator=generator,
+                            verbose=True,
+                            inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
+                            is_keyword_tokens1=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     # for tracker in accelerator.trackers:
@@ -1216,18 +1241,23 @@ def main(args):
                         # [4] MLM LOGGING
 
                         # [5] VALIDTION
-                        images,validation_prompts = log_validation(
-                                # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
-                                accelerator.unwrap_model(text_encoder),
-                                tokenizer,
-                                unwrap_model(unet),
-                                vae,
-                                args,
-                                accelerator,
-                                weight_dtype,
-                                global_step,
-                                pipeline=pipeline,
-                            )
+                        with torch.no_grad():
+                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
+                            images,validation_prompts = log_validation(
+                                    # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
+                                    accelerator.unwrap_model(text_encoder),
+                                    tokenizer,
+                                    accelerator.unwrap_model(unet),
+                                    vae,
+                                    args,
+                                    accelerator,
+                                    weight_dtype,
+                                    global_step,
+                                    pipeline=pipeline,
+                                    generator=generator_cuda,
+                                    target_emb=learned_embeds_val,
+                                )
+                            del learned_embeds_val
                         validation_files=sorted(os.listdir(args.train_data_dir1))
                         validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
                         num_images=len(images)
