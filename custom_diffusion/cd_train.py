@@ -828,8 +828,8 @@ def main(args):
             # custom_diffusion_layers, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
             #     custom_diffusion_layers, optimizer, train_dataloader, lr_scheduler
             # )
-            custom_diffusion_layers, text_encoder, optimizer, train_dataloader, lr_scheduler, cls_net, mlm_loader  = accelerator.prepare(
-            custom_diffusion_layers, text_encoder, optimizer, train_dataloader, lr_scheduler, cls_net, mlm_loader
+            custom_diffusion_layers, text_encoder, optimizer, train_dataloader, lr_scheduler  = accelerator.prepare(
+            custom_diffusion_layers, text_encoder, optimizer, train_dataloader, lr_scheduler
         )
     # Potentially load in the weights and states from a previous save
     if args.resume_cd_path and args.resume_cd_path!='None':
