@@ -113,7 +113,7 @@ ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
-include_prior=1
+include_prior=0
 delay=25
 mask_prob_list=[0.25]
 rev_list=[0]
