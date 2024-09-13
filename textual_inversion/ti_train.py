@@ -968,6 +968,7 @@ def main():
             if args.report_to=='wandb' and accelerator.is_main_process:
                 wandb.log(logs)
             progress_bar.set_postfix(**logs)
+            accelerator.log(logs, step=global_step)
             # [6] PBAR PRINTING
             if global_step >= args.max_train_steps:
                 break
