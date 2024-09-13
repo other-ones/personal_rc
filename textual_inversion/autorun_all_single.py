@@ -102,7 +102,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 target_devices=[0,1,2,3,4,5,6,7]
-seed=2940
+seed=7777
 include_prior=1
 delay=25
 mask_prob_list=[0.25]
@@ -112,7 +112,16 @@ benchmark='dreambooth'
 # mlm_target_list=['masked','non_special']
 mlm_target_list=['masked']
 nonmask_weight_list=[1]
-train_batch_size=1
+
+
+
+
+
+
+
+
+
+train_batch_size=4
 if train_batch_size==4:
     learning_rate='5e-4'
 elif train_batch_size==1:
@@ -120,9 +129,9 @@ elif train_batch_size==1:
 else:
     assert False
 if include_prior:
-    dir_name='single_batch{}_capv7_prior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
+    dir_name='single_reduced{}_capv7_prior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
 else:
-    dir_name='single_batch{}_capv7_noprior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
+    dir_name='single_reduced{}_capv7_noprior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
 train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
@@ -134,7 +143,6 @@ mlm_batch=25
 check_tags=['']
 # check_tags=['']
 for mask_prob in mask_prob_list:
-    continue
     for nonmask_weight in nonmask_weight_list:
         nonmask_weight_str=float_to_str(nonmask_weight)
         nonmask_weight_str=nonmask_weight_str.replace('.','')

@@ -771,12 +771,18 @@ def main():
                     loss_mlm = F.cross_entropy(
                         mlm_logits.view(-1,cls_output_dim),
                         mlm_labels.view(-1),
-                        ignore_index=-100,
+                        # ignore_index=-100,
                         reduction='none'
                     )
+
                     # masked_idxs_flat
                     if args.nonmask_weight!=1 and args.mlm_target in ['non_special','all','non_padding']:
                         loss_mlm[nonmask_idxs_flat]*=args.nonmask_weight
+                    elif args.mlm_target in ['masked']:
+                        # masked
+                        loss_mlm=loss_mlm[masked_idxs_flat]
+                    else:
+                        assert False
                     loss_mlm=loss_mlm.mean()
                     loss=loss+(loss_mlm*args.lambda_mlm)
                     assert isinstance(mask_token_ids,list)
