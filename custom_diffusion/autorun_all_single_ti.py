@@ -62,13 +62,15 @@ if '03' in hostname:
     target_devices=[6,7]
 elif '04' in hostname:
     target_devices=[0,1,2,3,4,5,6,7]
+elif '07' in hostname:
+    target_devices=[0,1,2]
     
     
 
 lambda_mlm_list=[
             # 0, 
             0.001,
-            # 0.005,
+            0.005,
             # 0.0001,
             # 0.0005,
             # 0.00005,
