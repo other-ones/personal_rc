@@ -436,6 +436,7 @@ def main(args):
             print(batch_idx+1,num_batches,render_delay)
             print(merged_viz.size,'merged_viz.size',len(images),'len(images)')
             merged_viz.save(os.path.join(merged_dir,'merged_{:03d}.jpg'.format(batch_idx+1)))
+            torch.cuda.empty_cache()
             
     json.dump(caption_data,caption_file,indent=1)
     accelerator.wait_for_everyone()

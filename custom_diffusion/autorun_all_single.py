@@ -8,8 +8,8 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'pet_cat1':('cat','cat','pet','living'),
 

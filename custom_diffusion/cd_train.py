@@ -514,6 +514,7 @@ def main(args):
             token_embeds[placeholder_token_id1] = learned_embed1.clone()
         initial_embed=learned_embed1.clone().detach()
         del learned_embed1
+        initial_embed=initial_embed.to(accelerator.device)
 
     # with torch.no_grad():
     #     for token_id in mask_token_ids:

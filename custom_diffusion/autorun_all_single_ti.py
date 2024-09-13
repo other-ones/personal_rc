@@ -61,7 +61,7 @@ info_map_01={
 if '03' in hostname:
     target_devices=[6,7]
 elif '04' in hostname:
-    target_devices=[0,6,7]
+    target_devices=[0,1,2,3,4,5,6,7]
     
     
 
@@ -186,6 +186,7 @@ for lr in lr_list:
                     command+='--checkpoints_total_limit=20 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
                     command+='--max_train_steps=3001 \\\n'
+                    command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
