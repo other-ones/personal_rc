@@ -307,10 +307,11 @@ def main():
         initializer_token_ids = tokenizer.encode(args.initializer_token, add_special_tokens=False)
         assert len(initializer_token_ids)==1,args.initializer_token
         initializer_token_id = initializer_token_ids[0]
+        initial_embed=token_embeds[initializer_token_ids].clone().to(accelerator.device)
         with torch.no_grad():
             for token_id in placeholder_token_ids:
                 token_embeds[token_id] = token_embeds[initializer_token_id].clone()
-        
+        initial_embed=initial_embed.to(accelerator.device)
     # mask_embeds=token_embeds[mask_token_ids]
     if args.lambda_mlm:
         assert args.mask_embed_path is not None
@@ -693,6 +694,7 @@ def main():
     # prior_embed=prior_embed.to(accelerator.device)
     
 
+    cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     for epoch in range(first_epoch, args.num_train_epochs):
         text_encoder.train()
         for step, batch in enumerate(train_dataloader):
@@ -965,6 +967,8 @@ def main():
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             with torch.no_grad():
                 target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1].clone()
+                logs['sim_target']=cos_sim(target_embeds_log,initial_embed.detach()).item()
+                logs['same_target']=bool(torch.all(target_embeds_log==initial_embed).item())
                 norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
                 del target_embeds_log
             if loss_mlm is not None:
