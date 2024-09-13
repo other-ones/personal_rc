@@ -155,8 +155,8 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,genera
                           num_inference_steps=25, 
                           generator=generator,
                           silent=args.silent,
-                          inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
-                          is_keyword_tokens1=is_keyword_tokens_list1,
+                        #   inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
+                        #   is_keyword_tokens1=is_keyword_tokens_list1,
                           ).images
     print('Generated')
 
@@ -307,11 +307,11 @@ def main():
         initializer_token_ids = tokenizer.encode(args.initializer_token, add_special_tokens=False)
         assert len(initializer_token_ids)==1,args.initializer_token
         initializer_token_id = initializer_token_ids[0]
-        initial_embed=token_embeds[initializer_token_ids].clone().to(accelerator.device)
+        initial_embed=token_embeds[initializer_token_ids]
         with torch.no_grad():
             for token_id in placeholder_token_ids:
-                token_embeds[token_id] = token_embeds[initializer_token_id].clone()
-        initial_embed=initial_embed.to(accelerator.device)
+                token_embeds[token_id] = initial_embed.clone()
+        initial_embed=initial_embed.detach().clone().to(accelerator.device)
     # mask_embeds=token_embeds[mask_token_ids]
     if args.lambda_mlm:
         assert args.mask_embed_path is not None
@@ -925,7 +925,7 @@ def main():
                                 tokenizer=tokenizer, 
                                 args=args, 
                                 accelerator=accelerator, 
-                                target_emb=learned_embeds_val.clone(),
+                                target_emb=learned_embeds_val.clone().detach(),
                                 pipeline=pipeline,
                                 step=global_step,
                                 generator=generator_cuda
