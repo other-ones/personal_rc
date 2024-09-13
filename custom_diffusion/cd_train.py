@@ -867,7 +867,7 @@ def main(args):
                 if saved_key.startswith('module.'):
                     new_key=saved_key.replace('module.','')
             new_state_dict[new_key]=saved_state_dict[saved_key]
-        cls_net.load_state_dict(new_state_dict,strict=True)
+        # cls_net.load_state_dict(new_state_dict,strict=True)
     # ADDED
 
 
