@@ -1210,6 +1210,10 @@ def main(args):
                         del learned_embeds_saved
                     logger.info(f"Saved state to {save_dir}")
                 # [1] CHECKPOINTING
+
+
+
+                # CAPTION LOGGGING/ INPUT LOGGING / MLM LOGGING / VALIDATION
                 if accelerator.is_main_process:
                     # [2] CAPTION LOGGING
                     if ((global_step % args.log_steps == 0) or global_step==1) and accelerator.is_main_process:

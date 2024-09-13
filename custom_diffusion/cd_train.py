@@ -1132,6 +1132,8 @@ def main(args):
                 # [1] CHECKPOINTING
 
 
+
+                # CAPTION LOGGGING/ INPUT LOGGING / MLM LOGGING / VALIDATION
                 if accelerator.is_main_process:
                     # [2] CAPTION LOGGING
                     if ((global_step % args.log_steps == 0) or global_step==1):
@@ -1151,7 +1153,7 @@ def main(args):
                         caption_log_file.close()
                     # [2] CAPTION LOGGING
                     
-                    
+
                     if (global_step % args.validation_steps == 0  or global_step==1):
                         # [3] INPUT LOGGING
                         input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
@@ -1244,13 +1246,8 @@ def main(args):
                             merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
                         merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
                         # [5] VALIDTION
-                    
-                    
-
-            if accelerator.sync_gradients:
-                #
-                progress_bar.update(1)
-                global_step += 1
+            # sync_grad        
+            # [6] PBAR PRINTING
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             with torch.no_grad():
                 target_embeds_log=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
@@ -1269,6 +1266,8 @@ def main(args):
                 del mask_embeds_log
             logs['norm_target']=norm_target.item()
             progress_bar.set_postfix(**logs)
+            # [6] PBAR PRINTING
+            
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break
