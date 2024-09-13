@@ -93,7 +93,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 fixte_list=[0]
-mask_prob_list=[0.15]
+mask_prob_list=[0.25]
 seed=7777
 rep_id=1
 dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
