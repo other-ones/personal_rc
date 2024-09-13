@@ -170,7 +170,9 @@ for check_tag in check_tags:
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
-                    command+='--max_train_steps=501 \\\n'
+                    command+='--checkpointing_steps=250 \\\n'
+                    command+='--checkpoints_total_limit=4 \\\n'
+                    command+='--max_train_steps=1001 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
@@ -218,69 +220,68 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step=500
-
-for concept in concepts:
-    if concept not in info_map:
-        continue
-    gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
-    os.makedirs(gen_log_dir,exist_ok=True)    
-    concept_path=os.path.join(dir_path,concept)
-    if not os.path.exists(concept_path):
-        continue
-    exps=os.listdir(concept_path)
-    for exp_idx,exp in enumerate(exps):
-        train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        resume_cd_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(gen_target_step))
-        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_target_step))
-        if not os.path.exists(resume_cd_path):
-            print(resume_cd_path,'does not exist')
+for gen_target_step in [500,1000]:
+    for concept in concepts:
+        if concept not in info_map:
             continue
-        exp_name=resume_cd_path.split('/')[-4]
-        exp_name+='_s{}'.format(gen_target_step)
-        output_dir=os.path.join('results/cd_results/{}/{}'.format(dir_name,concept))
-        dst_exp_path=os.path.join(output_dir,exp_name)
-        if os.path.exists(dst_exp_path):
-            print(dst_exp_path,'exists')
+        gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
+        os.makedirs(gen_log_dir,exist_ok=True)    
+        concept_path=os.path.join(dir_path,concept)
+        if not os.path.exists(concept_path):
             continue
-        while True:
-            stats=get_gpu_memory()
-            found=False
-            for stat_idx in target_devices:
-                stat=stats[stat_idx]    
-                if stat>2e4 :
-                    device_idx=stat_idx
-                    found=True
+        exps=os.listdir(concept_path)
+        for exp_idx,exp in enumerate(exps):
+            train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
+            resume_cd_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(gen_target_step))
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_target_step))
+            if not os.path.exists(resume_cd_path):
+                print(resume_cd_path,'does not exist')
+                continue
+            exp_name=resume_cd_path.split('/')[-4]
+            exp_name+='_s{}'.format(gen_target_step)
+            output_dir=os.path.join('results/cd_results/{}/{}'.format(dir_name,concept))
+            dst_exp_path=os.path.join(output_dir,exp_name)
+            if os.path.exists(dst_exp_path):
+                print(dst_exp_path,'exists')
+                continue
+            while True:
+                stats=get_gpu_memory()
+                found=False
+                for stat_idx in target_devices:
+                    stat=stats[stat_idx]    
+                    if stat>2e4 :
+                        device_idx=stat_idx
+                        found=True
+                        break
+                if found:
                     break
-            if found:
-                break
-            print(exp_name,'sleep',stat_idx,stat)
-            time.sleep(10)
-        print(exp_name,device_idx)
-        log_path=os.path.join(gen_log_dir,exp_name+'.out')
-        command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-        command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-        command+='accelerate launch --main_process_port {} cd_generate.py \\\n'.format(ports[port_idx])
-        command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
-        command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-        command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-        command+='--resolution=512 \\\n'
-        command+='--eval_batch_size=15 \\\n'
-        command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
-        command+='--output_dir="{}" \\\n'.format(output_dir)
-        command+='--seed={} \\\n'.format(seed)
-        command+='--mask_tokens="[MASK]" \\\n'
-        command+='--resume_cd_path="{}" \\\n'.format(resume_cd_path)
-        command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-        command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
-        command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
-        command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
-        command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
-        command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
-        command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
-        command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
-        os.system(command)
-        print('STARTED')
-        port_idx+=1
-        time.sleep(30)
+                print(exp_name,'sleep',stat_idx,stat)
+                time.sleep(10)
+            print(exp_name,device_idx)
+            log_path=os.path.join(gen_log_dir,exp_name+'.out')
+            command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
+            command+='accelerate launch --main_process_port {} cd_generate.py \\\n'.format(ports[port_idx])
+            command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+            command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
+            command+='--placeholder_token1="<{}>" \\\n'.format(concept)
+            command+='--resolution=512 \\\n'
+            command+='--eval_batch_size=15 \\\n'
+            command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
+            command+='--output_dir="{}" \\\n'.format(output_dir)
+            command+='--seed={} \\\n'.format(seed)
+            command+='--mask_tokens="[MASK]" \\\n'
+            command+='--resume_cd_path="{}" \\\n'.format(resume_cd_path)
+            command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
+            command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
+            command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
+            command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
+            command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
+            command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
+            command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
+            command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
+            os.system(command)
+            print('STARTED')
+            port_idx+=1
+            time.sleep(30)
 
