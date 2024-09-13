@@ -104,7 +104,7 @@ else:
 dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
 
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4,1e-4]
+lr_list=[5e-4]
 mlm_batch_size=25
 train_target_step=500
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
@@ -187,9 +187,9 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_cd_path={} \\\n'.format(resume_cd_path)
                     command+='--learned_embed_path1={} \\\n'.format(learned_embed_path1)
-                    command+='--train_batch_size=1 \\\n'
+                    command+='--train_batch_size=4 \\\n'
                     command+='--scale_lr \\\n'
-                    command+='--gradient_accumulation_steps=4 \\\n'
+                    command+='--gradient_accumulation_steps=1 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpoints_total_limit=20 \\\n'
                     command+='--checkpointing_steps=250 \\\n'

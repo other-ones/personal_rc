@@ -147,7 +147,8 @@ if __name__=='__main__':
         concept_results=[]
         # exps=sorted(exps)[::-1]
         sorted_exps = sorted(exps, key=extract_values)
-        if any("_ti" in exp or "nomlm" in exp for exp in exps):
+        # if any("_ti" in exp or "nomlm" in exp for exp in exps):
+        if True:
             for exp in sorted_exps:
                 if args.exclude is not None and args.exclude in exp:
                     continue

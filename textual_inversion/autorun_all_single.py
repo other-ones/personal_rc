@@ -13,18 +13,18 @@ info_map_03={
     'teapot':('teapot','teapot','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
 
-    'pet_cat1':('cat','cat','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
 
 
     # NOT USED
@@ -83,9 +83,9 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0,
+            # 0,
             # 0.01,
-            # 0.001,
+            0.001,
             # 0.002,
             # 0.0001,
             # 0.0005,
@@ -116,9 +116,9 @@ target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
 include_prior=0
 delay=25
-mask_prob_list=[0.25]
+mask_prob_list=[0.15]
 rev_list=[0]
-rep_id=1
+rep_id=2
 benchmark='dreambooth'
 # mlm_target_list=['masked','non_special']
 mlm_target_list=['masked']

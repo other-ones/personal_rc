@@ -115,7 +115,8 @@ if __name__ == "__main__":
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         sorted_exps = sorted(exps, key=extract_values)
-        if any("_ti" in exp or "nomlm" in exp for exp in sorted_exps):
+        # if any("_ti" in exp or "nomlm" in exp for exp in sorted_exps):
+        if True:
             for exp in sorted_exps:
                 if args.exclude is not None and args.exclude in exp:
                         continue
