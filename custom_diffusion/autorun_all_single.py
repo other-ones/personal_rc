@@ -180,8 +180,9 @@ for check_tag in check_tags:
                                 break
                         if found:
                             break
-                        print(run_name,'sleep',stat_idx,stat)
+                        print('TRAINING',run_name,'sleep',stat_idx,stat)
                         time.sleep(10)
+                        
                     print(exp_path,device_idx)
                     log_path=os.path.join(log_dir,run_name+'.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
@@ -252,11 +253,13 @@ for gen_target_step in [500,1000]:
     for concept in concepts:
         if concept not in info_map:
             continue
+        
         gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
         os.makedirs(gen_log_dir,exist_ok=True)    
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             continue
+
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
@@ -283,7 +286,7 @@ for gen_target_step in [500,1000]:
                         break
                 if found:
                     break
-                print(exp_name,'sleep',stat_idx,stat)
+                print('GENERATION',exp_name,'sleep',stat_idx,stat)
                 time.sleep(10)
             print(exp_name,device_idx)
             log_path=os.path.join(gen_log_dir,exp_name+'.out')
@@ -309,7 +312,7 @@ for gen_target_step in [500,1000]:
             command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
             command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
             os.system(command)
-            print('STARTED')
+            print('GENERATION STARTED')
             port_idx+=1
             time.sleep(30)
 
