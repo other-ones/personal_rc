@@ -113,9 +113,9 @@ benchmark='dreambooth'
 mlm_target_list=['masked']
 nonmask_weight_list=[1]
 if include_prior:
-    dir_name='single_noacc_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_batch4_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
 else:
-    dir_name='single_noacc_capv7_noprior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_batch4_capv7_noprior_seed{}_rep{}'.format(seed,rep_id)
 train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
@@ -123,7 +123,8 @@ exclude_cap_types=None
 os.makedirs(train_log_dir,exist_ok=True) 
 train_steps=3001
 mlm_batch=25
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
+# check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
+check_tags=['']
 # check_tags=['']
 for mask_prob in mask_prob_list:
     for nonmask_weight in nonmask_weight_list:
@@ -189,7 +190,7 @@ for mask_prob in mask_prob_list:
                         command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                         command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                         command+='--resolution=512 \\\n'
-                        command+='--train_batch_size=1 \\\n'
+                        command+='--train_batch_size=4 \\\n'
                         command+='--gradient_accumulation_steps=1 \\\n'
                         command+='--max_train_steps={} \\\n'.format(train_steps)
                         command+='--learning_rate=5e-4 \\\n'

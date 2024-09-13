@@ -74,5 +74,4 @@ accelerate launch --main_process_port=9980 cd_train.py \
   --seed=2940 \
   --mlm_batch_size=25 \
   --initializer_token="sks" \
-  --mask_prob=0.15 \
-  --initialize_token=1
+  --mask_prob=0.25 

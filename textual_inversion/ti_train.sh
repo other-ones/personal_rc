@@ -1,7 +1,7 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1";
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
-export CUDA_VISIBLE_DEVICES=4;
+export CUDA_VISIBLE_DEVICES=0;
 accelerate launch --main_process_port 4230  ti_train.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
@@ -10,7 +10,7 @@ accelerate launch --main_process_port 4230  ti_train.py \
   --train_prior_concept1="dog" \
   --eval_prior_concept1="dog" \
   --resolution=512 \
-  --train_batch_size=1 \
+  --train_batch_size=4 \
   --gradient_accumulation_steps=1 \
   --max_train_steps=3001 \
   --learning_rate=5e-4 \
