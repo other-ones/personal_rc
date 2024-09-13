@@ -9,9 +9,9 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'pet_cat1':('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
 
     # 'cat1': ('cat','cat','pet','living'),
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -95,7 +95,7 @@ fixte_list=[0]
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_noacc_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):

@@ -9,9 +9,9 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'cat1': ('cat','cat','pet','living'),
     'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'cat1': ('cat','cat','pet','living'),
 
     # 'pet_cat1':('cat','cat','pet','living'),
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -73,14 +73,14 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            # 0,
-            0.01,
+            0,
+            # 0.01,
             0.001,
             # 0.002,
             # 0.0001,
-            0.0005,
+            # 0.0005,
             # 0.0002,
-            0.005,
+            # 0.005,
             # 0.01,
             # 0.0002,
             ]
@@ -105,7 +105,7 @@ target_devices=[0,1,2,3,4,5,6,7]
 seed=2940
 include_prior=1
 delay=25
-mask_prob_list=[0.25,0.3]
+mask_prob_list=[0.25]
 rev_list=[0]
 rep_id=1
 benchmark='dreambooth'
@@ -113,9 +113,9 @@ benchmark='dreambooth'
 mlm_target_list=['masked']
 nonmask_weight_list=[1]
 if include_prior:
-    dir_name='single_mtarget_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_noacc_capv7_prior_seed{}_rep{}'.format(seed,rep_id)
 else:
-    dir_name='single_mtarget_capv7_noprior_seed{}_rep{}'.format(seed,rep_id)
+    dir_name='single_noacc_capv7_noprior_seed{}_rep{}'.format(seed,rep_id)
 train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
@@ -190,7 +190,7 @@ for mask_prob in mask_prob_list:
                         command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                         command+='--resolution=512 \\\n'
                         command+='--train_batch_size=1 \\\n'
-                        command+='--gradient_accumulation_steps=4 \\\n'
+                        command+='--gradient_accumulation_steps=1 \\\n'
                         command+='--max_train_steps={} \\\n'.format(train_steps)
                         command+='--learning_rate=5e-4 \\\n'
                         command+='--lr_scheduler="constant" \\\n'
