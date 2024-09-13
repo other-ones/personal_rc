@@ -89,18 +89,18 @@ for stat_idx,stat in enumerate(stats):
         break
 
 ports=np.arange(1111,2222)
-fixte_list=[0]
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[5e-4,1e-4]
 mlm_batch_size=25
-train_target_step=1000
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+train_target_step=500
+# check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+check_tags=['']
 
 print('\nTRAINING TI')
 for lr in lr_list:
@@ -138,12 +138,12 @@ for lr in lr_list:
                     unet_exp_name=unet_exp_name.replace('lr1e4','lr1e5')
                     unet_exp_name=unet_exp_name.replace('_ti','')
                     
-                    resume_cd_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
-                    resume_text_encoder_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(train_target_step,train_target_step))
+                    resume_cd_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step))
+                    learned_embed_path1=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(train_target_step))
                     output_dir=os.path.join('saved_models/cd_models/{}'.format(dir_name),concept)
                     
                     if not os.path.exists(resume_cd_path):
-                        print(resume_cd_path,'UNET not exists',concept)
+                        print(resume_cd_path,'CD NOT EXISTS',concept)
                         continue
                     exp_path=os.path.join(output_dir,run_name)
                     if os.path.exists(exp_path):
@@ -177,7 +177,7 @@ for lr in lr_list:
                     command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
                     command+='--resolution=512 \\\n'
                     command+='--resume_cd_path={} \\\n'.format(resume_cd_path)
-                    command+='--resume_text_encoder_path={} \\\n'.format(resume_text_encoder_path)
+                    command+='--learned_embed_path1={} \\\n'.format(learned_embed_path1)
                     command+='--train_batch_size=1 \\\n'
                     command+='--scale_lr \\\n'
                     command+='--gradient_accumulation_steps=4 \\\n'
@@ -245,16 +245,12 @@ for gen_target_step in gen_target_step_list:
         for exp_idx,exp in enumerate(exps):
             if not '_ti' in exp:
                 continue
-            # if not (gen_target_lr in exp and gen_target_mlm in exp):
-            #     continue
-            # unet_exp_name=exp.split('_lr')
-            unet_exp_name=exp.replace('lr5e4','lr1e6')
-            unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')
-            unet_exp_name=unet_exp_name.replace('_ti','')
+            cd_exp_name=exp.replace('lr5e4','lr1e5')
+            cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')
+            cd_exp_name=cd_exp_name.replace('_ti','')
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-            resume_cd_path=os.path.join(concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
-            resume_text_encoder_path=os.path.join(concept_path,unet_exp_name,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(train_target_step,train_target_step))
-            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds_s{:04d}.pt'.format(gen_target_step,gen_target_step))
+            resume_cd_path=os.path.join(concept_path,cd_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step,train_target_step))
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_target_step,gen_target_step))
             if not os.path.exists(resume_cd_path):
                 print(resume_cd_path,'UNET does not exist')
                 continue
@@ -296,7 +292,6 @@ for gen_target_step in gen_target_step_list:
             command+='--seed={} \\\n'.format(seed)
             command+='--mask_tokens="[MASK]" \\\n'
             command+='--resume_cd_path="{}" \\\n'.format(resume_cd_path)
-            command+='--resume_text_encoder_path="{}" \\\n'.format(resume_text_encoder_path)
             command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
             command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
             command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
