@@ -233,7 +233,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[500,1000,2000,3000]
+gen_target_step_list=[1000,2000,3000]
 gen_target_lr='5e4'
 gen_target_mlm='mlm000005'
 for gen_target_step in gen_target_step_list:

@@ -64,10 +64,16 @@ info_map_01={
 }
 if '03' in hostname:
     target_devices=[0,1,2,3,4,5,6,7]
+    host_suffix='03'
 elif 'ubuntu' in hostname:
     target_devices=[0,1]
+    host_suffix='01'
+elif '07' in hostname:
+    target_devices=[0,1,2]
+    host_suffix='07'
 elif '04' in hostname:
     target_devices=[4,5,6,7]
+    host_suffix='04'
 lambda_mlm_list=[
             0.001,
             0, 
@@ -95,7 +101,7 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
 
 lr_list=[1e-5]
 mlm_batch_size=25
@@ -117,7 +123,7 @@ for check_tag in check_tags:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_cnetv4'
+                    run_name='cd_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
