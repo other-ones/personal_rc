@@ -1109,12 +1109,21 @@ def main(args):
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
                     masked_idxs_flat=masked_idxs.view(-1)
+                    # loss_mlm = F.cross_entropy(
+                    #     mlm_logits.view(-1,cls_output_dim),
+                    #     mlm_labels.view(-1),
+                    #     ignore_index=-100,
+                    #     reduction='mean'
+                    # )
+                    mlm_labels_flat=mlm_labels.view(-1)
                     loss_mlm = F.cross_entropy(
                         mlm_logits.view(-1,cls_output_dim),
                         mlm_labels.view(-1),
-                        ignore_index=-100,
-                        reduction='mean'
+                        # ignore_index=-100,
+                        reduction='none'
                     )
+                    loss_mlm=loss_mlm[mlm_labels_flat!=(-100)]
+                    loss_mlm=loss_mlm.mean()
                     loss=loss+(loss_mlm*args.lambda_mlm)
 
                 accelerator.backward(loss)

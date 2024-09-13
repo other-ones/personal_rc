@@ -9,7 +9,7 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'cat1': ('cat','cat','pet','living'),
 
@@ -132,11 +132,10 @@ if include_prior:
     dir_name='single_reduced{}_capv7_prior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
 else:
     dir_name='single_reduced{}_capv7_noprior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
-train_log_dir='logs/ti_models/train/{}'.format(dir_name)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
-os.makedirs(train_log_dir,exist_ok=True) 
+
 train_steps=3001
 mlm_batch=25
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
@@ -152,6 +151,8 @@ for mask_prob in mask_prob_list:
                 mask_prob_str=mask_prob_str.replace('.','')
                 for cidx,concept in enumerate(list(info_map.keys())):
                     device_idx=stat_idx
+                    train_log_dir='logs/ti_models/train/{}/{}'.format(dir_name,concept)
+                    os.makedirs(train_log_dir,exist_ok=True) 
                     for lambda_mlm in lambda_mlm_list:
                         lambda_mlm_str=float_to_str(lambda_mlm)
                         lambda_mlm_str=lambda_mlm_str.replace('.','')
@@ -194,7 +195,7 @@ for mask_prob in mask_prob_list:
                                 break
                             print('SLEEP TRAINING',run_name,'sleep','{}/{}'.format(cidx+1,len(concepts)))
                             time.sleep(delay)
-                        print(run_name,device_idx)
+                        print(dir_name,run_name,device_idx)
                         log_path=os.path.join(train_log_dir,run_name+'.out')
                         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
@@ -253,9 +254,8 @@ for mask_prob in mask_prob_list:
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/ti_models',dir_name)
-gen_log_dir='logs/generate/{}'.format(dir_name)
+
 target_step=3000
-os.makedirs(gen_log_dir,exist_ok=True)    
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -265,6 +265,8 @@ exclude_key='mtarget_nonspec'
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
+    gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
+    os.makedirs(gen_log_dir,exist_ok=True)    
     concept_path=os.path.join(dir_path,concept)
     if not os.path.exists(concept_path):
         continue
