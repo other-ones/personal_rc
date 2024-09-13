@@ -63,11 +63,11 @@ info_map_01={
     # 'flower1':('flower','flower'),
 }
 if '03' in hostname:
-    info_map=info_map_03
+    target_devices=[0,1,2,3,4,5,6,7]
 elif 'ubuntu' in hostname:
-    info_map=info_map_01
-
-target_devices=[0,1,2,3,4,5,6,7]
+    target_devices=[0,1]
+elif '04' in hostname:
+    target_devices=[5,6,7]
 lambda_mlm_list=[
             0.001,
             0, 
