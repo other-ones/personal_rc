@@ -495,7 +495,7 @@ def main(args):
         with torch.no_grad():
             for token_id in mask_token_ids:
                 token_embeds[token_id] = mask_embeds
-
+        print('MASK EMB LOADED')
     # FOR TI
     if args.initializer_token and args.resume_cd_path is None:
         initializer_token_ids = tokenizer.encode(args.initializer_token, add_special_tokens=False)
@@ -893,6 +893,7 @@ def main(args):
                     new_key=saved_key.replace('module.','')
             new_state_dict[new_key]=saved_state_dict[saved_key]
         cls_net.load_state_dict(new_state_dict,strict=True)
+        print('CLSNET LOADED')
     # ADDED
 
 
@@ -1063,14 +1064,16 @@ def main(args):
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     # clip_text_embedding_masked = text_encoder(input_ids_masked)[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
-                    # masked_idxs_flat=masked_idxs.view(-1)
+                    masked_idxs_flat=masked_idxs.view(-1)
+                    nonmask_idxs_flat=~masked_idxs_flat
                     loss_mlm = F.cross_entropy(
                         mlm_logits.view(-1,cls_output_dim),
                         mlm_labels.view(-1),
-                        ignore_index=-100,
-                        reduction='mean'
+                        # ignore_index=-100,
+                        reduction='none'
                     )
-                    # loss_mlm[masked_idxs_flat]*=args.mlm_weight
+                    if args.nonmask_weight!=1 and args.mlm_target in ['non_special','all','non_padding']:
+                        loss_mlm[nonmask_idxs_flat]*=args.nonmask_weight
                     # loss_mlm=loss_mlm.mean()
                     loss+=(loss_mlm*args.lambda_mlm)
 
@@ -1241,43 +1244,44 @@ def main(args):
                         # [4] MLM LOGGING
 
                         # [5] VALIDTION
-                        with torch.no_grad():
-                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
-                            images,validation_prompts = log_validation(
-                                    # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
-                                    accelerator.unwrap_model(text_encoder),
-                                    tokenizer,
-                                    accelerator.unwrap_model(unet),
-                                    vae,
-                                    args,
-                                    accelerator,
-                                    weight_dtype,
-                                    global_step,
-                                    pipeline=pipeline,
-                                    generator=generator_cuda,
-                                    target_emb=learned_embeds_val,
-                                )
-                            del learned_embeds_val
-                        validation_files=sorted(os.listdir(args.train_data_dir1))
-                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
-                        num_images=len(images)
-                        num_cols=num_images
-                        num_rows=num_images//num_cols
-                        margin_bottom=150
-                        margin_right=10
-                        merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
-                        for ridx in range(num_rows):
-                            merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
-                        for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
-                            row_idx=iidx//num_cols
-                            col_idx=iidx-(num_cols*row_idx)
-                            x0=(col_idx+1)*(512+margin_right)
-                            y0=row_idx*(512+margin_bottom)+512
-                            x1=x0+(512+margin_right)
-                            y1=y0+margin_bottom
-                            merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
-                            merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
-                        merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
+                        if not args.debug:
+                            with torch.no_grad():
+                                learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
+                                images,validation_prompts = log_validation(
+                                        # unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
+                                        accelerator.unwrap_model(text_encoder),
+                                        tokenizer,
+                                        accelerator.unwrap_model(unet),
+                                        vae,
+                                        args,
+                                        accelerator,
+                                        weight_dtype,
+                                        global_step,
+                                        pipeline=pipeline,
+                                        generator=generator_cuda,
+                                        target_emb=learned_embeds_val,
+                                    )
+                                del learned_embeds_val
+                            validation_files=sorted(os.listdir(args.train_data_dir1))
+                            validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
+                            num_images=len(images)
+                            num_cols=num_images
+                            num_rows=num_images//num_cols
+                            margin_bottom=150
+                            margin_right=10
+                            merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
+                            for ridx in range(num_rows):
+                                merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
+                            for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
+                                row_idx=iidx//num_cols
+                                col_idx=iidx-(num_cols*row_idx)
+                                x0=(col_idx+1)*(512+margin_right)
+                                y0=row_idx*(512+margin_bottom)+512
+                                x1=x0+(512+margin_right)
+                                y1=y0+margin_bottom
+                                merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
+                                merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
+                            merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
                         # [5] VALIDTION
             # sync_grad        
             # [6] PBAR PRINTING

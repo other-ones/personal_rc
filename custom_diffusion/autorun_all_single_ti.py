@@ -92,7 +92,7 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_capv7_seed{}_rep{}'.format(seed,rep_id)
+dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
@@ -120,7 +120,6 @@ for lr in lr_list:
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
                     run_name='cd_cnetv4'
-                    unet_exp_name='cd_cnetv4'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -134,12 +133,12 @@ for lr in lr_list:
                     run_name+='_lr{}'.format(lr_str)
                     run_name+='_ti'
 
-                    unet_exp_name=run_name.replace('lr5e4','lr1e5')
-                    unet_exp_name=unet_exp_name.replace('lr1e4','lr1e5')
-                    unet_exp_name=unet_exp_name.replace('_ti','')
+                    cd_exp_name=run_name.replace('lr5e4','lr1e5')
+                    cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')
+                    cd_exp_name=cd_exp_name.replace('_ti','')
                     
-                    resume_cd_path=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step))
-                    learned_embed_path1=os.path.join(unet_concept_path,unet_exp_name,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(train_target_step))
+                    resume_cd_path=os.path.join(unet_concept_path,cd_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step))
+                    learned_embed_path1=os.path.join(unet_concept_path,cd_exp_name,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(train_target_step))
                     output_dir=os.path.join('saved_models/cd_models/{}'.format(dir_name),concept)
                     
                     if not os.path.exists(resume_cd_path):
