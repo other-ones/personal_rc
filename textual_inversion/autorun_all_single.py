@@ -8,23 +8,23 @@ print(hostname,'hostname')
 # concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('toy','duck toy','nonliving','nonliving'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
 
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
 
 
     # NOT USED
@@ -67,18 +67,28 @@ info_map_01={
 }
 if '03' in hostname:
     info_map=info_map_03
+    host_suffix='03'
 elif 'ubuntu' in hostname:
     info_map=info_map_01
+    host_suffix='01'
+elif '07' in hostname:
+    info_map=info_map_03
+    host_suffix='07'
+elif '04' in hostname:
+    info_map=info_map_03
+    host_suffix='04'
+else:
+    assert False
 concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             0,
             # 0.01,
-            0.001,
+            # 0.001,
             # 0.002,
             # 0.0001,
-            0.0005,
+            # 0.0005,
             # 0.0002,
             0.0001,
             # 0.01,
@@ -129,9 +139,9 @@ elif train_batch_size==1:
 else:
     assert False
 if include_prior:
-    dir_name='single_reduced{}_capv7_prior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
+    dir_name='single_reduced{}_prior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id,host_suffix)
 else:
-    dir_name='single_reduced{}_capv7_noprior_seed{}_rep{}'.format(train_batch_size,seed,rep_id)
+    dir_name='single_reduced{}_noprior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id,host_suffix)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
@@ -157,7 +167,7 @@ for mask_prob in mask_prob_list:
                         lambda_mlm_str=float_to_str(lambda_mlm)
                         lambda_mlm_str=lambda_mlm_str.replace('.','')
                         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                        prefix='ti_cnetv4'
+                        prefix='ti_qlab{}'.format(host_suffix)
                         if include_prior:
                             prefix+='_prior'
                         else:
