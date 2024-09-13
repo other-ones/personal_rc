@@ -24,7 +24,7 @@ accelerate launch --main_process_port 4230  ti_train.py \
   --mask_embed_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
   --mlm_target='masked' \
   --mlm_batch_size=25 \
-  --run_name='tmp_mlm0001' \
+  --run_name='tmp_mlm0001_sync' \
   --scale_lr \
   --train_prompt_type='pet' \
   --eval_prompt_type='living' \
