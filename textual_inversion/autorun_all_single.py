@@ -139,9 +139,9 @@ elif train_batch_size==1:
 else:
     assert False
 if include_prior:
-    dir_name='single_reduced{}_prior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id)
+    dir_name='single_reduced{}_prior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id,host_suffix)
 else:
-    dir_name='single_reduced{}_noprior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id)
+    dir_name='single_reduced{}_noprior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id,host_suffix)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
