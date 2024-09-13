@@ -727,7 +727,6 @@ def main(args):
     else:
         exclude_cap_types=None
     train_dataset = CustomDiffusionDataset(
-        get_images=True,
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
@@ -738,6 +737,7 @@ def main(args):
         train_prior_concept1=args.train_prior_concept1,
         mask_token_ids=mask_token_ids,
         mlm_target=args.mlm_target,
+        get_images=True,
         prompt_type=args.train_prompt_type,
         class_data_root=args.class_data_dir1 if args.with_prior_preservation else None,
         class_num=args.num_class_images,
@@ -750,7 +750,6 @@ def main(args):
         aug=not(args.noaug),
     )
     train_dataset_mlm = CustomDiffusionDataset(
-        get_images=False,
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
         tokenizer=tokenizer,
@@ -761,6 +760,7 @@ def main(args):
         train_prior_concept1=args.train_prior_concept1,
         mask_token_ids=mask_token_ids,
         mlm_target=args.mlm_target,
+        get_images=False,
         prompt_type=args.train_prompt_type,
         mask_prob=args.mask_prob,
         simple_caption=args.simple_caption,
@@ -1267,7 +1267,7 @@ def main(args):
             logs['norm_target']=norm_target.item()
             progress_bar.set_postfix(**logs)
             # [6] PBAR PRINTING
-            
+
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break

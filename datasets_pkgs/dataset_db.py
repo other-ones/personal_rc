@@ -240,6 +240,9 @@ class DreamboothDataset(Dataset):
                 placeholder='{} {}'.format(self.placeholder_token,self.train_prior_concept1)
         else:
             placeholder=self.placeholder_token
+
+
+            
         # 1. Image
         if self.get_images:
             # 1) Personal Image

@@ -136,9 +136,11 @@ class CustomDiffusionDataset(Dataset):
         aug=True,
         exclude_cap_types=None,
         mask_size=64,
+        check_tag=None,
 
     ):  
         self.nlp=spacy.load("en_core_web_sm")
+        self.check_tag=check_tag
         self.mask_size=mask_size
         self.aug=aug
         self.instance_prompt="photo of a {}"
@@ -191,7 +193,7 @@ class CustomDiffusionDataset(Dataset):
             if not valid:
                 continue
             cap_file_path=os.path.join(caption_dir_path,cap_file)
-            self.captions[fname]=sorted(open(cap_file_path).readlines())
+            self.captions[fname]=sorted(list(set(open(cap_file_path).readlines())))
             print('{}\t{}'.format(fname,len(self.captions[fname])))
         # self._length=max_length
         if exclude_cap_types is not None:
@@ -272,6 +274,9 @@ class CustomDiffusionDataset(Dataset):
                 placeholder='{} {}'.format(self.placeholder_token,self.train_prior_concept1)
         else:
             placeholder=self.placeholder_token
+
+
+
         # 1. Image
         if self.get_images:
             # 1) Personal Image
@@ -332,7 +337,7 @@ class CustomDiffusionDataset(Dataset):
 
             # 2. Caption for TI
             # instance_prompt="photo of a <new1> cat"
-            text= self.instance_prompt.format(placeholder)
+            text = self.instance_prompt.format(placeholder)
             if random_scale < 0.6 * self.size:
                 text = np.random.choice(["a far away ", "very small "]) + text
             elif random_scale > self.size:
@@ -399,34 +404,72 @@ class CustomDiffusionDataset(Dataset):
             words_mlm=mlm_caption.split()
             is_keyword_tokens_mlm=[False] # first token for <startoftext>
             masked_idxs=[False]
-            if self.mlm_target=='non_special': # if non-special only then bos is not learned
-                mlm_labels=[-100]
-            else:
+            if self.mlm_target in ['all','non_padding']:
                 mlm_labels=[self.tokenizer.bos_token_id]
+            else:
+                mlm_labels=[-100]
+
             input_ids_masked=[self.tokenizer.bos_token_id]
             non_special_idxs=[False]
             for word_idx in range(len(words_mlm)):
                 mlm_word=words_mlm[word_idx]
+                if self.check_tag is not None:
+                    doc = self.nlp(mlm_word)
+                    valid_mlm_tag=False
+                    if mlm_word not in ['the','a','an']:
+                        for token in doc:
+                            pos_tag = token.pos_
+                            if pos_tag in self.check_tag:
+                                valid_mlm_tag=True
+                                break
+                else:
+                    valid_mlm_tag=True
+
+
                 word_token_ids=self.tokenizer.encode(mlm_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
                 non_special_idxs+=([True]*num_tokens)
                 for tok_id in word_token_ids:
                     tok_decoded=self.tokenizer.decode(tok_id)
+
+
+
                     # 1) input ids and indices for mask token
-                    if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
-                        masked_idxs.append(True)
-                        input_ids_masked.append(self.mask_token_ids)
+                    if valid_mlm_tag:
+                        if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
+                            masked_idxs.append(True)
+                            input_ids_masked.append(self.mask_token_ids)
+                            mlm_labels.append(tok_id)
+                        else:
+                            masked_idxs.append(False)
+                            input_ids_masked.append(tok_id)
+                            if self.mlm_target in ['all','non_padding','non_special']:
+                                # all/non_padding/non_special
+                                mlm_labels.append(tok_id)
+                            else:
+                                # masked
+                                mlm_labels.append(-100)
                     else:
+                        # if non-target tag,
+                        # do not contribute to mlm loss
                         masked_idxs.append(False)
                         input_ids_masked.append(tok_id)
+                        mlm_labels.append(-100)
+                    
+                    # if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
+                    #     masked_idxs.append(True)
+                    #     input_ids_masked.append(self.mask_token_ids)
+                    # else:
+                    #     masked_idxs.append(False)
+                    #     input_ids_masked.append(tok_id)
+
+
                     # 2) keyword indices and labels for MLM
                     if self.placeholder_token == tok_decoded:
                         assert num_tokens==1
                         is_keyword_tokens_mlm.append(True)
-                        mlm_labels.append(-100)
                     else:
                         is_keyword_tokens_mlm.append(False)
-                        mlm_labels.append(tok_id)
             
 
             # 3) is_keyword_tokens_mlm - keyword indices for MLM
@@ -446,15 +489,28 @@ class CustomDiffusionDataset(Dataset):
 
             # 5) mlm_labels
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-            if self.mlm_target not in ['non_special']: #if all learned (bos+eos+nonspecial) then add eos token
+            if self.mlm_target in ['all','non_padding']: 
                 mlm_labels.append(self.tokenizer.eos_token_id)
+            else:
+                # masked/non_special
+                pass
+
+
+
+            # MLM LABELS - EOS AND PADDING
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 if self.mlm_target=='all':
                     mlm_labels.append(self.tokenizer.pad_token_id)
                 else: # non_padding/non_special/masked
                     mlm_labels.append(-100)
             mlm_labels=torch.LongTensor(mlm_labels)
+            for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+                if self.mlm_target=='all':
+                    mlm_labels.append(self.tokenizer.pad_token_id)
+                else: # non_padding/masked/non_special
+                    mlm_labels.append(-100)
             example['mlm_labels']=mlm_labels
+            # MLM LABELS - EOS AND PADDING
 
             
             # 6) non_special_idxs/masked_idxs
