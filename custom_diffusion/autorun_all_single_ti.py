@@ -68,9 +68,9 @@ elif '04' in hostname:
 lambda_mlm_list=[
             # 0, 
             0.001,
-            0.005,
+            # 0.005,
             # 0.0001,
-            0.0005,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -95,6 +95,8 @@ seed=7777
 rep_id=1
 if '04' in hostname:
     host_suffix='04'
+elif '07' in hostname:
+    host_suffix='07'
 else:
     assert False
 dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
