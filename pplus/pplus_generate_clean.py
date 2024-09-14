@@ -281,9 +281,9 @@ def main(args):
     
     # batch_size=len(prompts)
     print(args.benchmark_path,'args.benchmark_path')
+    batch_size=args.eval_batch_size
     eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
     num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
-    batch_size=args.eval_batch_size
 
     # validation_files=os.listdir(args.train_data_dir1)
     # validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512))
