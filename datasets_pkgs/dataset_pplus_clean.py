@@ -20,6 +20,7 @@ from packaging import version
 
 # Added
 import spacy
+torch.use_deterministic_algorithms(True)
 # Added
 Image.MAX_IMAGE_PIXELS = 1000000000
 alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95
@@ -298,11 +299,10 @@ class PPlusDataset(Dataset):
                 mlm_caption=mlm_caption_raw.replace('<new1>','{}'.format(self.placeholder_tokens[pidx])) # caption without masked embedding
                 words_mlm=mlm_caption.split()
                 masked_idxs=[False] # DO NOT MASK SOT AND EOS token
-                if self.mlm_target=='non_special': # if non-special only then bos is not learned
-                    mlm_labels=[-100]
-                else:
-                    # masked,all
+                if self.mlm_target in ['all','non_padding']:
                     mlm_labels=[self.tokenizer.bos_token_id]
+                else:
+                    mlm_labels=[-100]
                 input_ids_masked=[self.tokenizer.bos_token_id]
                 non_special_idxs=[False]
                 for word_idx in range(len(words_mlm)):

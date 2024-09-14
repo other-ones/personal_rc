@@ -129,7 +129,7 @@ def main(args):
         codepath=os.path.join(exp_dir,'src')
         if os.path.exists(codepath) and 'tmp' not in codepath:
             assert False
-        caption_path = os.path.join(args.output_dir,exp_name,'captions.json')
+        caption_path = os.path.join(exp_dir,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
@@ -155,12 +155,12 @@ def main(args):
     tokenizer = CLIPTokenizer.from_pretrained(
         model_name,
         subfolder="tokenizer",
-        revision=args.revision,
+        revision=None,
     )
     text_encoder = CLIPTextModel.from_pretrained(
         model_name,
         subfolder="text_encoder",
-        revision=args.revision,
+        revision=None,
     )
 
     # HERE
@@ -186,13 +186,9 @@ def main(args):
     print(learned_embed1.keys(),'learned_embed1.keys()')
     learned_embed1=learned_embed1[args.placeholder_token1]
     print(learned_embed1.shape,'learned_embed1.shape')
-    initializer_token_ids = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
-    initializer_token_id = initializer_token_ids[0]
-    prior_embed=token_embeds[initializer_token_id].detach().clone()
     with torch.no_grad():
         for tidx,token_id in enumerate(placeholder_token_ids):
             token_embeds[token_id] = learned_embed1[tidx].clone()
-        # token_embeds[placeholder_token_id2] = learned_embed2 #token_embeds[initializer_token_id].clone()
     text_encoder.text_model.encoder.requires_grad_(False)
     text_encoder.text_model.final_layer_norm.requires_grad_(False)
     text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
@@ -200,10 +196,10 @@ def main(args):
     
     """VAE Initialization"""
     vae = AutoencoderKL.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
+        args.pretrained_model_name_or_path, subfolder="vae", revision=None, variant=args.variant
     )
     unet = UNet2DConditionModelPPlus.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+        args.pretrained_model_name_or_path, subfolder="unet", revision=None, variant=args.variant
     )
     """UNet Initialization"""
     print(inspect.getsourcefile(UNet2DConditionModelPPlus.from_pretrained), 'inspect')
@@ -275,7 +271,7 @@ def main(args):
             requires_safety_checker=False,
         )
     if args.include_prior_concept:
-        placeholder='{} {}'.format(args.placeholder_token1,args.prior_concept1)
+        placeholder='{} {}'.format(args.placeholder_token1,args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
     
@@ -292,8 +288,6 @@ def main(args):
     validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
     caption_data={}
     print(learned_embed1.shape,'learned_embed1.shape')
-    print(prior_embed.shape,'prior_embed.shape')
-    prior_embed=prior_embed.to(accelerator.device)
     learned_embed1=learned_embed1.to(accelerator.device)
     with torch.no_grad():
         for batch_idx in range(num_batches):
@@ -304,7 +298,7 @@ def main(args):
             for prompt in prompts:
                 for pidx in range(len(placeholder_tokens)):
                     if args.include_prior_concept:
-                        placeholder='{} {}'.format(placeholder_tokens[pidx],args.prior_concept1)
+                        placeholder='{} {}'.format(placeholder_tokens[pidx],args.train_prior_concept1)
                     else:
                         placeholder='{}'.format(placeholder_tokens[pidx])
                     eval_prompt=prompt.format(placeholder)
@@ -332,7 +326,7 @@ def main(args):
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
                 image_name='{:04d}'.format(count+1)
                 img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
-                prompt_saved=prompt.format(args.prior_concept1)
+                prompt_saved=prompt.format(args.train_prior_concept1)
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)
@@ -361,7 +355,7 @@ def main(args):
             # for iidx,(image, prompt) in enumerate(zip(images,prompts)):
             #     image_name='{:04d}'.format(count+1)
             #     img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
-            #     caption_data[image_name]=prompt.replace(placeholder,args.prior_concept1)
+            #     caption_data[image_name]=prompt.replace(placeholder,args.train_prior_concept1)
             #     merged_viz.paste(image.convert('RGB'),((iidx+1)*512,0))
             #     image.save(img_path)
             #     count+=1
@@ -369,7 +363,7 @@ def main(args):
             # merged_viz.save(os.path.join(merged_dir,'merged_{:03d}.jpg'.format(batch_idx+1)))
             # for iidx,prompt in enumerate(prompts):
             #     image_name='{:04d}'.format(count+1)
-            #     caption_data[image_name]=prompt.replace(args.placeholder_token1,args.prior_concept1)
+            #     caption_data[image_name]=prompt.replace(args.placeholder_token1,args.train_prior_concept1)
             #     count+=1
             #     print(count,len(eval_prompts))
             # break

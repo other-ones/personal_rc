@@ -9,22 +9,22 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
 
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
 
 
     # NOT USED
@@ -147,11 +147,15 @@ else:
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
 
-train_steps=1
-mlm_batch=10
+train_steps=3001
+mlm_batch=12
 check_tags=['']
-mlm_idxs_list=['']
+mlm_idxs_list=['','2,3,4','3']
 for mlm_idxs in mlm_idxs_list:
+    if not mlm_idxs:
+        mlm_idxs_str='none'
+    else:
+        mlm_idxs_str='{}'.format(''.join(mlm_idxs.split(',')))
     for mask_prob in mask_prob_list:
         for nonmask_weight in nonmask_weight_list:
             nonmask_weight_str=float_to_str(nonmask_weight)
@@ -183,6 +187,7 @@ for mlm_idxs in mlm_idxs_list:
                                     run_name+='_mtarget_masked'
                                 if check_tag:
                                     run_name+='_tagged'
+                                run_name+=f'_midxs_{mlm_idxs_str}'
                             else:
                                 run_name="{}_nomlm_{}".format(prefix,concept)
                             output_dir=os.path.join('saved_models/pplus_models/{}'.format(dir_name),concept)
@@ -272,7 +277,7 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/pplus_models',dir_name)
 
-target_step=1
+gen_target_step=3000
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -293,12 +298,12 @@ for cidx,concept in enumerate(concepts):
         if exclude_key in exp:
             continue
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(target_step))
+        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(gen_target_step))
         if not os.path.exists(learned_embed_path1):
             print(learned_embed_path1,'does not exist')
             continue
         exp_name=exp
-        exp_name+='_s{}'.format(target_step)
+        exp_name+='_s{}'.format(gen_target_step)
         output_dir=os.path.join('results/pplus_results/{}/{}'.format(dir_name,concept))
         exp_path=os.path.join(output_dir,exp_name)
         if os.path.exists(exp_path):
@@ -341,6 +346,7 @@ for cidx,concept in enumerate(concepts):
         command+='--rev={} \\\n'.format(rev)
         command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
         command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
+        command+='--num_vectors1=7 \\\n'
         command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
         os.system(command)
         print('GENERATION STARTED')
