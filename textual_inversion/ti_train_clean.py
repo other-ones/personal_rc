@@ -371,7 +371,6 @@ def main():
         placeholder_token=(" ".join(tokenizer.convert_ids_to_tokens(placeholder_token_ids))),
         center_crop=args.center_crop,
         flip_p=args.flip_p,
-        exclude_suffix=args.exclude_suffix,
         train_prior_concept1=args.train_prior_concept1,
         mask_token_ids=mask_token_ids,
         mlm_target=args.mlm_target,
@@ -403,7 +402,6 @@ def main():
         rev=args.rev,
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
-        exclude_suffix=args.exclude_suffix,
         check_tag=check_tag,
     )
     
