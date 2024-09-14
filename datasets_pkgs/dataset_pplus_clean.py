@@ -368,8 +368,7 @@ class PPlusDataset(Dataset):
                 # Append EOS Token
                 # In case 77th token is appended, remove it and replace with EOS token
                 mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-                mlm_labels.append(-100) 
-
+                mlm_labels.append(-100) # FOR EOS
                 # if self.mlm_target in ['all','non_padding']: 
                 #     # We DO learn EOS 
                 #     # IF MLM Target is all/non_padding
