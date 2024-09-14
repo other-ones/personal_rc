@@ -448,6 +448,7 @@ class CustomDiffusionDataset(Dataset):
             # 5) mlm_labels
             # In case 77th token is appended, remove it and replace with EOS token
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
+            # we do not learn EOS/PAD
             mlm_labels.append(-100) # FOR EOS
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 mlm_labels.append(-100) # FOR PADDING

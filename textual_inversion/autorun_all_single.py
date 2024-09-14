@@ -83,6 +83,7 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
+            0.0001,
             0,
             # 0.01,
             # 0.001,
@@ -90,7 +91,6 @@ lambda_mlm_list=[
             # 0.0001,
             # 0.0005,
             # 0.0002,
-            0.0001,
             # 0.00005,
             # 0.01,
             # 0.0002,
