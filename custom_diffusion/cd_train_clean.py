@@ -593,10 +593,7 @@ def main(args):
         text_encoder.text_model.encoder.requires_grad_(False)
         text_encoder.text_model.final_layer_norm.requires_grad_(False)
         text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
-    for key, val in text_encoder.named_parameters():
-        print(val.requires_grad,key,'text_encoder requires_grad')
-        if 'token_embedding' in key:
-            assert val.requires_grad
+    
             
     # now we will add new Custom Diffusion weights to the attention layers
     # It's important to realize here how many attention weights will be added and of which sizes
@@ -706,9 +703,7 @@ def main(args):
                 {"params": custom_diffusion_layers.parameters(), "lr": args.learning_rate},
                 {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
             ]
-    for key,val in custom_diffusion_layers.named_parameters():
-        print(key,'TRAINED CD LAYERS')
-    # part_cd_layer=val.clone().detach()
+    
     
     optimizer = optimizer_class(
         params_to_optimize,
@@ -957,6 +952,19 @@ def main(args):
     )
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
+
+
+    
+    for key,val in custom_diffusion_layers.named_parameters():
+        print(key,'TRAINED CD LAYERS')
+    # part_cd_layer=val.clone().detach()
+    for key, val in text_encoder.named_parameters():
+        print(val.requires_grad,key,'text_encoder requires_grad')
+        if 'token_embedding' in key:
+            assert val.requires_grad
+
+
+
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
         if args.placeholder_token1 is not None:

@@ -327,6 +327,8 @@ class CustomDiffusionDataset(Dataset):
                 text = np.random.choice(["a far away ", "very small "]) + text
             elif random_scale > self.size:
                 text = np.random.choice(["zoomed in ", "close up "]) + text
+            # else:
+            #     text = np.random.choice(prefixes).format(placeholder)
             # print(text,'text')
             example["raw_caption_ti"]=text
             example["input_ids"] = self.tokenizer(

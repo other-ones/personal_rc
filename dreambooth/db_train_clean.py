@@ -182,7 +182,6 @@ def log_validation(
     
     
     
-    
     # run inference
     # generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
     images = []
@@ -262,9 +261,6 @@ def collate_fn(examples,with_prior_preservation=False):
         if 'pixel_values' in examples[0]:
             # 1. pixel_values
             pixel_values = [example["pixel_values"] for example in examples]
-            # masks = [example["masks"] for example in examples]
-            # masks = torch.stack(masks)
-            # masks = masks.to(memory_format=torch.contiguous_format).float()
             # 2. input ids
             input_ids = [example["input_ids"] for example in examples]
             
@@ -789,7 +785,7 @@ def main(args):
             batch_size=args.mlm_batch_size,
             shuffle=True,
             collate_fn=lambda examples: collate_fn(examples, args.with_prior_preservation),
-            num_workers=args.dataloader_num_workers,
+            num_workers=args.dataloader_num_workers*2,
             generator=generator,
             worker_init_fn=seed_worker,
         )
@@ -986,8 +982,6 @@ def main(args):
                 # Load Batch
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
-                # masks=batch["masks"]# B,77 list of booleans (tensor)
-                # masks64=torch.nn.functional.interpolate(masks,(64,64))
                 raw_captions_ti=batch["raw_captions_ti"]
                 
                 # Load Batch
@@ -1038,9 +1032,6 @@ def main(args):
                     # Compute prior loss
                     prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
 
-                # if args.masked_loss:
-                #     model_pred=(model_pred*masks64)
-                #     target=(target*masks64)
 
                 loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
                 if args.with_prior_preservation:

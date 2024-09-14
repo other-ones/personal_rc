@@ -242,7 +242,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[1000,2000,3000]
+gen_target_step_list=[500,1000,2000,3000]
 for gen_target_step in gen_target_step_list:
     for concept in list(info_map.keys()):
           
@@ -253,6 +253,8 @@ for gen_target_step in gen_target_step_list:
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
             if not '_ti' in exp:
+                continue
+            if 'mlm001' in exp:
                 continue
             cd_exp_name=exp.replace('lr5e4','lr1e5')
             cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')

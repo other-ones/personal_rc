@@ -107,7 +107,7 @@ else:
 lambda_mlm_list=[
             0.001,
             0, 
-            0.01,
+            0.0001,
             # 0.0005,
             # 0.00005,
             # 0.002,
@@ -128,10 +128,10 @@ for stat_idx,stat in enumerate(stats):
         break
 
 ports=np.arange(1111,2222)
-mask_prob_list=[0.25]
+mask_prob_list=[0.15]
 seed=7777
 rep_id=1
-dir_name='bigger_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+dir_name='bigger2_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
@@ -152,7 +152,7 @@ for check_tag in check_tags:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_bigger_qlab{}'.format(host_suffix)
+                    run_name='cd_bigger2_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -196,11 +196,11 @@ for check_tag in check_tags:
                     command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
                     command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
                     command+='--resolution=512 \\\n'
-                    command+='--train_batch_size=1 \\\n'
+                    command+='--train_batch_size=2 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
                     command+='--checkpoints_total_limit=4 \\\n'
-                    command+='--max_train_steps=501 \\\n'
+                    command+='--max_train_steps=1501 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
