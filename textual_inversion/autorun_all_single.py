@@ -129,7 +129,7 @@ nonmask_weight_list=[1]
 
 
 
-rep_id=4
+rep_id=1
 
 
 train_batch_size=4
