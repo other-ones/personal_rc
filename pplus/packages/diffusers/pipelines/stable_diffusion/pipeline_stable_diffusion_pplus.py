@@ -387,10 +387,10 @@ class StableDiffusionPipelinePPlus(DiffusionPipeline, TextualInversionLoaderMixi
             prompt_embeds = self.text_encoder(
                 text_input_ids.to(device),
                 attention_mask=attention_mask,
-                inj_embeddings1=inj_embeddings1,
-                inj_embeddings2=inj_embeddings2,
-                is_keyword_tokens1=is_keyword_tokens1,
-                is_keyword_tokens2=is_keyword_tokens2,
+                # inj_embeddings1=inj_embeddings1,
+                # inj_embeddings2=inj_embeddings2,
+                # is_keyword_tokens1=is_keyword_tokens1,
+                # is_keyword_tokens2=is_keyword_tokens2,
             )
             prompt_embeds = prompt_embeds[0]
 

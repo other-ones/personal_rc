@@ -4,6 +4,16 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--log_steps',type=int,default=10)
+    parser.add_argument('--target_image',type=str)
+    parser.add_argument('--caption_root',type=str)
+    parser.add_argument('--mask_prob',type=float,default=0.15)
+    parser.add_argument('--eval_prior_concept1',type=str)
+    parser.add_argument('--train_prompt_type',type=str)
+    parser.add_argument('--eval_prompt_type',type=str)
+    parser.add_argument('--train_prior_concept1',type=int)
+    parser.add_argument('--exclude_cap_types',type=int)
+    parser.add_argument('--check_tag',type=int)
     parser.add_argument('--initialize_token',type=int)
     parser.add_argument('--run_name',type=str)
     parser.add_argument('--mask_tokens',type=str)
