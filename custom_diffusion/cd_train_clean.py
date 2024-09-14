@@ -1100,7 +1100,7 @@ def main(args):
                 global_step += 1
 
                 # [1] CHECKPOINTING
-                if (global_step % args.checkpointing_steps == 0 or global_step==1):
+                if ((global_step % args.checkpointing_steps == 0) or (global_step==1)):
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
                         if args.checkpoints_total_limit >0:

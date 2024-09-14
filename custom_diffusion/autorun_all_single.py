@@ -9,22 +9,22 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'pet_cat1':('cat','cat','pet','living'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
     
     
@@ -131,13 +131,14 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=7777
 rep_id=1
-dir_name='bigger2_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+dir_name='mgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
 # ['VERB', 'ADJ','ADV','PROPN','ADP','NOUN']
 check_tags=['']
 # target_tags=''
+num_devices=2
 for check_tag in check_tags:
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
@@ -146,8 +147,6 @@ for check_tag in check_tags:
             mask_prob_str=float_to_str(mask_prob)
             mask_prob_str=mask_prob_str.replace('.','')
             for port_idx,concept in enumerate(list(info_map.keys())):
-                  
-                device_idx=stat_idx
                 for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
@@ -171,20 +170,20 @@ for check_tag in check_tags:
                     while True:
                         stats=get_gpu_memory()
                         found=False
+                        available_devices=[]
                         for stat_idx in target_devices:
                             stat=stats[stat_idx]    
                             if stat>2e4 :
-                                device_idx=stat_idx
-                                found=True
-                                break
-                        if found:
+                                available_devices.append(str(stat_idx))
+                        if len(available_devices)>=num_devices:
                             break
-                        print('TRAINING',run_name,'sleep',stat_idx,stat)
+                        print('TRAINING',run_name,'sleep',available_devices)
                         time.sleep(10)
-                    print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idx}")
+                    device_idxs=','.join(available_devices[:num_devices])
+                    print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idxs}")
                     os.makedirs(exp_path,exist_ok=True) 
                     log_path=os.path.join(exp_path,'log.out')
-                    command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+                    command='export CUDA_VISIBLE_DEVICES={};'.format(device_idxs)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
                     command+='accelerate launch --main_process_port {} cd_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
@@ -199,8 +198,8 @@ for check_tag in check_tags:
                     command+='--train_batch_size=2 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
-                    command+='--checkpoints_total_limit=8 \\\n'
-                    command+='--max_train_steps=1501 \\\n'
+                    command+='--checkpoints_total_limit=2 \\\n'
+                    command+='--max_train_steps=501 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
@@ -235,7 +234,6 @@ for check_tag in check_tags:
 
 
 
-
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/cd_models',dir_name)
@@ -248,7 +246,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [500]:
+for gen_target_step in [250]:
     for concept in concepts:
         if concept not in info_map:
             continue
@@ -276,20 +274,21 @@ for gen_target_step in [500]:
             while True:
                 stats=get_gpu_memory()
                 found=False
+                available_devices=[]
                 for stat_idx in target_devices:
                     stat=stats[stat_idx]    
                     if stat>2e4 :
-                        device_idx=stat_idx
-                        found=True
+                        available_devices.append(stat_idx)
                         break
-                if found:
+                if len(available_devices)>=num_devices:
                     break
                 print('GENERATION',exp_name,'sleep',stat_idx,stat)
                 time.sleep(10)
-            print(exp_name,device_idx)
+            device_idxs=','.join(available_devices[:num_devices])
+            print(exp_name,device_idxs)
             os.makedirs(dst_exp_path,exist_ok=True)  
             log_path=os.path.join(dst_exp_path,exp_name+'.out')
-            command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command='export CUDA_VISIBLE_DEVICES={};'.format(device_idxs)
             command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
             command+='accelerate launch --main_process_port {} cd_generate_clean.py \\\n'.format(ports[port_idx])
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'

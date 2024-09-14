@@ -8,28 +8,24 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'red_cartoon':('character','cartoon character','pet','living'),
-    # 'candle':('candle','candle','nonliving','nonliving'),
-    # 'can':('can','can','nonliving','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'barn': ('barn','barn'),
-    # 'flower1':('flower','flower'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+
 }
 info_map_01={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
@@ -101,11 +97,11 @@ elif '07' in hostname:
     host_suffix='07'
 else:
     assert False
-dir_name=f'bigger2_seed{seed}_qlab{host_suffix}_rep{rep_id}'
+dir_name=f'mgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[5e-4]
 mlm_batch_size=25
-train_target_step=500
+train_target_step=250
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
 check_tags=['']
 
