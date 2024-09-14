@@ -541,32 +541,16 @@ def main(args):
     #     print('load ti embeddings')
     #     del learned_embed1
     if args.lambda_mlm:
-        if 'contextnetv5' in args.cls_net_path:
-            from contextnet_v3 import ContextNetV3
-            if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-                cls_net=ContextNetV3(1024, len(token_embeds)-1) #-1 for placeholder
-                cls_output_dim=len(token_embeds)-1
-            elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
-                if 'mlm_contextnet_' in args.cls_net_path:
-                    cls_net=ContextNetV3(768, len(token_embeds)) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)
-                else:
-                    cls_net=ContextNetV3(768, len(token_embeds)-1) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)-1
+        if 'contextnetv6' in args.cls_net_path:
+            from contextnet_v3 import ContextNetV3 as ContextNet
         else:
             from contextnet import ContextNet
-            if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-                cls_net=ContextNet(1024, len(token_embeds)-1) #-1 for placeholder
-                cls_output_dim=len(token_embeds)-1
-            elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
-                if 'mlm_contextnet_' in args.cls_net_path:
-                    cls_net=ContextNet(768, len(token_embeds)) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)
-                else:
-                    cls_net=ContextNet(768, len(token_embeds)-1) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)-1
-            else:
-                assert False,'undefined sd version'
+        if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
+            hidden_dim=1024
+        elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
+            hidden_dim=768
+        cls_output_dim=len(token_embeds)-1
+        cls_net=ContextNet(hidden_dim, cls_output_dim) # -1 for placeholder
 
     # Freeze all parameters except for the token embeddings in text encoder
     params_to_freeze = itertools.chain(

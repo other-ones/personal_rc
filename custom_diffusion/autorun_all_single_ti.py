@@ -290,6 +290,7 @@ for gen_target_step in gen_target_step_list:
             print('GENERATION START\t{}\tDEVICE:{}'.format(ti_exp_name,device_idx))
             log_path=os.path.join(gen_log_dir,ti_exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
             command+='accelerate launch --main_process_port {} cd_generate.py \\\n'.format(ports[port_idx],port_idx)
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
