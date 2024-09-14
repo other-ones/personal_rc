@@ -13,18 +13,18 @@ info_map_03={
     'teapot':('teapot','teapot','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
 
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
 
 
     # NOT USED
@@ -83,15 +83,15 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            # 0,
+            0,
             # 0.01,
-            0.001,
+            # 0.001,
             # 0.002,
             # 0.0001,
             # 0.0005,
             # 0.0002,
             0.0001,
-            0.00005,
+            # 0.00005,
             # 0.01,
             # 0.0002,
             ]
@@ -118,7 +118,6 @@ include_prior=0
 delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
-rep_id=2
 benchmark='dreambooth'
 # mlm_target_list=['masked','non_special']
 mlm_target_list=['masked']
@@ -130,6 +129,7 @@ nonmask_weight_list=[1]
 
 
 
+rep_id=1
 
 
 train_batch_size=4
@@ -140,18 +140,16 @@ elif train_batch_size==1:
 else:
     assert False
 if include_prior:
-    dir_name='single_reduced{}_prior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id,host_suffix)
+    dir_name='bigger_reduced{}_prior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
 else:
-    dir_name='single_reduced{}_noprior_seed{}_rep{}_qlab{}'.format(train_batch_size,seed,rep_id,host_suffix)
+    dir_name='bigger_reduced{}_noprior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
 
 train_steps=3001
 mlm_batch=25
-# check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
 check_tags=['']
-# check_tags=['']
 for mask_prob in mask_prob_list:
     for nonmask_weight in nonmask_weight_list:
         nonmask_weight_str=float_to_str(nonmask_weight)
@@ -162,13 +160,12 @@ for mask_prob in mask_prob_list:
                 mask_prob_str=mask_prob_str.replace('.','')
                 for cidx,concept in enumerate(list(info_map.keys())):
                     device_idx=stat_idx
-                    train_log_dir='logs/ti_models/train/{}/{}'.format(dir_name,concept)
-                    os.makedirs(train_log_dir,exist_ok=True) 
+                    
                     for lambda_mlm in lambda_mlm_list:
                         lambda_mlm_str=float_to_str(lambda_mlm)
                         lambda_mlm_str=lambda_mlm_str.replace('.','')
                         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                        prefix='ti_qlab{}'.format(host_suffix)
+                        prefix='ti_bigger_qlab{}'.format(host_suffix)
                         if include_prior:
                             prefix+='_prior'
                         else:
@@ -186,12 +183,12 @@ for mask_prob in mask_prob_list:
                                 run_name+='_tagged'
                         else:
                             run_name="{}_nomlm_{}".format(prefix,concept)
-                        
                         output_dir=os.path.join('saved_models/ti_models/{}'.format(dir_name),concept)
                         exp_path=os.path.join(output_dir,run_name)
                         if os.path.exists(exp_path):
                             print(exp_path,'exists')
                             continue
+                            
                         
                         while True:
                             stats=get_gpu_memory()
@@ -206,17 +203,19 @@ for mask_prob in mask_prob_list:
                                 break
                             print('SLEEP TRAINING',run_name,'sleep','{}/{}'.format(cidx+1,len(concepts)))
                             time.sleep(delay)
-                        print(dir_name,run_name,device_idx)
-                        log_path=os.path.join(train_log_dir,run_name+'.out')
+                        print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idx}")
+                        os.makedirs(exp_path,exist_ok=True) 
+                        log_path=os.path.join(exp_path,'log.out')
                         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                        command+='accelerate launch --main_process_port {} ti_train.py \\\n'.format(ports[cidx])
+                        command+='accelerate launch --main_process_port {} ti_train_clean.py \\\n'.format(ports[cidx])
                         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                         command+='--learnable_property="object" \\\n'
                         command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                         command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                         command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
+                        command+='--checkpointing_steps=250 \\\n'
                         command+='--resolution=512 \\\n'
                         command+='--train_batch_size={} \\\n'.format(train_batch_size)
                         command+='--gradient_accumulation_steps=1 \\\n'
@@ -231,8 +230,10 @@ for mask_prob in mask_prob_list:
                         command+='--seed={} \\\n'.format(seed)
                         command+='--mask_tokens="[MASK]" \\\n'
                         command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                        command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                        command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                        # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                        # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                        command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                        command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                         # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv5_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
                         # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv5_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                         command+='--mask_prob={} \\\n'.format(mask_prob)
@@ -274,8 +275,7 @@ exclude_key='mtarget_nonspec'
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
-    gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
-    os.makedirs(gen_log_dir,exist_ok=True)    
+     
     concept_path=os.path.join(dir_path,concept)
     if not os.path.exists(concept_path):
         continue
@@ -313,7 +313,8 @@ for cidx,concept in enumerate(concepts):
             print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
             time.sleep(delay)
         print(exp_name,device_idx)
-        log_path=os.path.join(gen_log_dir,exp_name+'.out')
+        os.makedirs(exp_path,exist_ok=True)   
+        log_path=os.path.join(exp_path,exp_name+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
         command+='accelerate launch --main_process_port {} ti_generate.py \\\n'.format(ports[port_idx])

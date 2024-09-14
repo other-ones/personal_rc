@@ -106,11 +106,11 @@ def extract_values(exp):
     # Default values if not found
     mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
     lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
-    step = int(s_match.group(1)) if s_match else float('inf')
+    step= int(s_match.group(1)) if s_match else float('inf')
     mprob = (mprob_match.group(1))[::-1] if mprob_match else 'inf'
 
     # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
-    return (not is_nomlm,tagged, mprob, mlm, lr, step)
+    return (not is_nomlm,step,tagged, mprob, mlm, lr)
 if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser()

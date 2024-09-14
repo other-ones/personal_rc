@@ -58,7 +58,7 @@ hostname = socket.gethostname()
 from configs import parse_args
 from torch import nn
 # ADDED
-torch.use_deterministic_algorithms(True)
+# torch.use_deterministic_algorithms(True)
 # ADDED
 
 
