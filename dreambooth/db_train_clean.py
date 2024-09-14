@@ -8,7 +8,7 @@ from utils import render_caption
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 sys.path.insert(0, './packages')
-from datasets_pkgs.dataset_db import DreamboothDataset
+from datasets_pkgs.dataset_db_clean import DreamboothDataset
 from data_utils import cycle, create_wbd
 import argparse
 import copy
@@ -563,32 +563,16 @@ def main(args):
     #         token_embeds[placeholder_token_id1] = learned_embed1.clone()
     #     del learned_embed1
     if args.lambda_mlm:
-        if 'contextnetv5' in args.cls_net_path:
-            from contextnet_v3 import ContextNetV3
-            if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-                cls_net=ContextNetV3(1024, len(token_embeds)-1) #-1 for placeholder
-                cls_output_dim=len(token_embeds)-1
-            elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
-                if 'mlm_contextnet_' in args.cls_net_path:
-                    cls_net=ContextNetV3(768, len(token_embeds)) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)
-                else:
-                    cls_net=ContextNetV3(768, len(token_embeds)-1) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)-1
+        if 'contextnetv6' in args.cls_net_path:
+            from contextnet_v3 import ContextNetV3 as ContextNet
         else:
             from contextnet import ContextNet
-            if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
-                cls_net=ContextNet(1024, len(token_embeds)-1) #-1 for placeholder
-                cls_output_dim=len(token_embeds)-1
-            elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
-                if 'mlm_contextnet_' in args.cls_net_path:
-                    cls_net=ContextNet(768, len(token_embeds)) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)
-                else:
-                    cls_net=ContextNet(768, len(token_embeds)-1) # -1 for placeholder
-                    cls_output_dim=len(token_embeds)-1
-            else:
-                assert False,'undefined sd version'
+        if 'stable-diffusion-2-1' in args.pretrained_model_name_or_path:
+            hidden_dim=1024
+        elif 'stable-diffusion-v1-5' in args.pretrained_model_name_or_path:
+            hidden_dim=768
+        cls_output_dim=len(token_embeds)-1
+        cls_net=ContextNet(hidden_dim, cls_output_dim) # -1 for placeholder
     # HERE
     def unwrap_model(model):
         model = accelerator.unwrap_model(model)

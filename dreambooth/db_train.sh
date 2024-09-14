@@ -2,7 +2,7 @@ export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
 export CUDA_VISIBLE_DEVICES=7;
-accelerate launch --main_process_port 4235  db_train.py \
+accelerate launch --main_process_port 4235  db_train_clean.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
   --placeholder_token1="<dog6>" \
@@ -20,8 +20,8 @@ accelerate launch --main_process_port 4235  db_train.py \
   --seed=7777 \
   --mask_tokens="[MASK]" \
   --lambda_mlm=0 --freeze_mask_embedding=1 \
-  --cls_net_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt' \
-  --mask_embed_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
+  --cls_net_path='saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt' \
+  --mask_embed_path='saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
   --mlm_target='masked' \
   --mlm_batch_size=25 \
   --run_name='tmp_nomlm_dog6' \
