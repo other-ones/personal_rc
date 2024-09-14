@@ -147,10 +147,10 @@ else:
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
 
-train_steps=3001
+train_steps=1
 mlm_batch=25
 check_tags=['']
-mlm_idxs_list=['2,3,4','']
+mlm_idxs_list=['']
 for mlm_idxs in mlm_idxs_list:
     for mask_prob in mask_prob_list:
         for nonmask_weight in nonmask_weight_list:
@@ -227,6 +227,9 @@ for mlm_idxs in mlm_idxs_list:
                             command+='--num_vectors1=7 \\\n'
                             command+='--initializer_token={} \\\n'.format(train_prior)
                             command+='--normalize_mask_embeds=0 \\\n'
+                            if mlm_idxs:
+                                command+='--mlm_idxs={} \\\n'.format(mlm_idxs)
+
                             # command+='--add_pe={} \\\n'.format(add_pe)
                             command+='--lr_warmup_steps=0 \\\n'
                             command+='--output_dir="{}" \\\n'.format(output_dir)

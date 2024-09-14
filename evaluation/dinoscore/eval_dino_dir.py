@@ -201,7 +201,7 @@ if __name__=='__main__':
                         fake_root=os.path.join(exp_path,'masked')
                         log_path=os.path.join(exp_path,'result.txt')
                         if not os.path.exists(log_path):
-                            print('log_path',exp)
+                            print('log_path NOT EXISTS',exp)
                             continue
                     else:
                         score_name='dino'
