@@ -705,7 +705,7 @@ def main():
                 progress_bar.update(1)
                 global_step += 1
                 # [1] CHECKPOINTING
-                if(global_step % args.checkpointing_steps) or (global_step==1):
+                if(global_step % args.checkpointing_steps==0) or (global_step==1):
                     if args.checkpoints_total_limit is not None:
                         checkpoints = os.listdir(ckpt_dir)
                         checkpoints = [d for d in checkpoints if d.startswith("checkpoint")]
