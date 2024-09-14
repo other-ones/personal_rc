@@ -119,7 +119,7 @@ def main(args):
     exp_name=args.learned_embed_path1.split('/')[-3]
     file_name=args.learned_embed_path1.split('/')[-1].split('.')[0]
     stepname=file_name.split('_')[-1]
-    exp_dir=os.path.join(args.output_dir,exp_name)
+    exp_dir=args.dst_exp_path
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
     os.makedirs(sample_dir, exist_ok=True)

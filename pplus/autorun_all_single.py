@@ -148,7 +148,7 @@ else:
 exclude_cap_types=None
 
 train_steps=1
-mlm_batch=25
+mlm_batch=10
 check_tags=['']
 mlm_idxs_list=['']
 for mlm_idxs in mlm_idxs_list:
@@ -190,7 +190,6 @@ for mlm_idxs in mlm_idxs_list:
                             if os.path.exists(exp_path):
                                 print(exp_path,'exists')
                                 continue
-                                
                             
                             while True:
                                 stats=get_gpu_memory()
@@ -210,10 +209,11 @@ for mlm_idxs in mlm_idxs_list:
                             log_path=os.path.join(exp_path,'log.out')
                             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                             command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                            command+='accelerate launch --main_process_port {} pplu_train_clean.py \\\n'.format(ports[cidx])
-                            command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+                            command+='export MODEL_NAME=runwayml/stable-diffusion-v1-5;'
+                            command+='accelerate launch --main_process_port {} pplus_train_clean.py \\\n'.format(ports[cidx])
                             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                             command+='--learnable_property="object" \\\n'
+                            command+='--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 \\\n'
                             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                             command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                             command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
@@ -226,7 +226,6 @@ for mlm_idxs in mlm_idxs_list:
                             command+='--lr_scheduler="constant" \\\n'
                             command+='--num_vectors1=7 \\\n'
                             command+='--initializer_token={} \\\n'.format(train_prior)
-                            command+='--normalize_mask_embeds=0 \\\n'
                             if mlm_idxs:
                                 command+='--mlm_idxs={} \\\n'.format(mlm_idxs)
 
@@ -273,7 +272,7 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/pplus_models',dir_name)
 
-target_step=3000
+target_step=1
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -323,8 +322,9 @@ for cidx,concept in enumerate(concepts):
         log_path=os.path.join(exp_path,exp_name+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-        command+='accelerate launch --main_process_port {} pplus_generate.py \\\n'.format(ports[port_idx])
-        command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+        command+='export MODEL_NAME="runwayml/stable-diffusion-v1-5";'
+        command+='accelerate launch --main_process_port {} pplus_generate_clean.py \\\n'.format(ports[port_idx])
+        command+='--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 \\\n'
         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
         command+='--placeholder_token1="<{}>" \\\n'.format(concept)
         command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
@@ -338,7 +338,6 @@ for cidx,concept in enumerate(concepts):
         command+='--seed={} \\\n'.format(seed)
         command+='--mask_tokens="[MASK]" \\\n'
         command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-        command+='--calibrate_ppos1=0 \\\n'
         command+='--rev={} \\\n'.format(rev)
         command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
         command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)

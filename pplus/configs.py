@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--dst_exp_path',type=str)
     parser.add_argument('--benchmark_path',type=str)
     parser.add_argument('--mlm_idxs',type=str)
     parser.add_argument('--log_steps',type=int,default=10)
@@ -13,7 +14,7 @@ def parse_args():
     parser.add_argument('--eval_prior_concept1',type=str)
     parser.add_argument('--train_prompt_type',type=str)
     parser.add_argument('--eval_prompt_type',type=str)
-    parser.add_argument('--train_prior_concept1',type=int)
+    parser.add_argument('--train_prior_concept1',type=str)
     parser.add_argument('--exclude_cap_types',type=int)
     parser.add_argument('--check_tag',type=int)
     parser.add_argument('--initialize_token',type=int)

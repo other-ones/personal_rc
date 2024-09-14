@@ -232,13 +232,13 @@ def main():
     # Load scheduler and models
     noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
     text_encoder = CLIPTextModel.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision
+        args.pretrained_model_name_or_path, subfolder="text_encoder", revision=None
     )
     vae = AutoencoderKL.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
+        args.pretrained_model_name_or_path, subfolder="vae", revision=None, variant=args.variant
     )
     unet = UNet2DConditionModelPPlus.from_pretrained(
-        args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+        args.pretrained_model_name_or_path, subfolder="unet", revision=None, variant=args.variant
     )
     
     # # # # # # # # # # 
@@ -906,15 +906,15 @@ def main():
                 break
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
-    if accelerator.is_main_process:
-        weight_name = "learned_embeds_final.pt" 
-        # weight_name_augmenter= "learned_embeds_final.pt" 
-        save_path = os.path.join(ckpt_dir, weight_name)
-        # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
-        # learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
-        learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
-        torch.save(learned_embeds_dict, save_path)
-        # torch.save(augmenter.state_dict(), save_path_augmenter)
+    # if accelerator.is_main_process:
+    #     weight_name = "learned_embeds_final.pt" 
+    #     # weight_name_augmenter= "learned_embeds_final.pt" 
+    #     save_path = os.path.join(ckpt_dir, weight_name)
+    #     # save_path_augmenter = os.path.join(ckpt_dir, weight_name_augmenter)
+    #     # learned_embeds = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_ids) : max(placeholder_token_ids) + 1]
+    #     learned_embeds_dict = {args.placeholder_token1: learned_embeds.detach().cpu()}
+    #     torch.save(learned_embeds_dict, save_path)
+    #     # torch.save(augmenter.state_dict(), save_path_augmenter)
 
         
 

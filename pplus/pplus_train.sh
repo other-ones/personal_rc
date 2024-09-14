@@ -1,4 +1,4 @@
-export MODEL_NAME="runwayml/stable-diffusion-v1-5"
+export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1"
 export CUDA_VISIBLE_DEVICES=0;
 accelerate launch --main_process_port 4234  pplus_train_clean.py \
