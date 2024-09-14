@@ -343,14 +343,6 @@ class PPlusDataset(Dataset):
                             input_ids_masked.append(tok_id)
                             mlm_labels.append(-100)
                             
-                        # # 1) input ids and indices for mask token
-                        # if np.random.rand()<self.mask_prob and (self.placeholder_tokens[pidx] != mlm_word) and (mlm_word != self.train_prior_concept1): 
-                        #     masked_idxs.append(True)
-                        #     input_ids_masked.append(self.mask_token_ids)
-                        # else:
-                        #     masked_idxs.append(False)
-                        #     input_ids_masked.append(tok_id)
-                        
                 
                 
 
@@ -361,6 +353,7 @@ class PPlusDataset(Dataset):
                 input_ids_masked.append(self.tokenizer.eos_token_id) # FOR EOS
                 for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
                     input_ids_masked.append(self.tokenizer.pad_token_id) # FOR PADDING
+                assert len(input_ids_masked)==self.tokenizer.model_max_length
                 input_ids_masked=torch.LongTensor(input_ids_masked)
                 input_ids_masked_list.append(input_ids_masked)
                 input_ids_non_mask= self.tokenizer(

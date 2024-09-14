@@ -108,12 +108,12 @@ def log_validation(tokenizer, args, accelerator, target_emb,pipeline,step,placeh
     # print('Start Inference')
     validation_prompts_list=[]
     viz_promps_list=[]
-    for pidx in range(len(placeholder_tokens)):
-        if args.include_prior_concept:
-            placeholder='{} {}'.format(placeholder_tokens[pidx],args.train_prior_concept1)
-        else:
-            placeholder='{}'.format(placeholder_tokens[pidx])
-        for prompt in validation_prompts:
+    for prompt in validation_prompts:
+        for pidx in range(len(placeholder_tokens)):
+            if args.include_prior_concept:
+                placeholder='{} {}'.format(placeholder_tokens[pidx],args.train_prior_concept1)
+            else:
+                placeholder='{}'.format(placeholder_tokens[pidx])
             val_prompt=prompt.format(placeholder)
             validation_prompts_list.append(val_prompt)
 
@@ -437,17 +437,18 @@ def main():
         train_dataset, batch_size=args.train_batch_size, shuffle=True, num_workers=args.dataloader_num_workers,
         collate_fn=collate_fn,
     )
-    mlm_loader = torch.utils.data.DataLoader(
-            train_dataset_mlm,
-            batch_size=args.mlm_batch_size,
-            shuffle=True,
-            collate_fn=collate_fn,
-            num_workers=args.dataloader_num_workers*2,
-        )
-    mlm_loader = cycle(mlm_loader)
-    def load_mlm_batch(mlm_loader):
-        mlm_data=next(mlm_loader)
-        return mlm_data
+    if args.lambda_mlm:
+        mlm_loader = torch.utils.data.DataLoader(
+                train_dataset_mlm,
+                batch_size=args.mlm_batch_size,
+                shuffle=True,
+                collate_fn=collate_fn,
+                num_workers=args.dataloader_num_workers*2,
+            )
+        mlm_loader = cycle(mlm_loader)
+        def load_mlm_batch(mlm_loader):
+            mlm_data=next(mlm_loader)
+            return mlm_data
 
 
     if args.validation_epochs is not None:
@@ -587,6 +588,10 @@ def main():
     pipeline.set_progress_bar_config(disable=False)
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     import time
+    if args.mlm_idxs:
+        mlm_idxs=[int(i) for i in args.mlm_idxs.split(',')]
+    else:
+        mlm_idxs=None
     for epoch in range(first_epoch, args.num_train_epochs):
         text_encoder.train()
         for step, batch in enumerate(train_dataloader):
@@ -647,6 +652,10 @@ def main():
                     input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
                     # load mlm batch
                     mlm_bsz=len(masked_idxs_list)
+                    # input_ids_masked_list:7,7,7,... -> 9*bsz
+                    if mlm_idxs:
+                        input_ids_masked_list=input_ids_masked_list[:,mlm_idxs,:]
+                        mlm_labels_list=mlm_labels_list[:,mlm_idxs]
                     clip_text_embedding_masked = text_encoder(input_ids_masked_list.reshape(-1,num_tokens),
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     # clip_text_embedding_masked:9*mlm_bsz,77,768
@@ -751,11 +760,25 @@ def main():
                         if args.lambda_mlm:
                             viz_batch_idx=0
                             viz_vec_idx=0
-                            mlm_logits_list=mlm_logits_list.reshape(mlm_bsz,num_vectors,num_tokens,cls_output_dim)
-                            masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,0] #50*9,77
-                            non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,0]
+                            if mlm_idxs:
+                                num_vectors_viz=len(mlm_idxs)
+                            else:
+                                num_vectors_viz=num_vectors
+                            mlm_logits_list=mlm_logits_list.reshape(mlm_bsz,num_vectors_viz,num_tokens,cls_output_dim)
+                            masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_idx] #50*9,77
+
+                            # non_special_idxs_list:  mlm_bsz,num_vectors,77
+                            # input_ids_non_mask_list:mlm_bsz,num_vectors,77
+                            # mlm_logits_list:        mlm_bsz,num_vectors,len(mlm_idxs),77
+                            # input_ids_masked_list:  mlm_bsz,num_vectors,len(mlm_idxs),77
+
+                            # torch.Size([10, 7, 77]) non_special_idxs_list.shape
+                            # torch.Size([10, 7, 77]) input_ids_non_mask_list.shape
+                            # torch.Size([10, 3, 77, 49409]) mlm_logits_list.shape
+                            # torch.Size([10, 3, 77]) input_ids_masked_list.shape
+                            non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,mlm_idxs[0]]
+                            input_ids_non_mask=input_ids_non_mask_list[viz_batch_idx:viz_batch_idx+1,mlm_idxs[0]]
                             mlm_logits=mlm_logits_list[viz_batch_idx:viz_batch_idx+1,0]
-                            input_ids_non_mask=input_ids_non_mask_list[viz_batch_idx:viz_batch_idx+1,0]
                             input_ids_masked=input_ids_masked_list[viz_batch_idx:viz_batch_idx+1,0]
 
                             # masked_idxs=masked_idxs.detach().cpu().numpy()[viz_batch_idx:viz_batch_idx+1]

@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--mlm_idxs',type=str)
     parser.add_argument('--log_steps',type=int,default=10)
     parser.add_argument('--target_image',type=str)
     parser.add_argument('--caption_root',type=str)
