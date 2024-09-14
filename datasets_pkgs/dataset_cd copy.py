@@ -1,5 +1,3 @@
-from spacy import symbols
-import spacy
 import random
 import torchvision
 import re
@@ -22,6 +20,8 @@ import albumentations as A
 from packaging import version
 
 # Added
+from spacy import symbols
+import spacy
 torch.use_deterministic_algorithms(True)
 # Added
 Image.MAX_IMAGE_PIXELS = 1000000000
@@ -47,7 +47,7 @@ roi_mask_transforms = transforms.Compose(
 
 
 # Generate captions by combining elements from each list with different formats
-prefixes=sorted(set([
+prefixes=sorted([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -75,9 +75,9 @@ prefixes=sorted(set([
     "a photo of the large {}",
     "a photo of a cool {}",
     "a photo of a small {}",
-]))
+])
 
-mlm_prefixes=sorted(set([
+mlm_prefixes=sorted([
     "a photo of a {}",
     "a rendering of a {}",
     "a cropped photo of the {}",
@@ -90,7 +90,7 @@ mlm_prefixes=sorted(set([
     "a close-up photo of the {}",
     "a rendition of the {}",
     "a rendition of a {}",
-]))
+])
 
 if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
     PIL_INTERPOLATION = {
@@ -109,14 +109,14 @@ else:
         "nearest": PIL.Image.NEAREST,
     }
 
-class DreamboothDataset(Dataset):
+class CustomDiffusionDataset(Dataset):
     def __init__(
         self,
         data_root,
         tokenizer,
         include_prior_concept,
         size=512,
-        interpolation="bicubic",
+        interpolation="bilinear",
         flip_p=0.5,
         center_crop=False,
         exclude_suffix=True,
@@ -134,12 +134,17 @@ class DreamboothDataset(Dataset):
         simple_caption=False,
         rev=False,
         seed=None,
+        aug=True,
         exclude_cap_types=None,
+        mask_size=64,
         check_tag=None,
 
     ):  
         self.nlp=spacy.load("en_core_web_sm")
         self.check_tag=check_tag
+        self.mask_size=mask_size
+        self.aug=aug
+        self.instance_prompt="photo of a {}"
         self.rev=rev
         self.exclude_cap_types=exclude_cap_types
         if seed:
@@ -189,7 +194,7 @@ class DreamboothDataset(Dataset):
             if not valid:
                 continue
             cap_file_path=os.path.join(caption_dir_path,cap_file)
-            self.captions[fname]=sorted(list(set(open(cap_file_path).readlines()))) #CHECK
+            self.captions[fname]=sorted(list(set(open(cap_file_path).readlines())))
             print('{}\t{}'.format(fname,len(self.captions[fname])))
         # self._length=max_length
         if exclude_cap_types is not None:
@@ -216,6 +221,16 @@ class DreamboothDataset(Dataset):
         self.flip_p = flip_p
         self.image_paths = sorted([os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)])
         self.num_images = len(self.image_paths)
+        self.flip = transforms.RandomHorizontalFlip(p=self.flip_p)
+        self.image_transforms = transforms.Compose(
+            [
+                self.flip,
+                transforms.Resize(size, interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.CenterCrop(size) if center_crop else transforms.RandomCrop(size),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ]
+        )
         # self._length = self.num_images * repeats
 
         self.interpolation = {
@@ -229,7 +244,26 @@ class DreamboothDataset(Dataset):
 
     def __len__(self):
         return self._length
-
+    def preprocess(self, image, scale, resample):
+        outer, inner = self.size, scale
+        factor = self.size // self.mask_size
+        if scale > self.size:
+            outer, inner = scale, self.size
+        top, left = np.random.randint(0, outer - inner + 1), np.random.randint(0, outer - inner + 1)
+        image = image.resize((scale, scale), resample=resample)
+        image = np.array(image).astype(np.uint8)
+        image = (image / 127.5 - 1.0).astype(np.float32)
+        instance_image = np.zeros((self.size, self.size, 3), dtype=np.float32)
+        mask = np.zeros((self.size // factor, self.size // factor))
+        if scale > self.size:
+            instance_image = image[top : top + inner, left : left + inner, :]
+            mask = np.ones((self.size // factor, self.size // factor))
+        else:
+            instance_image[top : top + inner, left : left + inner, :] = image
+            mask[
+                top // factor + 1 : (top + scale) // factor - 1, left // factor + 1 : (left + scale) // factor - 1
+            ] = 1.0
+        return instance_image, mask
     def __getitem__(self, index):
         example = {}
         if self.include_prior_concept:
@@ -243,57 +277,38 @@ class DreamboothDataset(Dataset):
             placeholder=self.placeholder_token
 
 
-            
+
         # 1. Image
         if self.get_images:
             # 1) Personal Image
             img_path=self.image_paths[index % (len(self.image_paths))]
-            mask_path=img_path.replace('/images/','/masks/')
-            mask_path=mask_path.replace('.jpg','.png')
-            mask_path=mask_path.replace('.jpeg','.png')
-            mask=cv2.imread(mask_path,-1)
-            mask=cv2.resize(mask,(512,512),cv2.INTER_NEAREST)
             image = Image.open(img_path)
             if not image.mode == "RGB":
                 image = image.convert("RGB")
-
-            if np.random.rand()<0.5:
-                image=image.transpose(Image.FLIP_LEFT_RIGHT)
-                mask=cv2.flip(mask,1)
-           
-            # default to score-sde preprocessing
-            img = np.array(image).astype(np.uint8)
-            if self.center_crop: #NO
-                crop = min(img.shape[0], img.shape[1])
-                (
-                    h,
-                    w,
-                ) = (
-                    img.shape[0],
-                    img.shape[1],
+            image = self.flip_transform(image)
+            random_scale = self.size
+            if self.aug:
+                random_scale = (
+                    np.random.randint(self.size // 3, self.size + 1)
+                    if np.random.uniform() < 0.66
+                    else np.random.randint(int(1.2 * self.size), int(1.4 * self.size))
                 )
-                img = img[(h - crop) // 2 : (h + crop) // 2, (w - crop) // 2 : (w + crop) // 2]
-
-            image = Image.fromarray(img)
-            image = image.resize((self.size, self.size), resample=self.interpolation)
-            # image = self.flip_transform(image)
-            image = np.array(image).astype(np.uint8)
-            image = (image / 127.5 - 1.0).astype(np.float32)
+            image, mask = self.preprocess(image, random_scale, self.interpolation)
+            # image = Image.fromarray(img)
             example["pixel_values"] = torch.from_numpy(image).permute(2, 0, 1)
-            mask_tensor=torch.from_numpy(mask).unsqueeze(-1).permute(2, 0, 1) # binary mask
-            example["masks"] = mask_tensor
+            example["mask"] = torch.from_numpy(mask)
+
+
+
 
             # 1) Prior Image
             if self.class_images_path:
                 class_image = Image.open(self.class_images_path[index % self.num_class_images])
                 if not class_image.mode == "RGB":
                     class_image = class_image.convert("RGB")
-                # class_image = exif_transpose(class_image)
-                class_image = class_image.resize((self.size, self.size), resample=self.interpolation)
-                class_image = np.array(class_image).astype(np.uint8)
-                class_image = (class_image / 127.5 - 1.0).astype(np.float32)
-                class_image=torch.from_numpy(class_image).permute(2, 0, 1)
+                class_image=self.image_transforms(class_image)
                 example["class_images"] = class_image
+                example["class_mask"] = torch.ones_like(example["mask"])
                 class_text_inputs=self.tokenizer(
                     self.class_prompt,
                     truncation=True,
@@ -302,33 +317,17 @@ class DreamboothDataset(Dataset):
                     return_tensors="pt",
                 )
                 example["class_prompt_ids"] = class_text_inputs.input_ids[0]
-                is_keyword_tokens_prior=[False]
-                text_words_prior=self.class_prompt.split()
-                for word_idx in range(len(text_words_prior)):
-                    cap_word=text_words_prior[word_idx]
-                    word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
-                    num_tokens=len(word_token_ids)
-                    for tok_id in word_token_ids:
-                        if self.placeholder_token == cap_word:
-                            is_keyword_tokens_prior.append(True)
-                        else:
-                            is_keyword_tokens_prior.append(False)
-                for _ in range(len(is_keyword_tokens_prior),self.tokenizer.model_max_length):
-                    is_keyword_tokens_prior.append(False)
-                assert sum(is_keyword_tokens_prior)==0
-                assert len(is_keyword_tokens_prior)==self.tokenizer.model_max_length
-                is_keyword_tokens_prior=torch.BoolTensor(is_keyword_tokens_prior)
-                example["is_keyword_tokens_prior"]=is_keyword_tokens_prior
+                
 
 
             # 2. Caption for TI
-            placeholder_string = self.placeholder_token
-            # if self.simple_caption:
-            #     prefix=prefixes[0]
-            # else:
-            #     prefix=random.choice(prefixes)
-            prefix=random.choice(prefixes)
-            text = prefix.format(placeholder)
+            # instance_prompt="photo of a <new1> cat"
+            text = self.instance_prompt.format(placeholder)
+            if random_scale < 0.6 * self.size:
+                text = np.random.choice(["a far away ", "very small "]) + text
+            elif random_scale > self.size:
+                text = np.random.choice(["zoomed in ", "close up "]) + text
+            # print(text,'text')
             example["raw_caption_ti"]=text
             example["input_ids"] = self.tokenizer(
                 text,
@@ -337,29 +336,13 @@ class DreamboothDataset(Dataset):
                 max_length=self.tokenizer.model_max_length,
                 return_tensors="pt",
             ).input_ids[0]
-            is_keyword_tokens=[False]
-            text_words=text.split()
-            for word_idx in range(len(text_words)):
-                cap_word=text_words[word_idx]
-                word_token_ids=self.tokenizer.encode(cap_word,add_special_tokens=False)
-                num_tokens=len(word_token_ids)
-                for tok_id in word_token_ids:
-                    tok_decoded=self.tokenizer.decode(tok_id)
-                    if self.placeholder_token == tok_decoded:
-                        is_keyword_tokens.append(True)
-                    else:
-                        is_keyword_tokens.append(False)
+            
 
-            # 3) is_keyword_tokens - keyword indices for MLM
-            for _ in range(len(is_keyword_tokens),self.tokenizer.model_max_length):
-                is_keyword_tokens.append(False)
-            assert len(is_keyword_tokens)==self.tokenizer.model_max_length
-            assert sum(is_keyword_tokens)==1
-            example["is_keyword_tokens"]=torch.BoolTensor(is_keyword_tokens)
+            
+            
             # mlm data
             example["raw_caption_mlm"]=[]
             example["input_ids_pos"]=[]
-            example["is_keyword_tokens_mlm"]=[]
             example["mlm_labels"]=[]
             example['masked_idxs']=[]
             example['non_special_idxs']=[]
@@ -385,15 +368,12 @@ class DreamboothDataset(Dataset):
 
 
             words_mlm=mlm_caption.split()
-            is_keyword_tokens_mlm=[False] # first token for <startoftext>
             masked_idxs=[False]
-            # if self.mlm_target=='non_special': # if non-special only then bos is not learned
-            # else:
-            #     mlm_labels=[self.tokenizer.bos_token_id]
             if self.mlm_target in ['all','non_padding']:
                 mlm_labels=[self.tokenizer.bos_token_id]
             else:
                 mlm_labels=[-100]
+
             input_ids_masked=[self.tokenizer.bos_token_id]
             non_special_idxs=[False]
             for word_idx in range(len(words_mlm)):
@@ -410,11 +390,15 @@ class DreamboothDataset(Dataset):
                 else:
                     valid_mlm_tag=True
 
+
                 word_token_ids=self.tokenizer.encode(mlm_word,add_special_tokens=False)
                 num_tokens=len(word_token_ids)
                 non_special_idxs+=([True]*num_tokens)
                 for tok_id in word_token_ids:
                     tok_decoded=self.tokenizer.decode(tok_id)
+
+
+
                     # 1) input ids and indices for mask token
                     if valid_mlm_tag:
                         if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
@@ -436,23 +420,19 @@ class DreamboothDataset(Dataset):
                         masked_idxs.append(False)
                         input_ids_masked.append(tok_id)
                         mlm_labels.append(-100)
+                    
+                    # if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
+                    #     masked_idxs.append(True)
+                    #     input_ids_masked.append(self.mask_token_ids)
+                    # else:
+                    #     masked_idxs.append(False)
+                    #     input_ids_masked.append(tok_id)
 
 
-
-                    # 2) keyword indices and labels for MLM
-                    if self.placeholder_token == tok_decoded:
-                        assert num_tokens==1
-                        is_keyword_tokens_mlm.append(True)
-                    else:
-                        is_keyword_tokens_mlm.append(False)
+                    
             
 
-            # 3) is_keyword_tokens_mlm - keyword indices for MLM
-            for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
-                is_keyword_tokens_mlm.append(False)
-            assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
-            assert sum(is_keyword_tokens_mlm)==1
-            example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
+            
 
             # 4) input_ids or MLM
             input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
@@ -468,16 +448,24 @@ class DreamboothDataset(Dataset):
                 mlm_labels.append(self.tokenizer.eos_token_id)
             else:
                 # masked/non_special
-                pass
+                mlm_labels.append(-100)
+
+
+
+            # MLM LABELS - EOS AND PADDING
+            for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+                if self.mlm_target=='all':
+                    mlm_labels.append(self.tokenizer.pad_token_id)
+                else: # non_padding/non_special/masked
+                    mlm_labels.append(-100)
+            mlm_labels=torch.LongTensor(mlm_labels)
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 if self.mlm_target=='all':
                     mlm_labels.append(self.tokenizer.pad_token_id)
                 else: # non_padding/masked/non_special
                     mlm_labels.append(-100)
-            assert len(mlm_labels)==self.tokenizer.model_max_length
-            mlm_labels=torch.LongTensor(mlm_labels)
             example['mlm_labels']=mlm_labels
-            
+            # MLM LABELS - EOS AND PADDING
 
             
             # 6) non_special_idxs/masked_idxs

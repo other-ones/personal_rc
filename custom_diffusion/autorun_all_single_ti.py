@@ -70,7 +70,7 @@ elif '07' in hostname:
 lambda_mlm_list=[
             # 0, 
             0.001,
-            0.005,
+            0.01,
             # 0.0001,
             # 0.0005,
             # 0.00005,
@@ -101,8 +101,7 @@ elif '07' in hostname:
     host_suffix='07'
 else:
     assert False
-dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
-
+dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[5e-4]
 mlm_batch_size=25
@@ -129,7 +128,7 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_qlab{}'.format(host_suffix)
+                    run_name='cd_bigger_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -175,7 +174,7 @@ for lr in lr_list:
                     log_path=os.path.join(log_dir,run_name+'.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                    command+='accelerate launch --main_process_port {} cd_train.py \\\n'.format(ports[port_idx])
+                    command+='accelerate launch --main_process_port {} cd_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     # command+='--initializer_token=sks \\\n'
@@ -204,8 +203,10 @@ for lr in lr_list:
                     if check_tag:
                         command+='--check_tag={} \\\n'.format(check_tag)
                     command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                     # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
                     # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                     command+='--mlm_target=masked \\\n'
@@ -232,7 +233,6 @@ print('\n\n')
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/cd_models',dir_name)
-
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -291,7 +291,7 @@ for gen_target_step in gen_target_step_list:
             log_path=os.path.join(gen_log_dir,ti_exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
             command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-            command+='accelerate launch --main_process_port {} cd_generate.py \\\n'.format(ports[port_idx],port_idx)
+            command+='accelerate launch --main_process_port {} cd_generate_clean.py \\\n'.format(ports[port_idx],port_idx)
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)

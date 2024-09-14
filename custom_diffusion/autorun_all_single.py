@@ -8,23 +8,23 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
     
     
@@ -107,7 +107,7 @@ else:
 lambda_mlm_list=[
             0.001,
             0, 
-            0.005,
+            0.01,
             # 0.0005,
             # 0.00005,
             # 0.002,
@@ -131,7 +131,7 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_mtarget_seed{}_rep{}_qlab{}'.format(seed,rep_id,host_suffix)
+dir_name='bigger_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
@@ -146,14 +146,13 @@ for check_tag in check_tags:
             mask_prob_str=float_to_str(mask_prob)
             mask_prob_str=mask_prob_str.replace('.','')
             for port_idx,concept in enumerate(list(info_map.keys())):
-                log_dir='logs/train/{}/{}'.format(dir_name,concept)
-                os.makedirs(log_dir,exist_ok=True)   
+                  
                 device_idx=stat_idx
                 for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_qlab{}'.format(host_suffix)
+                    run_name='cd_bigger_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -182,12 +181,12 @@ for check_tag in check_tags:
                             break
                         print('TRAINING',run_name,'sleep',stat_idx,stat)
                         time.sleep(10)
-                        
-                    print(exp_path,device_idx)
-                    log_path=os.path.join(log_dir,run_name+'.out')
+                    print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idx}")
+                    os.makedirs(exp_path,exist_ok=True) 
+                    log_path=os.path.join(exp_path,'log.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                    command+='accelerate launch --main_process_port {} cd_train.py \\\n'.format(ports[port_idx])
+                    command+='accelerate launch --main_process_port {} cd_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     command+='--initializer_token=sks \\\n'
@@ -201,7 +200,7 @@ for check_tag in check_tags:
                     command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
                     command+='--checkpoints_total_limit=4 \\\n'
-                    command+='--max_train_steps=1001 \\\n'
+                    command+='--max_train_steps=501 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
@@ -249,13 +248,12 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [500,1000]:
+for gen_target_step in [500]:
     for concept in concepts:
         if concept not in info_map:
             continue
         
-        gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
-        os.makedirs(gen_log_dir,exist_ok=True)    
+          
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             continue
@@ -289,10 +287,11 @@ for gen_target_step in [500,1000]:
                 print('GENERATION',exp_name,'sleep',stat_idx,stat)
                 time.sleep(10)
             print(exp_name,device_idx)
-            log_path=os.path.join(gen_log_dir,exp_name+'.out')
+            os.makedirs(dst_exp_path,exist_ok=True)  
+            log_path=os.path.join(dst_exp_path,exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
             command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-            command+='accelerate launch --main_process_port {} cd_generate.py \\\n'.format(ports[port_idx])
+            command+='accelerate launch --main_process_port {} cd_generate_clean.py \\\n'.format(ports[port_idx])
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)

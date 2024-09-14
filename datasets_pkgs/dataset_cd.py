@@ -22,6 +22,7 @@ from packaging import version
 # Added
 from spacy import symbols
 import spacy
+torch.use_deterministic_algorithms(True)
 # Added
 Image.MAX_IMAGE_PIXELS = 1000000000
 alphabet = string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation + ' ' # len(aphabet) = 95

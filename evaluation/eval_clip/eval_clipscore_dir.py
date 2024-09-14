@@ -34,7 +34,7 @@ def extract_values(exp):
     mprob = (mprob_match.group(1))[::-1] if mprob_match else 'inf'
 
     # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
-    return (not is_nomlm,step,tagged, mprob, mlm, lr)
+    return (not step,is_nomlm,tagged, mprob, mlm, lr)
 def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
     image_list=[]
     image_ids=[]

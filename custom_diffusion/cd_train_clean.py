@@ -171,25 +171,6 @@ def log_validation(
     # else:
     # pipeline_args = {"prompt": args.validation_prompt}
 
-    # is_keyword_tokens_list1=[]
-    # for prompt in validation_prompts:
-    #     is_keyword_tokens1=[False]
-    #     text_words=prompt.split()
-    #     for word_idx in range(len(text_words)):
-    #         cap_word=text_words[word_idx]
-    #         word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
-    #         num_tokens=len(word_token_ids)
-    #         for tok_id in word_token_ids:
-    #             tok_decoded=tokenizer.decode(tok_id)
-    #             if args.placeholder_token1 == tok_decoded:
-    #                 is_keyword_tokens1.append(True)
-    #             else:
-    #                 is_keyword_tokens1.append(False)
-    #     for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
-    #         is_keyword_tokens1.append(False)
-    #     assert len(is_keyword_tokens1)==tokenizer.model_max_length
-    #     is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
-    #     is_keyword_tokens_list1.append(is_keyword_tokens1)
 
 
     # run inference
@@ -205,8 +186,6 @@ def log_validation(
                             num_inference_steps=25, 
                             generator=generator,
                             verbose=True,
-                            # inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
-                            # is_keyword_tokens1=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     # for tracker in accelerator.trackers:
@@ -259,13 +238,10 @@ def collate_fn(examples,with_prior_preservation):
         # 2. input ids
         input_ids = [example["input_ids"] for example in examples]
         # 3. prior preseravation
-        is_keyword_tokens = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
         if with_prior_preservation:
             input_ids += [example["class_prompt_ids"] for example in examples]
-            is_keyword_tokens += [example["is_keyword_tokens_prior"] for example in examples]
             pixel_values += [example["class_images"] for example in examples]
             masks += [example["class_mask"] for example in examples]
-        is_keyword_tokens = torch.stack(is_keyword_tokens)
         input_ids=torch.stack(input_ids)
         pixel_values = torch.stack(pixel_values)
         pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
@@ -280,14 +256,12 @@ def collate_fn(examples,with_prior_preservation):
         masked_idxs = []
         mlm_labels = []
         non_special_idxs = []
-        is_keyword_tokens_mlm = []
         raw_captions_mlm = []
 
     else:
         # FOR TI
         pixel_values=[]
         input_ids=[]
-        is_keyword_tokens=[]
         masks=[]
         raw_captions_mlm = [example["raw_caption_mlm"] for example in examples]
         raw_captions_ti = []
@@ -305,8 +279,6 @@ def collate_fn(examples,with_prior_preservation):
         mlm_labels = torch.stack(mlm_labels)
         non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans
         non_special_idxs = torch.stack(non_special_idxs)
-        is_keyword_tokens_mlm = [example["is_keyword_tokens_mlm"] for example in examples] #N,77, list of booleans
-        is_keyword_tokens_mlm = torch.stack(is_keyword_tokens_mlm)
         # 5. For MLM 
     batch = {
         "masks": masks,
@@ -317,8 +289,6 @@ def collate_fn(examples,with_prior_preservation):
         "masked_idxs": masked_idxs,
         "mlm_labels": mlm_labels,
         "non_special_idxs": non_special_idxs,
-        "is_keyword_tokens_mlm": is_keyword_tokens_mlm,
-        "is_keyword_tokens": is_keyword_tokens,
         "raw_captions_ti": raw_captions_ti,
         "raw_captions_mlm": raw_captions_mlm,
     }
@@ -736,7 +706,11 @@ def main(args):
                 {"params": custom_diffusion_layers.parameters(), "lr": args.learning_rate},
                 {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
             ]
-    
+    for key,val in custom_diffusion_layers.named_parameters():
+        print(key,'TRAINED CD LAYERS')
+    # part_cd_layer=val.clone().detach()
+    initial_key,initial_cd=list(custom_diffusion_layers.named_parameters())[-1]
+    initial_cd=initial_cd.clone().detach()
     optimizer = optimizer_class(
         params_to_optimize,
         lr=args.learning_rate,
@@ -990,7 +964,6 @@ def main(args):
                 # Load Batch
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
-                is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 raw_captions_ti=batch["raw_captions_ti"]
                 # masks64=torch.nn.functional.interpolate(masks,(64,64))
@@ -1018,8 +991,6 @@ def main(args):
                 #     target_emb=learned_embeds
                 encoder_hidden_states = text_encoder(
                                                     input_ids,
-                                                    # is_keyword_tokens1=is_keyword_tokens,
-                                                    # inj_embeddings1=target_emb,
                                                      )[0].to(dtype=weight_dtype)
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
                 if noise_scheduler.config.prediction_type == "epsilon":
@@ -1048,7 +1019,6 @@ def main(args):
                 if args.lambda_mlm:
                     # for MLM
                     batch_mlm=load_mlm_batch(mlm_loader)
-                    is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
                     masked_idxs=batch_mlm["masked_idxs"]
                     mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
                     non_special_idxs=batch_mlm["non_special_idxs"]
@@ -1057,10 +1027,6 @@ def main(args):
                     raw_captions_mlm=batch_mlm["raw_captions_mlm"]
                     # for MLM
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                                            # mask_embedding=mask_embeds.unsqueeze(0),
-                                                            # mask_idxs=masked_idxs,
-                                                            # is_keyword_tokens1=is_keyword_tokens_mlm,
-                                                            # inj_embeddings1=target_emb,
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     # clip_text_embedding_masked = text_encoder(input_ids_masked)[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
@@ -1107,7 +1073,7 @@ def main(args):
                     index_no_updates = torch.ones((len(tokenizer),), dtype=torch.bool)
                     assert isinstance(placeholder_token_id1,list)
                     updated_ids=copy.deepcopy(placeholder_token_id1)
-                    index_no_updates[min(updated_ids) : max(updated_ids) + 1] = False #everything except placeholder
+                    index_no_updates[min(updated_ids) : max(updated_ids) + 1] = False # everything except placeholder
                     with torch.no_grad():
                         accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
                             index_no_updates] = orig_embeds_params[index_no_updates]
@@ -1307,6 +1273,16 @@ def main(args):
                 logs['sim_mask']=cos_sim(mask_embeds_log,mask_embeds_initial.detach()).item()
                 logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
                 del mask_embeds_log
+            # with torch.no_grad():
+            #     cur_key,cur_cd=list(custom_diffusion_layers.named_parameters())[-1]
+            #     cur_cd=cur_cd.clone().detach()
+            #     sim_cd=cos_sim(initial_cd,cur_cd.detach()).mean().item()
+            #     assert cur_key==initial_key
+            #     print(cur_key)
+            #     print(cur_cd.shape,'cur_cd.shape')
+            #     print(initial_cd.shape,'initial_cd.shape')
+            #     print(cur_key,sim_cd,'cd')
+
             logs['norm_target']=norm_target.item()
             progress_bar.set_postfix(**logs)
             # [6] PBAR PRINTING
