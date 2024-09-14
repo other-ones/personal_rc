@@ -130,7 +130,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=7777
-rep_id=2
+rep_id=1
 dir_name='bigger2_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
@@ -199,7 +199,7 @@ for check_tag in check_tags:
                     command+='--train_batch_size=2 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
-                    command+='--checkpoints_total_limit=4 \\\n'
+                    command+='--checkpoints_total_limit=8 \\\n'
                     command+='--max_train_steps=1501 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)

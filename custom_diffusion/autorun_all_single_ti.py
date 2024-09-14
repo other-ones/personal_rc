@@ -8,9 +8,9 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     'pet_cat1':('cat','cat','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
@@ -70,8 +70,8 @@ elif '07' in hostname:
 lambda_mlm_list=[
             # 0, 
             0.001,
-            0.01,
-            # 0.0001,
+            # 0.01,
+            0.0001,
             # 0.0005,
             # 0.00005,
             # 0.002,
@@ -92,7 +92,7 @@ for stat_idx,stat in enumerate(stats):
         break
 
 ports=np.arange(1111,2222)
-mask_prob_list=[0.25]
+mask_prob_list=[0.15]
 seed=7777
 rep_id=1
 if '04' in hostname:
@@ -101,7 +101,7 @@ elif '07' in hostname:
     host_suffix='07'
 else:
     assert False
-dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
+dir_name=f'bigger2_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[5e-4]
 mlm_batch_size=25
@@ -127,7 +127,7 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_bigger_qlab{}'.format(host_suffix)
+                    run_name='cd_bigger2_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -253,8 +253,6 @@ for gen_target_step in gen_target_step_list:
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
             if not '_ti' in exp:
-                continue
-            if 'mlm001' in exp:
                 continue
             cd_exp_name=exp.replace('lr5e4','lr1e5')
             cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')

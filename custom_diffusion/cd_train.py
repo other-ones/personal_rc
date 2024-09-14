@@ -808,7 +808,7 @@ def main(args):
             batch_size=args.mlm_batch_size,
             shuffle=True,
             collate_fn=lambda examples: collate_fn(examples, args.with_prior_preservation),
-            num_workers=args.dataloader_num_workers,
+            num_workers=args.dataloader_num_workers*2,
             generator=generator,
             worker_init_fn=seed_worker,
         )
