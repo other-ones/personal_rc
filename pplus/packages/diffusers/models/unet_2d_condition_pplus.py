@@ -994,7 +994,7 @@ class UNet2DConditionModelPPlus(ModelMixin, ConfigMixin, UNet2DConditionLoadersM
                 sample = upsample_block(
                     hidden_states=sample, temb=emb, res_hidden_states_tuple=res_samples, upsample_size=upsample_size
                 )
-
+        assert layer_count==len(encoder_hidden_states_list),'len(encoder_hidden_states_list)==layer_count'
         # 6. post-process
         if self.conv_norm_out:
             sample = self.conv_norm_out(sample)

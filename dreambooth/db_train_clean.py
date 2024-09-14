@@ -118,26 +118,6 @@ def log_validation(
         assert False, 'undefined eval prompt type'
 
     
-    is_keyword_tokens_list1=[]
-    for prompt in validation_prompts:
-        is_keyword_tokens1=[False]
-        text_words=prompt.split()
-        for word_idx in range(len(text_words)):
-            cap_word=text_words[word_idx]
-            word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
-            num_tokens=len(word_token_ids)
-            for tok_id in word_token_ids:
-                tok_decoded=tokenizer.decode(tok_id)
-                if args.placeholder_token1 == tok_decoded:
-                    is_keyword_tokens1.append(True)
-                else:
-                    is_keyword_tokens1.append(False)
-        for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
-            is_keyword_tokens1.append(False)
-        assert len(is_keyword_tokens1)==tokenizer.model_max_length
-        is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
-        is_keyword_tokens_list1.append(is_keyword_tokens1)
-    is_keyword_tokens_list1=torch.stack(is_keyword_tokens_list1)
 
 
     logger.info(
@@ -228,8 +208,6 @@ def log_validation(
                             num_inference_steps=25, 
                             generator=generator,
                             verbose=True,
-                            inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
-                            is_keyword_tokens1=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     for tracker in accelerator.trackers:
@@ -291,12 +269,9 @@ def collate_fn(examples,with_prior_preservation=False):
             input_ids = [example["input_ids"] for example in examples]
             
             # 3. prior preseravation
-            is_keyword_tokens = [example["is_keyword_tokens"] for example in examples] #N,77, list of booleans
             if with_prior_preservation:
                 input_ids += [example["class_prompt_ids"] for example in examples]
-                is_keyword_tokens += [example["is_keyword_tokens_prior"] for example in examples]
                 pixel_values += [example["class_images"] for example in examples]
-            is_keyword_tokens = torch.stack(is_keyword_tokens)
             input_ids=torch.stack(input_ids)
             pixel_values = torch.stack(pixel_values)
             pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
@@ -307,13 +282,11 @@ def collate_fn(examples,with_prior_preservation=False):
             masked_idxs = []
             mlm_labels = []
             non_special_idxs = []
-            is_keyword_tokens_mlm = []
             raw_captions_mlm = []
             
         else:
             pixel_values=[]
             input_ids=[]
-            is_keyword_tokens=[]
             # masks=[]
             raw_captions_mlm = [example["raw_caption_mlm"] for example in examples]
             raw_captions_ti = []
@@ -328,8 +301,6 @@ def collate_fn(examples,with_prior_preservation=False):
             mlm_labels = torch.stack(mlm_labels)
             non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans
             non_special_idxs = torch.stack(non_special_idxs)
-            is_keyword_tokens_mlm = [example["is_keyword_tokens_mlm"] for example in examples] #N,77, list of booleans
-            is_keyword_tokens_mlm = torch.stack(is_keyword_tokens_mlm)
             # 5. For MLM 
        
         
@@ -343,8 +314,6 @@ def collate_fn(examples,with_prior_preservation=False):
             "masked_idxs": masked_idxs,
             "mlm_labels": mlm_labels,
             "non_special_idxs": non_special_idxs,
-            "is_keyword_tokens_mlm": is_keyword_tokens_mlm,
-            "is_keyword_tokens": is_keyword_tokens,
             # "masks": masks,
             "raw_captions_mlm": raw_captions_mlm,
             "raw_captions_ti": raw_captions_ti,
@@ -1017,7 +986,6 @@ def main(args):
                 # Load Batch
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
-                is_keyword_tokens=batch["is_keyword_tokens"]# B,77 list of booleans (tensor)
                 # masks=batch["masks"]# B,77 list of booleans (tensor)
                 # masks64=torch.nn.functional.interpolate(masks,(64,64))
                 raw_captions_ti=batch["raw_captions_ti"]
@@ -1033,15 +1001,8 @@ def main(args):
                 timesteps = timesteps.long()
                 noisy_model_input = noise_scheduler.add_noise(model_input, noise, timesteps)
                 # learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                num_keywords=torch.sum(is_keyword_tokens.clone())
-                if args.with_prior_preservation:
-                    assert num_keywords==(bsz//2) #//2 for prior preservation
-                else:
-                    assert num_keywords==bsz #//2 for prior preservation
                 encoder_hidden_states = text_encoder(
                                                     input_ids,
-                                                    # is_keyword_tokens1=is_keyword_tokens,
-                                                    # inj_embeddings1=learned_embeds.repeat(num_keywords,1),
                                                      )[0].to(dtype=weight_dtype)
                 # if unwrap_model(unet).config.in_channels == channels * 2:
                 #     noisy_model_input = torch.cat([noisy_model_input, noisy_model_input], dim=1)
@@ -1091,7 +1052,6 @@ def main(args):
                 if args.lambda_mlm:
                     # for MLM
                     batch_mlm=load_mlm_batch(mlm_loader)
-                    is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
                     masked_idxs=batch_mlm["masked_idxs"]
                     mlm_labels=batch_mlm["mlm_labels"].to(accelerator.device)
                     non_special_idxs=batch_mlm["non_special_idxs"]
@@ -1099,16 +1059,10 @@ def main(args):
                     input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                     raw_captions_mlm=batch_mlm["raw_captions_mlm"]
                     # for MLM
-                    num_masked=torch.sum(masked_idxs.clone())
-                    mlm_bsz=len(masked_idxs)
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
-                                                            # mask_embedding=mask_embeds.repeat(num_masked,1),
-                                                            # mask_idxs=masked_idxs,
-                                                            # is_keyword_tokens1=is_keyword_tokens_mlm,
-                                                            # inj_embeddings1=learned_embeds.repeat(mlm_bsz,1),
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
                     mlm_logits=cls_net(clip_text_embedding_masked)
-                    masked_idxs_flat=masked_idxs.view(-1)
+                    # masked_idxs_flat=masked_idxs.view(-1)
                     # loss_mlm = F.cross_entropy(
                     #     mlm_logits.view(-1,cls_output_dim),
                     #     mlm_labels.view(-1),
