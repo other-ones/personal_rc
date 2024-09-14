@@ -228,8 +228,8 @@ def log_validation(
                             num_inference_steps=25, 
                             generator=generator,
                             verbose=True,
-                            inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
-                            is_keyword_tokens1=is_keyword_tokens_list1,
+                            # inj_embeddings1=target_emb.repeat(len(validation_prompts),1),
+                            # is_keyword_tokens1=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     for tracker in accelerator.trackers:

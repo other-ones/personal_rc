@@ -590,8 +590,8 @@ class StableDiffusionPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lo
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         guidance_rescale: float = 0.0,
         verbose=True,
-        inj_embeddings1=True,
-        is_keyword_tokens1=True,
+        inj_embeddings1=None,
+        is_keyword_tokens1=None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
