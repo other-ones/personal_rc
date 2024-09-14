@@ -357,9 +357,9 @@ class PPlusDataset(Dataset):
                 # Append EOS Token
                 # In case 77th token is appended, remove it and replace with EOS token
                 input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
-                input_ids_masked.append(self.tokenizer.eos_token_id)
+                input_ids_masked.append(self.tokenizer.eos_token_id) # FOR EOS
                 for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
-                    input_ids_masked.append(self.tokenizer.pad_token_id)
+                    input_ids_masked.append(self.tokenizer.pad_token_id) # FOR PADDING
                 input_ids_masked=torch.LongTensor(input_ids_masked)
                 example["input_ids_masked"]=input_ids_masked
 
@@ -369,6 +369,10 @@ class PPlusDataset(Dataset):
                 # In case 77th token is appended, remove it and replace with EOS token
                 mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
                 mlm_labels.append(-100) # FOR EOS
+                for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+                    mlm_labels.append(-100) # FOR PADDING
+
+
                 # if self.mlm_target in ['all','non_padding']: 
                 #     # We DO learn EOS 
                 #     # IF MLM Target is all/non_padding
@@ -378,13 +382,13 @@ class PPlusDataset(Dataset):
                 #     # We do not learn EOS 
                 #     # IF MLM Target is masked/non_special
                 
-                for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
-                    if self.mlm_target=='all':
-                        # Learn PADDING if MLM target is "all"
-                        mlm_labels.append(self.tokenizer.pad_token_id)
-                    else: 
-                        # non_padding/masked/non_special
-                        mlm_labels.append(-100)
+                # for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+                #     if self.mlm_target=='all':
+                #         # Learn PADDING if MLM target is "all"
+                #         mlm_labels.append(self.tokenizer.pad_token_id)
+                #     else: 
+                #         # non_padding/masked/non_special
+                #         mlm_labels.append(-100)
                 assert len(mlm_labels)==self.tokenizer.model_max_length
                 mlm_labels=torch.LongTensor(mlm_labels)
                 mlm_labels_list.append(mlm_labels)
@@ -396,13 +400,15 @@ class PPlusDataset(Dataset):
                 # In case last token is appended, remove it and replace with EOS token
                 masked_idxs=masked_idxs[:self.tokenizer.model_max_length-1] 
                 for _ in range(len(masked_idxs),self.tokenizer.model_max_length):
-                    masked_idxs.append(False) # We DONOT mask EOS
+                    # We DO NOT mask EOS/PAD
+                    masked_idxs.append(False)  # FOR EOS or PADDING
                 masked_idxs=torch.BoolTensor(masked_idxs)
                 masked_idxs_list.append(masked_idxs)
 
+                # In case last token is appended, remove it and replace with EOS token
                 non_special_idxs=non_special_idxs[:self.tokenizer.model_max_length-1]
                 for _ in range(len(non_special_idxs),self.tokenizer.model_max_length):
-                    non_special_idxs.append(False) #for EOS
+                    non_special_idxs.append(False) #for EOS or PAD
                 non_special_idxs=torch.BoolTensor(non_special_idxs)
                 non_special_idxs_list.append(non_special_idxs)
                 

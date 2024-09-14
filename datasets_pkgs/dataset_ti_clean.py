@@ -353,6 +353,7 @@ class TextualInversionDataset(Dataset):
 
 
             # 4) input_ids or MLM
+            # In case 77th token is appended, remove it and replace with EOS token
             input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
             input_ids_masked.append(self.tokenizer.eos_token_id)
             for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
@@ -365,18 +366,25 @@ class TextualInversionDataset(Dataset):
 
 
             # 5) mlm_labels
+            # Append EOS Token
+            # In case 77th token is appended, remove it and replace with EOS token
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-            mlm_labels.append(-100) # FOR EOS/ WE DO NOT LEARN EOS
-            # if self.mlm_target in ['all','non_padding']: 
-            #     mlm_labels.append(self.tokenizer.eos_token_id)
-            # else:
-            #     # masked/non_special
-            #     mlm_labels.append(-100)
+            mlm_labels.append(-100) # FOR EOS
+            for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+                mlm_labels.append(-100) # FOR PADDING
+
             # for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
-            #     if self.mlm_target=='all':
-            #         mlm_labels.append(self.tokenizer.pad_token_id)
-            #     else: # non_padding/masked/non_special
-            #         mlm_labels.append(-100)
+            #     mlm_labels.append(-100)
+            # # if self.mlm_target in ['all','non_padding']: 
+            # #     mlm_labels.append(self.tokenizer.eos_token_id)
+            # # else:
+            # #     # masked/non_special
+            # #     mlm_labels.append(-100)
+            # for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+            #     # if self.mlm_target=='all':
+            #     #     mlm_labels.append(self.tokenizer.pad_token_id)
+            #     # else: # non_padding/masked/non_special
+            #     mlm_labels.append(-100)
             assert len(mlm_labels)==self.tokenizer.model_max_length
             mlm_labels=torch.LongTensor(mlm_labels)
             example['mlm_labels']=mlm_labels
@@ -385,7 +393,8 @@ class TextualInversionDataset(Dataset):
             # 6) non_special_idxs/masked_idxs
             masked_idxs=masked_idxs[:self.tokenizer.model_max_length-1]
             for _ in range(len(masked_idxs),self.tokenizer.model_max_length):
-                masked_idxs.append(False)
+                # we do not mask EOS or PAD
+                masked_idxs.append(False) # FOR EOS or PAD
             non_special_idxs=non_special_idxs[:self.tokenizer.model_max_length-1]
             for _ in range(len(non_special_idxs),self.tokenizer.model_max_length):
                 non_special_idxs.append(False)

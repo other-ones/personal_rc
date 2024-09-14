@@ -437,6 +437,7 @@ class CustomDiffusionDataset(Dataset):
             
 
             # 4) input_ids or MLM
+            # In case 77th token is appended, remove it and replace with EOS token
             input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
             input_ids_masked.append(self.tokenizer.eos_token_id)
             for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
@@ -445,21 +446,24 @@ class CustomDiffusionDataset(Dataset):
             example["input_ids_masked"]=input_ids_masked
 
             # 5) mlm_labels
+            # In case 77th token is appended, remove it and replace with EOS token
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-            if self.mlm_target in ['all','non_padding']: 
-                mlm_labels.append(self.tokenizer.eos_token_id)
-            else:
-                # masked/non_special
-                mlm_labels.append(-100)
-
-
-
-            # MLM LABELS - EOS AND PADDING
+            mlm_labels.append(-100) # FOR EOS
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
-                if self.mlm_target=='all':
-                    mlm_labels.append(self.tokenizer.pad_token_id)
-                else: # non_padding/non_special/masked
-                    mlm_labels.append(-100)
+                mlm_labels.append(-100) # FOR PADDING
+
+            # mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
+            # if self.mlm_target in ['all','non_padding']: 
+            #     mlm_labels.append(self.tokenizer.eos_token_id)
+            # else:
+            #     # masked/non_special
+            #     mlm_labels.append(-100)
+            # # MLM LABELS - EOS AND PADDING
+            # for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+            #     if self.mlm_target=='all':
+            #         mlm_labels.append(self.tokenizer.pad_token_id)
+            #     else: # non_padding/non_special/masked
+            #         mlm_labels.append(-100)
             mlm_labels=torch.LongTensor(mlm_labels)
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
                 if self.mlm_target=='all':
@@ -471,9 +475,11 @@ class CustomDiffusionDataset(Dataset):
 
             
             # 6) non_special_idxs/masked_idxs
+            # In case 77th token is appended, remove it and replace with EOS token
             masked_idxs=masked_idxs[:self.tokenizer.model_max_length-1]
             for _ in range(len(masked_idxs),self.tokenizer.model_max_length):
                 masked_idxs.append(False)
+            # In case 77th token is appended, remove it and replace with EOS token
             non_special_idxs=non_special_idxs[:self.tokenizer.model_max_length-1]
             for _ in range(len(non_special_idxs),self.tokenizer.model_max_length):
                 non_special_idxs.append(False)

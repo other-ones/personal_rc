@@ -383,6 +383,7 @@ class DreamboothDataset(Dataset):
                             masked_idxs.append(False)
                             input_ids_masked.append(tok_id)
                             if self.mlm_target in ['all','non_padding','non_special']:
+                                # Still add label if mlm_target is
                                 # all/non_padding/non_special
                                 mlm_labels.append(tok_id)
                             else:
@@ -403,26 +404,35 @@ class DreamboothDataset(Dataset):
             
 
             # 4) input_ids or MLM
+            # In case 77th token is appended, remove it and replace with EOS token
             input_ids_masked=input_ids_masked[:self.tokenizer.model_max_length-1]
-            input_ids_masked.append(self.tokenizer.eos_token_id)
-            for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
-                input_ids_masked.append(self.tokenizer.pad_token_id)
+            input_ids_masked.append(self.tokenizer.eos_token_id) # FOR EOS
+            for _ in range(len(input_ids_masked),self.tokenizer.model_max_length): 
+                input_ids_masked.append(self.tokenizer.pad_token_id) # FOR PADDING
             input_ids_masked=torch.LongTensor(input_ids_masked)
             example["input_ids_masked"]=input_ids_masked
 
             # 5) mlm_labels
+            # Append EOS Token
+            # In case 77th token is appended, remove it and replace with EOS token
             mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
-            if self.mlm_target in ['all','non_padding']: 
-                mlm_labels.append(self.tokenizer.eos_token_id)
-            else:
-                # masked/non_special
-                pass
+            mlm_labels.append(-100) # FOR EOS
             for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
-                if self.mlm_target=='all':
-                    mlm_labels.append(self.tokenizer.pad_token_id)
-                else: # non_padding/masked/non_special
-                    mlm_labels.append(-100)
-            assert len(mlm_labels)==self.tokenizer.model_max_length
+                mlm_labels.append(-100) # FOR PADDING
+
+            # mlm_labels=mlm_labels[:self.tokenizer.model_max_length-1]
+            # mlm_labels.append(-100)
+            # # if self.mlm_target in ['all','non_padding']: 
+            # #     mlm_labels.append(self.tokenizer.eos_token_id)
+            # # else:
+            # #     # masked/non_special
+            # #     pass
+            # for _ in range(len(mlm_labels),self.tokenizer.model_max_length):
+            #     if self.mlm_target=='all':
+            #         mlm_labels.append(self.tokenizer.pad_token_id)
+            #     else: # non_padding/masked/non_special
+            #         mlm_labels.append(-100)
+            # assert len(mlm_labels)==self.tokenizer.model_max_length
             mlm_labels=torch.LongTensor(mlm_labels)
             example['mlm_labels']=mlm_labels
             
@@ -431,10 +441,11 @@ class DreamboothDataset(Dataset):
             # 6) non_special_idxs/masked_idxs
             masked_idxs=masked_idxs[:self.tokenizer.model_max_length-1]
             for _ in range(len(masked_idxs),self.tokenizer.model_max_length):
-                masked_idxs.append(False)
+                # we do not mask EOS or PAD
+                masked_idxs.append(False) # FOR EOS or PADDING
             non_special_idxs=non_special_idxs[:self.tokenizer.model_max_length-1]
             for _ in range(len(non_special_idxs),self.tokenizer.model_max_length):
-                non_special_idxs.append(False)
+                non_special_idxs.append(False) # FOR EOS or PADDING
             masked_idxs=torch.BoolTensor(masked_idxs)
             non_special_idxs=torch.BoolTensor(non_special_idxs)
             example['masked_idxs']=masked_idxs
