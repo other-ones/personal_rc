@@ -1,10 +1,10 @@
 import inspect
 
+import sys
 sys.path.insert(0, './packages')
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from datasets_pkgs.dataset_pplus import PPlusDataset
+from datasets_pkgs.dataset_pplus_clean import PPlusDataset
 from configs import parse_args
-import sys
 import argparse
 import logging
 import math
