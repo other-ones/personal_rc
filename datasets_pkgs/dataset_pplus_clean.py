@@ -143,6 +143,8 @@ class PPlusDataset(Dataset):
             print('seeded')
 
         self.exclude_cap_types=exclude_cap_types
+        # print(prompt_type,'prompt_type')
+        # print(caption_root,'caption_root')
         caption_dir_path=os.path.join(caption_root,prompt_type)
         cap_file_list=sorted(os.listdir(caption_dir_path))
         self.captions={}
@@ -320,9 +322,8 @@ class PPlusDataset(Dataset):
                     num_tokens=len(word_token_ids)
                     non_special_idxs+=([True]*num_tokens)
                     for tok_id in word_token_ids:
-                        tok_decoded=self.tokenizer.decode(tok_id)
                         if valid_mlm_tag:
-                            if np.random.rand()<self.mask_prob and (self.placeholder_token != mlm_word) and (mlm_word != self.train_prior_concept1): 
+                            if np.random.rand()<self.mask_prob and (self.placeholder_tokens[pidx] != mlm_word) and (mlm_word != self.train_prior_concept1): 
                                 masked_idxs.append(True)
                                 input_ids_masked.append(self.mask_token_ids)
                                 mlm_labels.append(tok_id)
@@ -361,7 +362,15 @@ class PPlusDataset(Dataset):
                 for _ in range(len(input_ids_masked),self.tokenizer.model_max_length):
                     input_ids_masked.append(self.tokenizer.pad_token_id) # FOR PADDING
                 input_ids_masked=torch.LongTensor(input_ids_masked)
-                example["input_ids_masked"]=input_ids_masked
+                input_ids_masked_list.append(input_ids_masked)
+                input_ids_non_mask= self.tokenizer(
+                    mlm_caption,
+                    padding="max_length",
+                    truncation=True,
+                    max_length=self.tokenizer.model_max_length,
+                    return_tensors="pt",
+                ).input_ids[0]
+                input_ids_non_mask_list.append(input_ids_non_mask)
 
 
                 # 5) mlm_labels
