@@ -30,11 +30,11 @@ def extract_values(exp):
     # Default values if not found
     mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
     lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
-    step = int(s_match.group(1)) if s_match else float('inf')
+    step = -int(s_match.group(1)) if s_match else float('inf')
     mprob = (mprob_match.group(1))[::-1] if mprob_match else 'inf'
 
     # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
-    return (not step,is_nomlm,tagged, mprob, mlm, lr)
+    return (not is_nomlm,tagged, mprob, mlm, lr,step)
 def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
     image_list=[]
     image_ids=[]
@@ -115,8 +115,8 @@ if __name__ == "__main__":
         concept_path=os.path.join(dir_path,concept)
         exps=os.listdir(concept_path)
         sorted_exps = sorted(exps, key=extract_values)
-        # if any("_ti" in exp or "nomlm" in exp for exp in sorted_exps):
-        if True:
+        if any("_ti" in exp or "nomlm" in exp for exp in sorted_exps):
+        # if True:
             for exp in sorted_exps:
                 if args.exclude is not None and args.exclude in exp:
                         continue
@@ -129,8 +129,8 @@ if __name__ == "__main__":
                             break
                 else:
                     valid=True
-                if 'nomlm' in exp:
-                    valid=True
+                # if 'nomlm' in exp:
+                #     valid=True
                 if not valid:
                     continue
                 pred_root=os.path.join(exp_path,'generated')
