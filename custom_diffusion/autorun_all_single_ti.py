@@ -120,7 +120,6 @@ for lr in lr_list:
             for port_idx,concept in enumerate(list(info_map.keys())):
                 print(concept,'concept')
                 log_dir='logs/train/{}/{}'.format(dir_name,concept)
-                os.makedirs(log_dir,exist_ok=True)   
                 unet_dir_path=os.path.join('saved_models/cd_models',dir_name)
                 unet_concept_path=os.path.join(unet_dir_path,concept)
                 device_idx=stat_idx
@@ -171,13 +170,15 @@ for lr in lr_list:
                         print(f"TRAIN SLEEP {run_name}")
                         time.sleep(10)
                     print(run_name,device_idx)
-                    log_path=os.path.join(log_dir,run_name+'.out')
+                    os.makedirs(exp_path,exist_ok=True)
+                    log_path=os.path.join(exp_path,run_name+'.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
                     command+='accelerate launch --main_process_port {} cd_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     # command+='--initializer_token=sks \\\n'
+                    command+='--with_prior_preservation=0 \\\n'
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
@@ -244,8 +245,7 @@ concepts=sorted(concepts)
 gen_target_step_list=[1000,2000,3000]
 for gen_target_step in gen_target_step_list:
     for concept in list(info_map.keys()):
-        gen_log_dir='logs/generate/{}/{}'.format(dir_name,concept)
-        os.makedirs(gen_log_dir,exist_ok=True)    
+          
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             print(concept_path,'not exists',concept)
@@ -288,7 +288,8 @@ for gen_target_step in gen_target_step_list:
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print('GENERATION START\t{}\tDEVICE:{}'.format(ti_exp_name,device_idx))
-            log_path=os.path.join(gen_log_dir,ti_exp_name+'.out')
+            os.makedirs(dst_exp_path,exist_ok=True)  
+            log_path=os.path.join(dst_exp_path,ti_exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
             command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
             command+='accelerate launch --main_process_port {} cd_generate_clean.py \\\n'.format(ports[port_idx],port_idx)
