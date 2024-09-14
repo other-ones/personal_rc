@@ -118,9 +118,8 @@ class TextualInversionDataset(Dataset):
         include_prior_concept,
         size=512,
         interpolation="bicubic",
-        flip_p=0,
+        flip_p=0.5,
         center_crop=False,
-        exclude_suffix=True,
         mlm_target='all',
         mask_prob=0.15,
         mask_token_ids=None,
@@ -154,7 +153,6 @@ class TextualInversionDataset(Dataset):
         caption_dir_path=os.path.join(caption_root,prompt_type)
         cap_file_list=sorted(os.listdir(caption_dir_path))
         self.captions={}
-        max_length=0
         invalid_counts=0
         for cap_file in cap_file_list:
             fname=cap_file.split('.')[0]
@@ -169,25 +167,20 @@ class TextualInversionDataset(Dataset):
             cap_file_path=os.path.join(caption_dir_path,cap_file)
             self.captions[fname]=sorted(list(set(open(cap_file_path).readlines())))
             print('{}\t{}'.format(fname,len(self.captions[fname])))
-            if max_length<len(self.captions[fname]):
-                max_length=len(self.captions[fname])
         if exclude_cap_types is not None:
             if len(exclude_cap_types)!=invalid_counts:
                 print(invalid_counts,'invalid_counts',exclude_cap_types,'exclude_cap_types')
             assert len(exclude_cap_types)==invalid_counts,'len(exclude_cap_types)==invalid_counts'
-        # self._length=max_length*100
-        # self._length=25
         self._length=int(1e7)
         self.caption_types=sorted(list(self.captions.keys()))
-        
         self.get_images = get_images
+
         if mask_token_ids:
             mask_token_ids = mask_token_ids[0]
         self.mask_token_ids = mask_token_ids
             
         self.mask_prob = mask_prob
         self.mlm_target = mlm_target
-        self.exclude_suffix = exclude_suffix
         self.data_root = data_root
         self.tokenizer = tokenizer
         self.train_prior_concept1 = train_prior_concept1
@@ -299,7 +292,6 @@ class TextualInversionDataset(Dataset):
                     max_length=self.tokenizer.model_max_length,
                     return_tensors="pt",
                 ).input_ids[0]
-
             words_mlm=mlm_caption.split()
             masked_idxs=[False]
             if self.mlm_target in ['all','non_padding']:
