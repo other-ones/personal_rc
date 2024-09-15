@@ -297,6 +297,7 @@ class PPlusDataset(Dataset):
             input_ids_non_mask_list=[]
             for pidx in range(len(self.placeholder_tokens)):
                 mlm_caption=mlm_caption_raw.replace('<new1>','{}'.format(self.placeholder_tokens[pidx])) # caption without masked embedding
+                pritn(mlm_caption,'mlm_caption')
                 words_mlm=mlm_caption.split()
                 masked_idxs=[False] # DO NOT MASK SOT AND EOS token
                 if self.mlm_target in ['all','non_padding']:
@@ -343,7 +344,7 @@ class PPlusDataset(Dataset):
                             input_ids_masked.append(tok_id)
                             mlm_labels.append(-100)
                             
-                
+                exit()
                 
 
                 # 4) input_ids or MLM
