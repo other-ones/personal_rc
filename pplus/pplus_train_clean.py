@@ -662,14 +662,8 @@ def main():
                     # mlm_labels_list:9*mlm_bsz,77,768
                     mlm_logits_list=cls_net(clip_text_embedding_masked)
                     # masked_idxs_flat_list=masked_idxs.view(-1)
-                    # loss_mlm = F.cross_entropy(
-                    #     mlm_logits_list.view(-1,cls_output_dim),
-                    #     mlm_labels_list.view(-1),
-                    #     ignore_index=-100,
-                    #     reduction='none'
-                    # )
-                    # loss_mlm[masked_idxs_flat_list]*=args.mlm_weight
-                    # loss_mlm=loss_mlm.mean()
+                    print(mlm_labels_list.shape,'mlm_labels_list.shape')
+                    print(mlm_logits_list.shape,'mlm_logits_list.shape')
                     mlm_labels_list_flat=mlm_labels_list.view(-1)
                     loss_mlm = F.cross_entropy(
                         mlm_logits_list.view(-1,cls_output_dim),
