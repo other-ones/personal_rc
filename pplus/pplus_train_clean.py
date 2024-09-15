@@ -652,18 +652,18 @@ def main():
                     input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
                     
                     mlm_bsz=len(masked_idxs_list)
-                    # input_ids_masked_list:7,7,7,... -> 9*bsz
                     if mlm_idxs:
                         input_ids_masked_list=input_ids_masked_list[:,mlm_idxs,:]
                         mlm_labels_list=mlm_labels_list[:,mlm_idxs]
                     clip_text_embedding_masked = text_encoder(input_ids_masked_list.reshape(-1,num_tokens),
                                                             )[0].to(accelerator.device, dtype=weight_dtype)
-                    # clip_text_embedding_masked:9*mlm_bsz,77,768
-                    # mlm_labels_list:9*mlm_bsz,77,768
+                    # torch.Size([10, 7, 77]) input_ids_masked_list.shape
+                    # torch.Size([10, 7, 77]) mlm_labels_list.shape
+                    # torch.Size([70, 77, 49409]) mlm_logits_list.shape
+
+
                     mlm_logits_list=cls_net(clip_text_embedding_masked)
                     # masked_idxs_flat_list=masked_idxs.view(-1)
-                    print(mlm_labels_list.shape,'mlm_labels_list.shape')
-                    print(mlm_logits_list.shape,'mlm_logits_list.shape')
                     mlm_labels_list_flat=mlm_labels_list.view(-1)
                     loss_mlm = F.cross_entropy(
                         mlm_logits_list.view(-1,cls_output_dim),
@@ -753,13 +753,12 @@ def main():
                         # [4] MLM LOGGING
                         if args.lambda_mlm:
                             viz_batch_idx=0
-                            viz_vec_idx=0
                             if mlm_idxs:
                                 num_vectors_viz=len(mlm_idxs)
-                                viz_idx=mlm_idxs[0]
+                                viz_vec_idx=mlm_idxs[0]
                             else:
                                 num_vectors_viz=num_vectors
-                                viz_idx=0
+                                viz_vec_idx=0
                             mlm_logits_list=mlm_logits_list.reshape(mlm_bsz,num_vectors_viz,num_tokens,cls_output_dim)
 
                             # non_special_idxs_list:  mlm_bsz,num_vectors,77
@@ -767,31 +766,42 @@ def main():
                             # mlm_logits_list:        mlm_bsz,num_vectors,len(mlm_idxs),77
                             # input_ids_masked_list:  mlm_bsz,num_vectors,len(mlm_idxs),77
 
+                            # SELECTIVE
                             # torch.Size([10, 7, 77]) non_special_idxs_list.shape
                             # torch.Size([10, 7, 77]) input_ids_non_mask_list.shape
                             # torch.Size([10, 3, 77, 49409]) mlm_logits_list.shape
                             # torch.Size([10, 3, 77]) input_ids_masked_list.shape
-                            masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_idx] #50*9,77
-                            non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_idx]
-                            input_ids_non_mask=input_ids_non_mask_list[viz_batch_idx:viz_batch_idx+1,viz_idx]
+                            # SELECTIVE
+
+                            # NON SELECTIVE
+                            # torch.Size([10, 7, 77]) non_special_idxs_list.shape
+                            # torch.Size([10, 7, 77]) input_ids_non_mask_list.shape
+                            # torch.Size([10, 7, 77, 49409]) mlm_logits_list.shape
+                            # torch.Size([10, 7, 77]) input_ids_masked_list.shape
+                            # torch.Size([10, 7, 77]) mlm_labels_list.shape
+                            # NON SELECTIVE
+
+                            masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_vec_idx] #50*9,77
+                            non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_vec_idx]
+                            input_ids_non_mask=input_ids_non_mask_list[viz_batch_idx:viz_batch_idx+1,viz_vec_idx]
                             mlm_logits=mlm_logits_list[viz_batch_idx:viz_batch_idx+1,0]
                             input_ids_masked=input_ids_masked_list[viz_batch_idx:viz_batch_idx+1,0]
+                            mlm_labels=mlm_labels_list[viz_batch_idx:viz_batch_idx+1,0]
 
-                            # masked_idxs=masked_idxs.detach().cpu().numpy()[viz_batch_idx:viz_batch_idx+1]
-                            # non_special_idxs=non_special_idxs.detach().cpu()[viz_batch_idx:viz_batch_idx+1]
                             mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()#1,77
-
-                            # input_ids_non_mask=input_ids_non_mask[viz_batch_idx:viz_batch_idx+1]
-                            # input_ids_masked=input_ids_masked[viz_batch_idx:viz_batch_idx+1]
 
                             input_ids_non_mask=input_ids_non_mask[non_special_idxs]
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]
                             masked_idxs=masked_idxs[non_special_idxs]
+                            mlm_labels=mlm_labels[non_special_idxs].detach().cpu().numpy()
+                            mlm_labels=mlm_labels[mlm_labels>0]
+
 
                             decoded=tokenizer.batch_decode(input_ids_non_mask)
                             decoded_masked=tokenizer.batch_decode(input_ids_masked)
                             decoded_logits=tokenizer.batch_decode(mlm_logits)
+                            decoded_labels=tokenizer.batch_decode(mlm_labels)
                             decoded_list=[]
                             decoded_masked_list=[]
                             decoded_logits_list=[]
@@ -808,18 +818,22 @@ def main():
                             decoded=' '.join(decoded_list)
                             decoded_masked=' '.join(decoded_masked_list)
                             decoded_logits=' '.join(decoded_logits_list)
+                            decoded_lables=' '.join(decoded_labels)
+
                             dots='-'*100
                             print()
                             print()
                             print(dots)
-                            print(dots)
                             print('Step\t\t|{}'.format(global_step))
+                            print(dots)
                             print('Raw\t\t|{}'.format(decoded))
                             print('Masked\t\t|{}'.format(decoded_masked))
                             print('Preds\t\t|{}'.format(decoded_logits))
                             print(dots)
+                            print('Labels\t\t|{}'.format(decoded_lables))
                             print(dots)
                             print()
+
                         # [4] MLM LOGGING
 
 

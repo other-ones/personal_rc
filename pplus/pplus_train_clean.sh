@@ -30,6 +30,8 @@ accelerate launch --main_process_port 1234  pplus_train_clean.py \
   --include_prior_concept=0 \
   --num_vectors1=7 \
   --mask_prob=0.15 \
+  --validation_steps=2 \
+  --debug \
   --caption_root='../datasets_pkgs/captions/v7'
 
 

@@ -809,15 +809,19 @@ def main():
                             mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
                             input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
                             input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
+                            mlm_labels=mlm_labels[viz_idx:viz_idx+1]
 
                             input_ids_pos=input_ids_pos[non_special_idxs]
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]
                             masked_idxs=masked_idxs[non_special_idxs]
+                            mlm_labels=mlm_labels[non_special_idxs].detach().cpu().numpy()
+                            mlm_labels=mlm_labels[mlm_labels>0]
 
                             decoded=tokenizer.batch_decode(input_ids_pos)
                             decoded_masked=tokenizer.batch_decode(input_ids_masked)
                             decoded_logits=tokenizer.batch_decode(mlm_logits)
+                            decoded_labels=tokenizer.batch_decode(mlm_labels)
                             decoded_list=[]
                             decoded_masked_list=[]
                             decoded_logits_list=[]
@@ -834,16 +838,19 @@ def main():
                             decoded=' '.join(decoded_list)
                             decoded_masked=' '.join(decoded_masked_list)
                             decoded_logits=' '.join(decoded_logits_list)
-                            dots='-'*100
+                            decoded_labels=' '.join(decoded_labels)
+                            dots='-'*150
+
                             print()
                             print()
-                            print(dots)
                             print(dots)
                             print('Step\t\t|{}'.format(global_step))
+                            print(dots)
                             print('Raw\t\t|{}'.format(decoded))
                             print('Masked\t\t|{}'.format(decoded_masked))
                             print('Preds\t\t|{}'.format(decoded_logits))
                             print(dots)
+                            print('Labels\t\t|{}'.format(decoded_labels))
                             print(dots)
                             print()
                         # [4] MLM LOGGING

@@ -297,7 +297,6 @@ class PPlusDataset(Dataset):
             input_ids_non_mask_list=[]
             for pidx in range(len(self.placeholder_tokens)):
                 mlm_caption=mlm_caption_raw.replace('<new1>','{}'.format(self.placeholder_tokens[pidx])) # caption without masked embedding
-                print(mlm_caption,'mlm_caption')
                 words_mlm=mlm_caption.split()
                 masked_idxs=[False] # DO NOT MASK SOT AND EOS token
                 if self.mlm_target in ['all','non_padding']:
@@ -414,7 +413,6 @@ class PPlusDataset(Dataset):
                     non_special_idxs.append(False) #for EOS or PAD
                 non_special_idxs=torch.BoolTensor(non_special_idxs)
                 non_special_idxs_list.append(non_special_idxs)
-            exit()
               
 
                 

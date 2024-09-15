@@ -15,4 +15,4 @@ accelerate launch --main_process_port 1732  pplus_generate_clean.py \
   --eval_batch_size=1 \
   --eval_prompt_type='living' \
   --num_vectors1=7 \
-  --benchmark_path='../datasets_pkgs/eval_prompts/dreambooth.json' \
+  --benchmark_path='../datasets_pkgs/eval_prompts/dreambooth.json' 
