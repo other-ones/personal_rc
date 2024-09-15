@@ -17,12 +17,12 @@ accelerate launch --main_process_port 1234  pplus_train_clean.py \
   --output_dir="saved_models/pplus_models/" \
   --seed=7777 \
   --mask_tokens="[MASK]" \
-  --lambda_mlm=0 --freeze_mask_embedding=1 \
+  --lambda_mlm=0.001 --freeze_mask_embedding=1 \
   --cls_net_path='saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt' \
   --mask_embed_path='saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
   --mlm_target='masked' \
-  --mlm_batch_size=0 \
-  --run_name='tmp_pplus_nomlm_lr5e4' \
+  --mlm_batch_size=10 \
+  --run_name='tmp_pplus_mlm_lr5e4' \
   --scale_lr \
   --train_prompt_type='pet' \
   --eval_prompt_type='living' \
