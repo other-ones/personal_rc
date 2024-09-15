@@ -650,7 +650,7 @@ def main():
                     non_special_idxs_list=batch_mlm["non_special_idxs_list"]
                     raw_captions_mlm=batch_mlm["raw_captions_mlm"] # B,77 list of booleans (tensor)
                     input_ids_non_mask_list=batch_mlm["input_ids_non_mask_list"].to(accelerator.device)
-                    # load mlm batch
+                    
                     mlm_bsz=len(masked_idxs_list)
                     # input_ids_masked_list:7,7,7,... -> 9*bsz
                     if mlm_idxs:

@@ -84,7 +84,7 @@ concepts=list(info_map.keys())
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
             # 0.0001,
-            # 0,
+            0,
             # 0.01,
             0.001,
             # 0.002,
@@ -114,7 +114,7 @@ ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
-include_prior=0
+include_prior=1
 delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
@@ -129,7 +129,7 @@ nonmask_weight_list=[1]
 
 
 
-rep_id=2
+rep_id=1
 
 
 train_batch_size=4
@@ -276,11 +276,11 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/pplus_models',dir_name)
 
-gen_target_step=3000
 delay=30
 num_images_per_prompt=8
 port_idx=0
 exclude_key='mtarget_nonspec'
+gen_target_step=3000
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
