@@ -344,7 +344,6 @@ class PPlusDataset(Dataset):
                             input_ids_masked.append(tok_id)
                             mlm_labels.append(-100)
                             
-                exit()
                 
 
                 # 4) input_ids or MLM
@@ -415,7 +414,8 @@ class PPlusDataset(Dataset):
                     non_special_idxs.append(False) #for EOS or PAD
                 non_special_idxs=torch.BoolTensor(non_special_idxs)
                 non_special_idxs_list.append(non_special_idxs)
-                
+            exit()
+              
 
                 
 
