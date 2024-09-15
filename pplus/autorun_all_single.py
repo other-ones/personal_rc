@@ -83,10 +83,10 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0.0001,
-            0,
+            # 0.0001,
+            # 0,
             # 0.01,
-            # 0.001,
+            0.001,
             # 0.002,
             # 0.0001,
             # 0.0005,
@@ -129,7 +129,7 @@ nonmask_weight_list=[1]
 
 
 
-rep_id=1
+rep_id=2
 
 
 train_batch_size=4
@@ -146,13 +146,11 @@ else:
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
-
 train_steps=3001
 mlm_batch=12
 check_tags=['']
-mlm_idxs_list=['','2,3,4','3']
+mlm_idxs_list=['']
 for mlm_idxs in mlm_idxs_list:
-    continue
     if not mlm_idxs:
         mlm_idxs_str='none'
     else:

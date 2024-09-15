@@ -279,6 +279,7 @@ def main(args):
     print(args.benchmark_path,'args.benchmark_path')
     batch_size=args.eval_batch_size
     eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
+    eval_prompts=eval_prompts*args.num_images_per_prompt
     num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
 
     # validation_files=os.listdir(args.train_data_dir1)
@@ -347,6 +348,7 @@ def main(args):
             print(batch_idx+1,num_batches,render_delay)
             print(merged_viz.size,'merged_viz.size',len(images),'len(images)')
             merged_viz.save(os.path.join(merged_dir,'merged_{:03d}.jpg'.format(batch_idx+1)))
+            torch.cuda.empty_cache()
             # 
 
 
