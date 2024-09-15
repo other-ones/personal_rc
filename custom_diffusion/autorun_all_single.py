@@ -24,7 +24,7 @@ info_map={
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
     'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     

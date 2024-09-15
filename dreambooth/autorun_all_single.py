@@ -25,7 +25,7 @@ info_map={
     # 'cat_statue': ('toy','toy','nonliving','nonliving'),
     # 'rc_car':('toy','toy','nonliving','nonliving'),
     # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -63,9 +63,14 @@ info_map_01={
 }
 if '03' in hostname:
     target_devices=[0,1,2,3,4,5,6,7]
+    host_suffix='03'
 
 elif '04' in hostname:
     target_devices=[0,6,7]
+    host_suffix='04'
+elif '07' in hostname:
+    target_devices=[0,1,2]
+    host_suffix='07'
 
 lambda_mlm_list=[
             0, 
@@ -95,13 +100,13 @@ fixte_list=[0]
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='single_noacc_seed{}_rep{}'.format(seed,rep_id)
+dir_name='bigger_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-6]
 mlm_batch_size=25
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN','']
+check_tags=['']
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     lr_str=lr_str.replace('.','P')
@@ -148,7 +153,8 @@ for lr in lr_list:
                             print(run_name,'sleep',stat_idx,stat)
                             time.sleep(10)
                         print(f"START {exp_path}\tDEVICE:{device_idx}")
-                        log_path=os.path.join(log_dir,run_name+'.out')
+                        os.makedirs(exp_path,exist_ok=True)
+                        log_path=os.path.join(exp_path,run_name+'.out')
                         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
                         command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
@@ -171,8 +177,10 @@ for lr in lr_list:
                         command+='--seed={} \\\n'.format(seed)
                         command+='--mask_tokens="[MASK]" \\\n'
                         command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                        command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                        command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                        command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                        command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                        # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                        # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                         command+='--mlm_target=masked \\\n'
                         command+='--mlm_batch_size={} \\\n'.format(mlm_batch_size)
                         command+='--mask_prob={} \\\n'.format(mask_prob)
@@ -248,7 +256,8 @@ for concept in concepts:
             print(exp_name,'sleep',stat_idx,stat)
             time.sleep(10)
         print(exp_name,device_idx)
-        log_path=os.path.join(gen_log_dir,exp_name+'.out')
+        os.makedirs(dst_exp_path,exist_ok=True)
+        log_path=os.path.join(dst_exp_path,exp_name+'.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
         command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx])

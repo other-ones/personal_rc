@@ -21,7 +21,7 @@ info_map_03={
     'dog3':  ('dog','dog','pet','living'),
     'pet_dog1':('dog','dog','pet','living'),
     'backpack':('backpack','backpack','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
     'chair1': ('chair','chair','nonliving','nonliving'),
