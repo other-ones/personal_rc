@@ -1149,7 +1149,7 @@ def main(args):
                 # CAPTION LOGGGING/ INPUT LOGGING / MLM LOGGING / VALIDATION
                 if accelerator.is_main_process:
                     # [2] CAPTION LOGGING
-                    if ((global_step % args.log_steps == 0) or global_step==1):
+                    if ((global_step % args.log_steps == 0) or (global_step==1) ):
                         caption_log_file=open(caption_log_path,'a')
                         for raw_caption_ti in raw_captions_ti:
                             caption_log_file.write('STEP{:04d}\t{}\n'.format(global_step,raw_caption_ti))
@@ -1167,7 +1167,7 @@ def main(args):
                     # [2] CAPTION LOGGING
                     
 
-                    if (global_step % args.validation_steps == 0  or global_step==1):
+                    if ((global_step % args.validation_steps == 0)  or (global_step==1 )or (global_step==250)):
                         # [3] INPUT LOGGING
                         input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
                         input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
