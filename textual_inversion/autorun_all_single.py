@@ -149,15 +149,15 @@ exclude_cap_types=None
 train_steps=3001
 mlm_batch=25
 check_tags=['']
-for lambda_mlm in lambda_mlm_list:
-    lambda_mlm_str=float_to_str(lambda_mlm)
-    lambda_mlm_str=lambda_mlm_str.replace('.','')
+for cidx,concept in enumerate(list(info_map.keys())):
     for nonmask_weight in nonmask_weight_list:
         nonmask_weight_str=float_to_str(nonmask_weight)
         nonmask_weight_str=nonmask_weight_str.replace('.','')
         for check_tag in check_tags:
             for mlm_target in mlm_target_list:
-                for cidx,concept in enumerate(list(info_map.keys())):
+                for lambda_mlm in lambda_mlm_list:
+                    lambda_mlm_str=float_to_str(lambda_mlm)
+                    lambda_mlm_str=lambda_mlm_str.replace('.','')
                     device_idx=stat_idx
                     for mask_prob in mask_prob_list:
                         mask_prob_str=float_to_str(mask_prob)
@@ -186,7 +186,6 @@ for lambda_mlm in lambda_mlm_list:
                         if os.path.exists(exp_path):
                             print(exp_path,'exists')
                             continue
-                            
                         
                         while True:
                             stats=get_gpu_memory()
