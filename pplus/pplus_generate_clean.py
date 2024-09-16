@@ -327,7 +327,7 @@ def main(args):
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
                 image_name='{:04d}'.format(count+1)
                 img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
-                prompt_saved=prompt.format(args.train_prior_concept1)
+                prompt_saved=prompt.format(args.eval_prior_concept1)
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)

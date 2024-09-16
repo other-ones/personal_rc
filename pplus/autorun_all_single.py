@@ -8,6 +8,7 @@ print(hostname,'hostname')
 # concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
+    'chair1': ('chair','chair','nonliving','nonliving'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
     'teapot':('teapot','teapot','nonliving','nonliving'),
@@ -24,7 +25,6 @@ info_map_03={
     'teddybear':('teddy','teddy bear','nonliving','nonliving'),
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
 
 
     # NOT USED
@@ -86,7 +86,9 @@ lambda_mlm_list=[
             # 0.0001,
             0,
             # 0.01,
-            0.001,
+            # 0.001,
+            0.0005,
+            0.0001,
             # 0.002,
             # 0.0001,
             # 0.0005,
@@ -139,10 +141,12 @@ elif train_batch_size==1:
     learning_rate='1e-3'
 else:
     assert False
+
 if include_prior:
-    dir_name='bigger_reduced{}_prior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
+    dir_name=f'bigger_reduced4_prior_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 else:
-    dir_name='bigger_reduced{}_noprior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
+    dir_name=f'bigger_reduced4_noprior_seed{seed}_qlab{host_suffix}_rep{rep_id}'
+
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
