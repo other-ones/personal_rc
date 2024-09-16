@@ -23,7 +23,7 @@ accelerate launch --main_process_port 4230  ti_train_clean.py \
   --cls_net_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt' \
   --mask_embed_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
   --mlm_target='masked' \
-  --mlm_batch_size=10 \
+  --mlm_batch_size=25 \
   --run_name='tmp' \
   --scale_lr \
   --train_prompt_type='pet' \
