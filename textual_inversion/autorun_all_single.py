@@ -86,10 +86,10 @@ lambda_mlm_list=[
             # 0.0001,
             0,
             # 0.01,
-            # 0.001,
             # 0.002,
             0.0001,
             0.0005,
+            0.001,
             # 0.0002,
             # 0.00001,
             # 0.01,
@@ -129,7 +129,7 @@ nonmask_weight_list=[1]
 
 
 
-rep_id=1
+rep_id=2
 
 
 train_batch_size=4
@@ -149,20 +149,19 @@ exclude_cap_types=None
 train_steps=3001
 mlm_batch=25
 check_tags=['']
-for mask_prob in mask_prob_list:
+for lambda_mlm in lambda_mlm_list:
+    lambda_mlm_str=float_to_str(lambda_mlm)
+    lambda_mlm_str=lambda_mlm_str.replace('.','')
     for nonmask_weight in nonmask_weight_list:
         nonmask_weight_str=float_to_str(nonmask_weight)
         nonmask_weight_str=nonmask_weight_str.replace('.','')
         for check_tag in check_tags:
             for mlm_target in mlm_target_list:
-                mask_prob_str=float_to_str(mask_prob)
-                mask_prob_str=mask_prob_str.replace('.','')
                 for cidx,concept in enumerate(list(info_map.keys())):
                     device_idx=stat_idx
-                    
-                    for lambda_mlm in lambda_mlm_list:
-                        lambda_mlm_str=float_to_str(lambda_mlm)
-                        lambda_mlm_str=lambda_mlm_str.replace('.','')
+                    for mask_prob in mask_prob_list:
+                        mask_prob_str=float_to_str(mask_prob)
+                        mask_prob_str=mask_prob_str.replace('.','')
                         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
                         prefix='ti_bigger_qlab{}'.format(host_suffix)
                         if include_prior:
