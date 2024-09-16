@@ -9,6 +9,7 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
     'teapot':('teapot','teapot','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
@@ -24,7 +25,6 @@ info_map_03={
     'teddybear':('teddy','teddy bear','nonliving','nonliving'),
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
 
 
     # NOT USED
