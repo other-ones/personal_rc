@@ -1183,6 +1183,7 @@ def main(args):
                             viz_idx=0
                             masked_idxs=masked_idxs.detach().cpu().numpy()[viz_idx:viz_idx+1]
                             non_special_idxs=non_special_idxs.detach().cpu()[viz_idx:viz_idx+1]
+                            special_idxs=~non_special_idxs
                             mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
                             input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
                             input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
@@ -1192,6 +1193,7 @@ def main(args):
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]
                             masked_idxs=masked_idxs[non_special_idxs]
+                            assert torch.all(mlm_labels[special_idxs]==(-100)),'mlm_label special_idx==-100'
                             mlm_labels=mlm_labels[non_special_idxs].detach().cpu().numpy()
                             mlm_labels=mlm_labels[mlm_labels>0]
 
@@ -1226,7 +1228,7 @@ def main(args):
                             print('Masked\t\t|{}'.format(decoded_masked))
                             print('Preds\t\t|{}'.format(decoded_logits))
                             print(dots)
-                            print('Labels\t\t|{}'.format(decoded_logits))
+                            print('Labels\t\t|{}'.format(decoded_labels))
                             print(dots)
                             print()
                         # [4] MLM LOGGING
