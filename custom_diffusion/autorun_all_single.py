@@ -105,10 +105,10 @@ elif '04' in hostname:
 else:
     assert False
 lambda_mlm_list=[
-            # 0.001,
             0.0001,
             0, 
-            # 0.0005,
+            0.0005,
+            0.001,
             # 0.00005,
             # 0.002,
             ]
@@ -139,7 +139,7 @@ mlm_batch_size=25
 check_tags=['']
 # target_tags=''
 num_devices=1
-for check_tag in check_tags:
+for lambda_mlm in lambda_mlm_list:
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
         lr_str=lr_str.replace('.','P')
@@ -147,7 +147,7 @@ for check_tag in check_tags:
             mask_prob_str=float_to_str(mask_prob)
             mask_prob_str=mask_prob_str.replace('.','')
             for port_idx,concept in enumerate(list(info_map.keys())):
-                for lambda_mlm in lambda_mlm_list:
+                for check_tag in check_tags:        
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
