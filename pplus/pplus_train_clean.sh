@@ -1,7 +1,7 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/pet_dog1"
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=4;
 accelerate launch --main_process_port 1234  pplus_train_clean.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \

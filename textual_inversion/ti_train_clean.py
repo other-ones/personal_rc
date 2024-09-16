@@ -816,10 +816,7 @@ def main():
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]
                             masked_idxs=masked_idxs[non_special_idxs]
-
-                            print(torch.all(mlm_labels[special_idxs]==(-100)),'torch.all(mlm_labels[special_idxs]==(-100))')
                             assert torch.all(mlm_labels[special_idxs]==(-100)),'mlm_label special_idx==-100'
-                            exit()
                             mlm_labels=mlm_labels[non_special_idxs].detach().cpu().numpy()
 
                             mlm_labels=mlm_labels[mlm_labels>0]

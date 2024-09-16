@@ -783,6 +783,7 @@ def main():
 
                             masked_idxs=masked_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_vec_idx] #50*9,77
                             non_special_idxs=non_special_idxs_list[viz_batch_idx:viz_batch_idx+1,viz_vec_idx]
+                            special_idxs=~non_special_idxs
                             input_ids_non_mask=input_ids_non_mask_list[viz_batch_idx:viz_batch_idx+1,viz_vec_idx]
                             mlm_logits=mlm_logits_list[viz_batch_idx:viz_batch_idx+1,0]
                             input_ids_masked=input_ids_masked_list[viz_batch_idx:viz_batch_idx+1,0]
@@ -794,6 +795,7 @@ def main():
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]
                             masked_idxs=masked_idxs[non_special_idxs]
+                            assert torch.all(mlm_labels[special_idxs]==(-100)),'mlm_label special_idx==-100'
                             mlm_labels=mlm_labels[non_special_idxs].detach().cpu().numpy()
                             mlm_labels=mlm_labels[mlm_labels>0]
 
