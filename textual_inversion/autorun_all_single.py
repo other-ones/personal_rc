@@ -83,15 +83,15 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0.0001,
+            # 0.0001,
             0,
             # 0.01,
             # 0.001,
             # 0.002,
-            # 0.0001,
-            # 0.0005,
+            0.0001,
+            0.0005,
             # 0.0002,
-            0.00001,
+            # 0.00001,
             # 0.01,
             # 0.0002,
             ]
@@ -114,7 +114,7 @@ ports=np.arange(1111,2222)
 np.random.shuffle(ports)
 target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
-include_prior=0
+include_prior=1
 delay=25
 mask_prob_list=[0.15]
 rev_list=[0]
@@ -140,13 +140,12 @@ elif train_batch_size==1:
 else:
     assert False
 if include_prior:
-    dir_name='tmp_bigger_reduced{}_prior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
+    dir_name='bigger_reduced{}_prior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
 else:
-    dir_name='tmp_bigger_reduced{}_noprior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
+    dir_name='bigger_reduced{}_noprior_seed{}_qlab{}_rep{}'.format(train_batch_size,seed,host_suffix,rep_id)
 # exclude_cap_types='specific-human_interactions-creation'
 # exclude_cap_types='specific-human_interactions-creation'RF
 exclude_cap_types=None
-
 train_steps=3001
 mlm_batch=25
 check_tags=['']
