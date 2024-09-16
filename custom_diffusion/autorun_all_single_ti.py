@@ -18,13 +18,13 @@ info_map={
     'poop_emoji':('toy','toy','nonliving','nonliving'),
     'cat2':('cat','cat','pet','living'),
     'cat1': ('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('bear','teddy bear','nonliving','nonliving'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
 
 }
 info_map_01={
@@ -65,7 +65,7 @@ elif '07' in hostname:
 
 lambda_mlm_list=[
             # 0, 
-            0.001,
+            # 0.001,
             # 0.01,
             0.0001,
             # 0.0005,
@@ -97,9 +97,9 @@ elif '07' in hostname:
     host_suffix='07'
 else:
     assert False
-dir_name=f'mgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
+dir_name=f'sgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4]
+lr_list=[5e-5]
 mlm_batch_size=25
 train_target_step=250
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
@@ -139,6 +139,7 @@ for lr in lr_list:
 
                     cd_exp_name=run_name.replace('lr5e4','lr1e5')
                     cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')
+                    cd_exp_name=cd_exp_name.replace('lr5e5','lr1e5')
                     cd_exp_name=cd_exp_name.replace('_ti','')
                     
                     resume_cd_path=os.path.join(unet_concept_path,cd_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step))
@@ -238,7 +239,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[500,1000,2000,3000]
+gen_target_step_list=[1000,2000,3000]
 for gen_target_step in gen_target_step_list:
     for concept in list(info_map.keys()):
           

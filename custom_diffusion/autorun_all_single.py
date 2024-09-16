@@ -13,18 +13,18 @@ info_map={
     'dog6': ('dog','dog','pet','living'),
     'teapot':('teapot','teapot','nonliving','nonliving'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -131,14 +131,14 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=7777
 rep_id=1
-dir_name='mgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
 # ['VERB', 'ADJ','ADV','PROPN','ADP','NOUN']
 check_tags=['']
 # target_tags=''
-num_devices=2
+num_devices=1
 for check_tag in check_tags:
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
@@ -195,7 +195,7 @@ for check_tag in check_tags:
                     command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
                     command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
                     command+='--resolution=512 \\\n'
-                    command+='--train_batch_size=2 \\\n'
+                    command+='--train_batch_size=4 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
                     command+='--checkpoints_total_limit=2 \\\n'
