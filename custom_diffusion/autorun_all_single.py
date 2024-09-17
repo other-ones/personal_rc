@@ -116,7 +116,6 @@ check_tags=['']
 num_devices=1
 port_idx=0
 for lambda_mlm in lambda_mlm_list:
-    continue
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
         lr_str=lr_str.replace('.','P')
@@ -176,7 +175,7 @@ for lambda_mlm in lambda_mlm_list:
                     command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
                     command+='--checkpoints_total_limit=2 \\\n'
-                    command+='--max_train_steps=251 \\\n'
+                    command+='--max_train_steps=501 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
