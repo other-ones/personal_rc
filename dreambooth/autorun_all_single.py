@@ -73,8 +73,8 @@ elif '07' in hostname:
     host_suffix='07'
 
 lambda_mlm_list=[
-            0, 
             0.001,
+            0, 
             # 0.0001,
             0.0005,
             # 0.00005,
@@ -203,6 +203,7 @@ for lr in lr_list:
                         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                         os.system(command)
                         print('TRAIN STARTED')
+                        exit()
                         port_idx+=1
                         time.sleep(25)
 
