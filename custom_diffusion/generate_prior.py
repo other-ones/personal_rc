@@ -257,7 +257,7 @@ def main(args):
             torch_dtype=torch_dtype,
             safety_checker=None,
             revision=None,
-            variant=args.variant,
+            variant=None,
         )
         pipeline.set_progress_bar_config(disable=True)
 
