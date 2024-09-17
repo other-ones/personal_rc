@@ -97,7 +97,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 fixte_list=[0]
-mask_prob_list=[0.25]
+mask_prob_list=[0.15]
 seed=7777
 rep_id=1
 dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
@@ -141,7 +141,7 @@ for lr in lr_list:
                         found=False
                         for stat_idx in target_devices:
                             stat=stats[stat_idx]    
-                            if stat>2e4 :
+                            if stat>2.4e4 :
                                 device_idx=stat_idx
                                 found=True
                                 break
@@ -197,7 +197,6 @@ for lr in lr_list:
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
                     print('TRAIN STARTED')
-                    exit()
                     port_idx+=1
                     time.sleep(25)
 
