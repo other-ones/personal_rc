@@ -234,6 +234,8 @@ for gen_target_step in [500]:
 
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
+            if '_ti' in exp:
+                continue
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
             resume_cd_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(gen_target_step))
             learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_target_step))

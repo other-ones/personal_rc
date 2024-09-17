@@ -225,6 +225,8 @@ for concept_idx,concept in enumerate(concepts):
         continue
     exps=os.listdir(concept_path)
     for exp_idx,exp in enumerate(exps):
+        if '_ti' in exp:
+            continue
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
         resume_unet_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(target_step,target_step))
         resume_text_encoder_path=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/text_encoder_s{:04d}.pt'.format(target_step,target_step))
