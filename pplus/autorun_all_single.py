@@ -167,10 +167,9 @@ for mlm_idxs in mlm_idxs_list:
                 for mlm_target in mlm_target_list:
                     mask_prob_str=float_to_str(mask_prob)
                     mask_prob_str=mask_prob_str.replace('.','')
-                    for cidx,concept in enumerate(list(info_map.keys())):
+                    for lambda_mlm in lambda_mlm_list:
                         device_idx=stat_idx
-                        
-                        for lambda_mlm in lambda_mlm_list:
+                        for cidx,concept in enumerate(list(info_map.keys())):
                             lambda_mlm_str=float_to_str(lambda_mlm)
                             lambda_mlm_str=lambda_mlm_str.replace('.','')
                             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
