@@ -83,7 +83,7 @@ else:
     assert False
 dir_name=f'sgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-5]
+lr_list=[5e-4]
 mlm_batch_size=25
 train_target_step=250
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
