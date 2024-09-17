@@ -278,7 +278,7 @@ for gen_target_step in [250]:
                 for stat_idx in target_devices:
                     stat=stats[stat_idx]    
                     if stat>2e4 :
-                        available_devices.append(stat_idx)
+                        available_devices.append(str(stat_idx))
                         break
                 if len(available_devices)>=num_devices:
                     break
