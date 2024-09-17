@@ -19,12 +19,12 @@ accelerate launch --main_process_port 4235  db_train_clean.py \
   --output_dir="saved_models/tmp" \
   --seed=7777 \
   --mask_tokens="[MASK]" \
-  --lambda_mlm=0 --freeze_mask_embedding=1 \
+  --lambda_mlm=0.001 --freeze_mask_embedding=1 \
   --cls_net_path='saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt' \
   --mask_embed_path='saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
   --mlm_target='masked' \
   --mlm_batch_size=25 \
-  --run_name='tmp_nomlm_dog6' \
+  --run_name='tmp_mlm0001_dog6' \
   --train_prompt_type='pet' \
   --eval_prompt_type='living' \
   --include_prior_concept=1 \
