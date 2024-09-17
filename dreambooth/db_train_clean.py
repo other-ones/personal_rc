@@ -1052,7 +1052,9 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
+                print('here1')
                 progress_bar.update(1)
+                print('here2')
                 global_step += 1
                 # [1] CHECKPOINTING
                 if (global_step % args.checkpointing_steps == 0 or global_step==1) and not args.debug:
@@ -1250,7 +1252,7 @@ def main(args):
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break
-            print('here')
+            print('here3')
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
