@@ -660,6 +660,11 @@ def main(args):
         exclude_cap_types=args.exclude_cap_types.split('-')
     else:
         exclude_cap_types=None
+    if args.check_tag:
+        check_tag=args.check_tag.split('-')
+    else:
+        check_tag=None
+    print(check_tag,'check_tag')
     train_dataset = DreamboothDataset(
         include_prior_concept=args.include_prior_concept,
         data_root=args.train_data_dir1,
@@ -681,6 +686,7 @@ def main(args):
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
         caption_root=args.caption_root,
+        check_tag=check_tag,
     )
     train_dataset_mlm = DreamboothDataset(
         include_prior_concept=args.include_prior_concept,
@@ -700,6 +706,7 @@ def main(args):
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
         caption_root=args.caption_root,
+        check_tag=check_tag,
     )
     generator = torch.Generator(device='cpu').manual_seed(args.seed)
     generator_cuda = torch.Generator(device=accelerator.device).manual_seed(args.seed)

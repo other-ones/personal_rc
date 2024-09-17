@@ -100,112 +100,106 @@ fixte_list=[0]
 mask_prob_list=[0.25]
 seed=7777
 rep_id=1
-dir_name='bigger_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-6]
 mlm_batch_size=25
 port_idx=0
-check_tags=['']
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     lr_str=lr_str.replace('.','P')
     for mask_prob in mask_prob_list:
         mask_prob_str=float_to_str(mask_prob)
         mask_prob_str=mask_prob_str.replace('.','')
-        for check_tag in check_tags:
-            for concept_idx,concept in enumerate(list(info_map.keys())):
-                device_idx=stat_idx
-                for fixte in fixte_list:
-                    for lambda_mlm in lambda_mlm_list:
-                        lambda_mlm_str=float_to_str(lambda_mlm)
-                        lambda_mlm_str=lambda_mlm_str.replace('.','')
-                        train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                        run_name='db_cnetv4'
-                        if lambda_mlm:
-                            run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
-                            run_name+='_mprob{}'.format(mask_prob_str)
-                            run_name+='_mbatch{}'.format(mlm_batch_size)
-                            run_name+='_mtarget_masked'
-                            if check_tag:
-                                run_name+='_tagged'
-                        else:
-                            run_name+="_nomlm_{}".format(concept)
-                        if fixte:
-                            run_name+='_fixte'
-                        run_name+='_lr{}'.format(lr_str)
-                        output_dir=os.path.join('saved_models/db_models/{}'.format(dir_name),concept)
-                        exp_path=os.path.join(output_dir,run_name)
-                        if os.path.exists(exp_path):
-                            print(exp_path,'exists')
-                            continue
-                        while True:
-                            stats=get_gpu_memory()
-                            found=False
-                            for stat_idx in target_devices:
-                                stat=stats[stat_idx]    
-                                if stat>2e4 :
-                                    device_idx=stat_idx
-                                    found=True
-                                    break
-                            if found:
+        for concept_idx,concept in enumerate(list(info_map.keys())):
+            device_idx=stat_idx
+            for fixte in fixte_list:
+                for lambda_mlm in lambda_mlm_list:
+                    lambda_mlm_str=float_to_str(lambda_mlm)
+                    lambda_mlm_str=lambda_mlm_str.replace('.','')
+                    train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
+                    run_name=f'db_bigger_qlab{host_suffix}'
+                    if lambda_mlm:
+                        run_name+=f"_mlm{lambda_mlm_str}_{concept}"
+                        run_name+='_mprob{}'.format(mask_prob_str)
+                        run_name+='_mbatch{}'.format(mlm_batch_size)
+                        run_name+='_mtarget_masked'
+                    else:
+                        run_name+="_nomlm_{}".format(concept)
+                    if fixte:
+                        run_name+='_fixte'
+                    run_name+='_lr{}'.format(lr_str)
+                    output_dir=os.path.join('saved_models/db_models/{}'.format(dir_name),concept)
+                    exp_path=os.path.join(output_dir,run_name)
+                    if os.path.exists(exp_path):
+                        print(exp_path,'exists')
+                        continue
+                    while True:
+                        stats=get_gpu_memory()
+                        found=False
+                        for stat_idx in target_devices:
+                            stat=stats[stat_idx]    
+                            if stat>2e4 :
+                                device_idx=stat_idx
+                                found=True
                                 break
-                            print(f"SLEEP TRAINING\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}")
-                            time.sleep(10)
-                        print(f"START {exp_path}\tDEVICE:{device_idx}")
-                        os.makedirs(exp_path,exist_ok=True)
-                        log_path=os.path.join(exp_path,'log.out')
-                        command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-                        command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                        command+='accelerate launch --main_process_port {} db_train_clean.py \\\n'.format(ports[port_idx])
-                        command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
-                        command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-                        command+='--initializer_token=sks \\\n'
-                        command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-                        command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
-                        command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
-                        command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
-                        command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
-                        command+='--resolution=512 \\\n'
-                        command+='--train_batch_size=1 \\\n'
-                        command+='--gradient_accumulation_steps=1 \\\n'
-                        command+='--max_train_steps=1001 \\\n'
-                        command+='--learning_rate={} \\\n'.format(lr)
-                        command+='--lr_scheduler="constant" \\\n'
-                        command+='--lr_warmup_steps=0 \\\n'
-                        command+='--output_dir="{}" \\\n'.format(output_dir)
-                        command+='--seed={} \\\n'.format(seed)
-                        command+='--mask_tokens="[MASK]" \\\n'
-                        command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                        command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                        command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
-                        # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                        # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
-                        command+='--mlm_target=masked \\\n'
-                        command+='--mlm_batch_size={} \\\n'.format(mlm_batch_size)
-                        command+='--mask_prob={} \\\n'.format(mask_prob)
-                        command+='--silent=0 \\\n'
-                        if check_tag:
-                            command+='--check_tag={} \\\n'.format(check_tag)
-                        command+='--simple_caption=0 \\\n'
-                        command+='--masked_loss={} \\\n'.format(masked_loss)
-                        command+='--normalize_target1=0 \\\n'
-                        command+='--run_name="{}" \\\n'.format(run_name)
-                        command+='--with_prior_preservation={} \\\n'.format(1)
-                        command+='--class_prompt1="a picture of a {}" \\\n'.format(train_prior)
-                        command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
-                        command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
-                        if fixte==0: # do not fix text_encoder
-                            command+='--train_text_encoder \\\n'
-                        # command+='--report_to="wandb" \\\n'
-                        # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
-                        command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
-                        os.system(command)
-                        print('TRAIN STARTED')
-                        exit()
-                        port_idx+=1
-                        time.sleep(25)
+                        if found:
+                            break
+                        print(f"SLEEP TRAINING\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}")
+                        time.sleep(10)
+                    print(f"START {exp_path}\tDEVICE:{device_idx}")
+                    os.makedirs(exp_path,exist_ok=True)
+                    log_path=os.path.join(exp_path,'log.out')
+                    command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+                    command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
+                    command+='accelerate launch --main_process_port {} db_train_clean.py \\\n'.format(ports[port_idx])
+                    command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+                    command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
+                    command+='--initializer_token=sks \\\n'
+                    command+='--placeholder_token1="<{}>" \\\n'.format(concept)
+                    command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
+                    command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
+                    command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
+                    command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
+                    command+='--resolution=512 \\\n'
+                    command+='--train_batch_size=1 \\\n'
+                    command+='--gradient_accumulation_steps=1 \\\n'
+                    command+='--max_train_steps=1001 \\\n'
+                    command+='--learning_rate={} \\\n'.format(lr)
+                    command+='--lr_scheduler="constant" \\\n'
+                    command+='--lr_warmup_steps=0 \\\n'
+                    command+='--output_dir="{}" \\\n'.format(output_dir)
+                    command+='--seed={} \\\n'.format(seed)
+                    command+='--mask_tokens="[MASK]" \\\n'
+                    command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
+                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    command+='--mlm_target=masked \\\n'
+                    command+='--mlm_batch_size={} \\\n'.format(mlm_batch_size)
+                    command+='--mask_prob={} \\\n'.format(mask_prob)
+                    command+='--silent=0 \\\n'
+                    command+='--simple_caption=0 \\\n'
+                    command+='--masked_loss={} \\\n'.format(masked_loss)
+                    command+='--normalize_target1=0 \\\n'
+                    command+='--run_name="{}" \\\n'.format(run_name)
+                    command+='--with_prior_preservation={} \\\n'.format(1)
+                    command+='--class_prompt1="a picture of a {}" \\\n'.format(train_prior)
+                    command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
+                    command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
+                    if fixte==0: # do not fix text_encoder
+                        command+='--train_text_encoder \\\n'
+                    # command+='--report_to="wandb" \\\n'
+                    # command+='--project_name="DreamBooth MLM SINGLE" \\\n'
+                    command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
+                    os.system(command)
+                    print('TRAIN STARTED')
+                    exit()
+                    port_idx+=1
+                    time.sleep(25)
 
 
 
