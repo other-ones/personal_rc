@@ -87,7 +87,7 @@ lambda_mlm_list=[
             0,
             # 0.01,
             # 0.001,
-            0.0005,
+            # 0.0005,
             0.0001,
             # 0.002,
             # 0.0001,
@@ -283,7 +283,8 @@ delay=30
 num_images_per_prompt=8
 port_idx=0
 exclude_key='mtarget_nonspec'
-gen_target_step=3000
+include_key='mlm00005'
+gen_target_step=2000
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
@@ -298,6 +299,8 @@ for cidx,concept in enumerate(concepts):
         else:
             rev=0
         if exclude_key in exp:
+            continue
+        if not include_key in exp:
             continue
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
         learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(gen_target_step))

@@ -9,23 +9,23 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
 
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
 
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -76,7 +76,7 @@ lambda_mlm_list=[
             0, 
             0.001,
             # 0.0001,
-            # 0.0005,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -154,10 +154,10 @@ for lr in lr_list:
                             time.sleep(10)
                         print(f"START {exp_path}\tDEVICE:{device_idx}")
                         os.makedirs(exp_path,exist_ok=True)
-                        log_path=os.path.join(exp_path,run_name+'.out')
+                        log_path=os.path.join(exp_path,'log.out')
                         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                        command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
+                        command+='accelerate launch --main_process_port {} db_train_clean.py \\\n'.format(ports[port_idx])
                         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                         command+='--initializer_token=sks \\\n'
@@ -257,10 +257,10 @@ for concept in concepts:
             time.sleep(10)
         print(exp_name,device_idx)
         os.makedirs(dst_exp_path,exist_ok=True)
-        log_path=os.path.join(dst_exp_path,exp_name+'.out')
+        log_path=os.path.join(dst_exp_path,'log.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-        command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx])
+        command+='accelerate launch --main_process_port {} db_generate_clean.py \\\n'.format(ports[port_idx])
         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
         command+='--placeholder_token1="<{}>" \\\n'.format(concept)
