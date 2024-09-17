@@ -105,11 +105,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=7777
-<<<<<<< HEAD
-rep_id=1
-=======
 rep_id=3
->>>>>>> a8a23f4cb59548e33fc4e8cb5fddf2e2969229a0
 dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
