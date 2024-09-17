@@ -1242,9 +1242,9 @@ def main(args):
             #     logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
             #     del mask_embeds_log
             # logs['norm_target']=norm_target.item()
-            print(global_step,loss_mlm,'before')
+            print(global_step,logs,'before')
             progress_bar.set_postfix(**logs) #progress_Bar printing
-            print(global_step,loss_mlm,'after')
+            print(global_step,logs,'after')
 
             # [6] PBAR PRINTING
             accelerator.log(logs, step=global_step)
