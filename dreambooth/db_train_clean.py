@@ -1242,14 +1242,15 @@ def main(args):
             #     logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
             #     del mask_embeds_log
             # logs['norm_target']=norm_target.item()
-            print(global_step,logs,'before')
+            print(global_step,loss,'before')
             progress_bar.set_postfix(**logs) #progress_Bar printing
-            print(global_step,logs,'after')
+            print(global_step,loss,'after')
 
             # [6] PBAR PRINTING
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break
+            print('here')
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
