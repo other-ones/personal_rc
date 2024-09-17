@@ -256,7 +256,7 @@ def main(args):
             args.pretrained_model_name_or_path,
             torch_dtype=torch_dtype,
             safety_checker=None,
-            revision=args.revision,
+            revision=None,
             variant=args.variant,
         )
         pipeline.set_progress_bar_config(disable=True)
