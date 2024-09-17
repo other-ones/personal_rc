@@ -15,17 +15,17 @@ info_map={
     'dog6': ('dog','dog','pet','living'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'cat2':('cat','cat','pet','living'),
 
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -224,7 +224,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [500]:
+for gen_target_step in [250]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
