@@ -1190,7 +1190,8 @@ def main(args):
                             mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
                             input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
                             input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
-
+                            mlm_labels=mlm_labels[viz_idx:viz_idx+1]
+                            
                             input_ids_pos=input_ids_pos[non_special_idxs]
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]

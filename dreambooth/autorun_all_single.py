@@ -106,6 +106,7 @@ os.makedirs(log_dir,exist_ok=True)
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-6]
 mlm_batch_size=25
+port_idx=0
 check_tags=['']
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
@@ -114,7 +115,7 @@ for lr in lr_list:
         mask_prob_str=float_to_str(mask_prob)
         mask_prob_str=mask_prob_str.replace('.','')
         for check_tag in check_tags:
-            for port_idx,concept in enumerate(list(info_map.keys())):
+            for concept_idx,concept in enumerate(list(info_map.keys())):
                 device_idx=stat_idx
                 for fixte in fixte_list:
                     for lambda_mlm in lambda_mlm_list:
@@ -150,7 +151,7 @@ for lr in lr_list:
                                     break
                             if found:
                                 break
-                            print(run_name,'sleep',stat_idx,stat)
+                            print(f"SLEEP TRAINING\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}")
                             time.sleep(10)
                         print(f"START {exp_path}\tDEVICE:{device_idx}")
                         os.makedirs(exp_path,exist_ok=True)
@@ -202,6 +203,7 @@ for lr in lr_list:
                         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                         os.system(command)
                         print('TRAIN STARTED')
+                        port_idx+=1
                         time.sleep(25)
 
 
@@ -221,7 +223,7 @@ benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
 target_step=1000
-for concept in concepts:
+for concept_idx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
     concept_path=os.path.join(dir_path,concept)
@@ -253,7 +255,8 @@ for concept in concepts:
                     break
             if found:
                 break
-            print(exp_name,'sleep',stat_idx,stat)
+            # print(exp_name,'sleep',stat_idx,stat)
+            print(f"SLEEP GENERATION\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(concepts)}")
             time.sleep(10)
         print(exp_name,device_idx)
         os.makedirs(dst_exp_path,exist_ok=True)
