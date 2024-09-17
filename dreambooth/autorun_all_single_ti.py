@@ -9,21 +9,24 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
+
+    'cat1': ('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
@@ -59,9 +62,14 @@ info_map_01={
     # 'flower1':('flower','flower'),
 }
 if '03' in hostname:
-    target_devices=[6,7]
+    target_devices=[0,1,2,3,4,5,6,7]
+    host_suffix='03'
 elif '04' in hostname:
     target_devices=[0,6,7]
+    host_suffix='04'
+elif '07' in hostname:
+    target_devices=[0,1,2,]
+    host_suffix='07'
     
     
 
@@ -90,17 +98,17 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 fixte_list=[0]
-mask_prob_list=[0.25]
+mask_prob_list=[0.15]
 seed=7777
 rep_id=1
 dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4,1e-4]
+lr_list=[5e-4]
 mlm_batch_size=25
 train_target_step=1000
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+check_tags=['']
 
 print('\nTRAINING TI')
 for lr in lr_list:
@@ -119,8 +127,8 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='db_cnetv4'
-                    unet_exp_name='db_cnetv4'
+                    run_name=f'db_bigger_qlab{host_suffix}'
+                    unet_exp_name=f'db_bigger_qlab{host_suffix}'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -169,7 +177,6 @@ for lr in lr_list:
                     command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-                    # command+='--initializer_token=sks \\\n'
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
@@ -178,7 +185,7 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_unet_path={} \\\n'.format(resume_unet_path)
                     command+='--resume_text_encoder_path={} \\\n'.format(resume_text_encoder_path)
-                    command+='--train_batch_size=1 \\\n'
+                    command+='--train_batch_size=4 \\\n'
                     command+='--scale_lr \\\n'
                     command+='--gradient_accumulation_steps=4 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
