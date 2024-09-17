@@ -300,8 +300,6 @@ for cidx,concept in enumerate(concepts):
             rev=0
         if exclude_key in exp:
             continue
-        if not include_key in exp:
-            continue
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
         learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(gen_target_step))
         if not os.path.exists(learned_embed_path1):
@@ -327,9 +325,9 @@ for cidx,concept in enumerate(concepts):
                 break
             print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
             time.sleep(delay)
-        print(exp_name,device_idx)
+        print(f"START\t{dir_name}\t{exp_name}\tDEVICE:{device_idx}")
         os.makedirs(exp_path,exist_ok=True)   
-        log_path=os.path.join(exp_path,exp_name+'.out')
+        log_path=os.path.join(exp_path,'log.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
         command+='export MODEL_NAME="runwayml/stable-diffusion-v1-5";'
