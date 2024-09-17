@@ -9,23 +9,23 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
 
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
 
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -73,10 +73,10 @@ elif '07' in hostname:
     host_suffix='07'
 
 lambda_mlm_list=[
-            0, 
             0.001,
+            0, 
             # 0.0001,
-            # 0.0005,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -106,6 +106,7 @@ os.makedirs(log_dir,exist_ok=True)
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-6]
 mlm_batch_size=25
+port_idx=0
 check_tags=['']
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
@@ -114,7 +115,7 @@ for lr in lr_list:
         mask_prob_str=float_to_str(mask_prob)
         mask_prob_str=mask_prob_str.replace('.','')
         for check_tag in check_tags:
-            for port_idx,concept in enumerate(list(info_map.keys())):
+            for concept_idx,concept in enumerate(list(info_map.keys())):
                 device_idx=stat_idx
                 for fixte in fixte_list:
                     for lambda_mlm in lambda_mlm_list:
@@ -150,14 +151,14 @@ for lr in lr_list:
                                     break
                             if found:
                                 break
-                            print(run_name,'sleep',stat_idx,stat)
+                            print(f"SLEEP TRAINING\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}")
                             time.sleep(10)
                         print(f"START {exp_path}\tDEVICE:{device_idx}")
                         os.makedirs(exp_path,exist_ok=True)
-                        log_path=os.path.join(exp_path,run_name+'.out')
+                        log_path=os.path.join(exp_path,'log.out')
                         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                        command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
+                        command+='accelerate launch --main_process_port {} db_train_clean.py \\\n'.format(ports[port_idx])
                         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                         command+='--initializer_token=sks \\\n'
@@ -202,6 +203,8 @@ for lr in lr_list:
                         command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                         os.system(command)
                         print('TRAIN STARTED')
+                        exit()
+                        port_idx+=1
                         time.sleep(25)
 
 
@@ -221,7 +224,7 @@ benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
 target_step=1000
-for concept in concepts:
+for concept_idx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
     concept_path=os.path.join(dir_path,concept)
@@ -253,14 +256,15 @@ for concept in concepts:
                     break
             if found:
                 break
-            print(exp_name,'sleep',stat_idx,stat)
+            # print(exp_name,'sleep',stat_idx,stat)
+            print(f"SLEEP GENERATION\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(concepts)}")
             time.sleep(10)
         print(exp_name,device_idx)
         os.makedirs(dst_exp_path,exist_ok=True)
-        log_path=os.path.join(dst_exp_path,exp_name+'.out')
+        log_path=os.path.join(dst_exp_path,'log.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-        command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx])
+        command+='accelerate launch --main_process_port {} db_generate_clean.py \\\n'.format(ports[port_idx])
         command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
         command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
         command+='--placeholder_token1="<{}>" \\\n'.format(concept)

@@ -163,7 +163,7 @@ for lr in lr_list:
                         print(f"TRAIN SLEEP {run_name}")
                         time.sleep(10)
                     print(run_name,device_idx)
-                    log_path=os.path.join(log_dir,run_name+'.out')
+                    log_path=os.path.join(log_dir,'log.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
                     command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
@@ -283,7 +283,7 @@ for gen_target_step in gen_target_step_list:
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print('GENERATION START\t{}\tDEVICE:{}'.format(ti_exp_name,device_idx))
-            log_path=os.path.join(gen_log_dir,ti_exp_name+'.out')
+            log_path=os.path.join(gen_log_dir,'log.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
             command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx],port_idx)
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'

@@ -125,60 +125,7 @@ def log_validation(
         '\t'.join(validation_prompts)
     )
 
-    # pipeline_args = {}
-    # if vae is not None:
-    #     pipeline_args["vae"] = vae
-    # create pipeline (note: unet and vae are loaded again in float32)
-    # pipeline = DiffusionPipeline.from_pretrained(
-    #     args.pretrained_model_name_or_path,
-    #     tokenizer=tokenizer,
-    #     text_encoder=text_encoder,
-    #     unet=unet,
-    #     revision=args.revision,
-    #     variant=args.variant,
-    #     feature_extractor=None,
-    #     safety_checker=None,
-    #     requires_safety_checker=False,
-    #     torch_dtype=weight_dtype,
-    #     **pipeline_args,
-    # )
-    # noise_scheduler = DDPMScheduler.from_pretrained(args.pretrained_model_name_or_path, subfolder="scheduler")
-    # accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
-    #     inspect.signature(
-    #         accelerator.unwrap_model
-    #     ).parameters.keys()
-    # )
-    # extra_args = (
-    #     {"keep_fp32_wrapper": True}
-    #     if accepts_keep_fp32_wrapper
-    #     else {}
-    # )
-    # unet=unet.to(accelerator.device)
-    # pipeline = StableDiffusionPipeline(
-    #         vae=accelerator.unwrap_model(vae, **extra_args),
-    #         unet=accelerator.unwrap_model(unet, **extra_args),
-    #         text_encoder=accelerator.unwrap_model(text_encoder, **extra_args),
-    #         tokenizer=accelerator.unwrap_model(tokenizer, **extra_args),
-    #         scheduler=accelerator.unwrap_model(noise_scheduler, **extra_args),
-    #         feature_extractor=None,
-    #         safety_checker=None,
-    #         requires_safety_checker=False,
-    #     )
-
-    # We train on the simplified learning objective. If we were previously predicting a variance, we need the scheduler to ignore it
-    # scheduler_args = {}
-    # if "variance_type" in pipeline.scheduler.config:
-    #     variance_type = pipeline.scheduler.config.variance_type
-    #     if variance_type in ["learned", "learned_range"]:
-    #         variance_type = "fixed_small"
-    #     scheduler_args["variance_type"] = variance_type
-    # module = importlib.import_module("diffusers")
-    # scheduler_class = getattr(module, args.validation_scheduler)
-    # pipeline.scheduler = scheduler_class.from_config(pipeline.scheduler.config, **scheduler_args)
-    # pipeline = pipeline.to(accelerator.device)
-    # pipeline.set_progress_bar_config(disable=True)
-    # pipeline_args = {"prompt": args.validation_prompt}
-    
+   
     
     
     
@@ -892,7 +839,16 @@ def main(args):
     logger.info(f"  Total optimization steps = {args.max_train_steps}")
     global_step = 0
     first_epoch = 0
+    initial_global_step = 0
 
+    progress_bar = tqdm(
+        range(0, args.max_train_steps),
+        initial=initial_global_step,
+        desc="Steps",
+        # Only show the progress bar once on each machine.
+        disable=not accelerator.is_local_main_process,
+    )
+    print(accelerator.is_local_main_process,'accelerator.is_local_main_process')
     # PIPELINE
     accepts_keep_fp32_wrapper = "keep_fp32_wrapper" in set(
                             inspect.signature(
@@ -937,24 +893,13 @@ def main(args):
                 f"Checkpoint '{args.resume_from_checkpoint}' does not exist. Starting a new training run."
             )
             args.resume_from_checkpoint = None
-            initial_global_step = 0
         else:
             accelerator.print(f"Resuming from checkpoint {path}")
             accelerator.load_state(os.path.join(args.output_dir, path))
             global_step = int(path.split("-")[1])
-
-            initial_global_step = global_step
             first_epoch = global_step // num_update_steps_per_epoch
-    else:
-        initial_global_step = 0
 
-    progress_bar = tqdm(
-        range(0, args.max_train_steps),
-        initial=initial_global_step,
-        desc="Steps",
-        # Only show the progress bar once on each machine.
-        disable=not accelerator.is_local_main_process,
-    )
+    
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     for epoch in range(first_epoch, args.num_train_epochs):
@@ -1107,7 +1052,9 @@ def main(args):
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
+                print('here1')
                 progress_bar.update(1)
+                print('here2')
                 global_step += 1
                 # [1] CHECKPOINTING
                 if (global_step % args.checkpointing_steps == 0 or global_step==1) and not args.debug:
@@ -1190,7 +1137,8 @@ def main(args):
                             mlm_logits=mlm_logits.argmax(-1).detach().cpu().numpy()[viz_idx:viz_idx+1]#1,77
                             input_ids_pos=input_ids_pos[viz_idx:viz_idx+1]
                             input_ids_masked=input_ids_masked[viz_idx:viz_idx+1]
-
+                            mlm_labels=mlm_labels[viz_idx:viz_idx+1]
+                            
                             input_ids_pos=input_ids_pos[non_special_idxs]
                             input_ids_masked=input_ids_masked[non_special_idxs]
                             mlm_logits=mlm_logits[non_special_idxs]
@@ -1238,68 +1186,73 @@ def main(args):
                             print()
                         # [4] MLM LOGGING
 
-                        # [5] VALIDTION
-                        with torch.no_grad():
-                            learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                            images,validation_prompts = log_validation(
-                                unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
-                                tokenizer,
-                                unwrap_model(unet),
-                                vae,
-                                args,
-                                accelerator,
-                                weight_dtype,
-                                global_step,
-                                learned_embeds_val.clone(),
-                                generator=generator_cuda,
-                                pipeline=pipeline
-                            )
-                            del learned_embeds_val
-                        validation_files=sorted(os.listdir(args.train_data_dir1))
-                        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
-                        num_images=len(images)
-                        num_cols=num_images
-                        num_rows=num_images//num_cols
-                        margin_bottom=150
-                        margin_right=10
-                        merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
-                        for ridx in range(num_rows):
-                            merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
-                        for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
-                            row_idx=iidx//num_cols
-                            col_idx=iidx-(num_cols*row_idx)
-                            x0=(col_idx+1)*(512+margin_right)
-                            y0=row_idx*(512+margin_bottom)+512
-                            x1=x0+(512+margin_right)
-                            y1=y0+margin_bottom
-                            merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
-                            merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
-                        merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
-                        # [5] VALIDTION
+                        if not args.debug:
+                            # [5] VALIDTION
+                            with torch.no_grad():
+                                learned_embeds_val=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
+                                images,validation_prompts = log_validation(
+                                    unwrap_model(text_encoder) if text_encoder is not None else text_encoder,
+                                    tokenizer,
+                                    unwrap_model(unet),
+                                    vae,
+                                    args,
+                                    accelerator,
+                                    weight_dtype,
+                                    global_step,
+                                    learned_embeds_val.clone(),
+                                    generator=generator_cuda,
+                                    pipeline=pipeline
+                                )
+                                del learned_embeds_val
+                            validation_files=sorted(os.listdir(args.train_data_dir1))
+                            validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
+                            num_images=len(images)
+                            num_cols=num_images
+                            num_rows=num_images//num_cols
+                            margin_bottom=150
+                            margin_right=10
+                            merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
+                            for ridx in range(num_rows):
+                                merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
+                            for iidx,(image, val_prompt) in enumerate(zip(images[:],validation_prompts[:])):
+                                row_idx=iidx//num_cols
+                                col_idx=iidx-(num_cols*row_idx)
+                                x0=(col_idx+1)*(512+margin_right)
+                                y0=row_idx*(512+margin_bottom)+512
+                                x1=x0+(512+margin_right)
+                                y1=y0+margin_bottom
+                                merged_viz=render_caption(merged_viz,val_prompt,[x0,y0+20,x1,y1])
+                                merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
+                            merged_viz.save(os.path.join(sample_dir, 'sample_{:05d}.jpg'.format(global_step)))
+                            # [5] VALIDTION
 
             # sync_grad
             # [6] PBAR PRINTING
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
-            with torch.no_grad():
-                target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
-                norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
-                logs['sim_target']=cos_sim(target_embeds_log,initial_embed.detach()).item()
-                logs['same_target']=bool(torch.all(target_embeds_log==initial_embed).item())
-                del target_embeds_log
-            if loss_mlm is not None:
-                mask_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
-                logs['loss_mlm']=loss_mlm.detach().item()
-                norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
-                logs['norm_mask']=norm_mask.item()
-                logs['sim_mask']=cos_sim(mask_embeds_log,mask_embeds_initial.detach()).item()
-                logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
-                del mask_embeds_log
-            logs['norm_target']=norm_target.item()
-            progress_bar.set_postfix(**logs)
+            # with torch.no_grad():
+            #     target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
+            #     norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
+            #     logs['sim_target']=cos_sim(target_embeds_log,initial_embed.detach()).item()
+            #     logs['same_target']=bool(torch.all(target_embeds_log==initial_embed).item())
+            #     del target_embeds_log
+            # if loss_mlm is not None:
+            #     mask_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
+            #     logs['loss_mlm']=loss_mlm.detach().item()
+            #     norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
+            #     logs['norm_mask']=norm_mask.item()
+            #     logs['sim_mask']=cos_sim(mask_embeds_log,mask_embeds_initial.detach()).item()
+            #     logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
+            #     del mask_embeds_log
+            # logs['norm_target']=norm_target.item()
+            print(global_step,loss,'before')
+            progress_bar.set_postfix(**logs) #progress_Bar printing
+            print(global_step,loss,'after')
+
             # [6] PBAR PRINTING
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break
+            print('here3')
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()

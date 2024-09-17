@@ -87,7 +87,7 @@ lambda_mlm_list=[
             0,
             # 0.01,
             # 0.001,
-            0.0005,
+            # 0.0005,
             0.0001,
             # 0.002,
             # 0.0001,
@@ -167,10 +167,9 @@ for mlm_idxs in mlm_idxs_list:
                 for mlm_target in mlm_target_list:
                     mask_prob_str=float_to_str(mask_prob)
                     mask_prob_str=mask_prob_str.replace('.','')
-                    for cidx,concept in enumerate(list(info_map.keys())):
+                    for lambda_mlm in lambda_mlm_list:
                         device_idx=stat_idx
-                        
-                        for lambda_mlm in lambda_mlm_list:
+                        for cidx,concept in enumerate(list(info_map.keys())):
                             lambda_mlm_str=float_to_str(lambda_mlm)
                             lambda_mlm_str=lambda_mlm_str.replace('.','')
                             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
@@ -284,7 +283,8 @@ delay=30
 num_images_per_prompt=8
 port_idx=0
 exclude_key='mtarget_nonspec'
-gen_target_step=3000
+include_key='mlm00005'
+gen_target_step=2000
 for cidx,concept in enumerate(concepts):
     if concept not in info_map:
         continue
@@ -325,9 +325,9 @@ for cidx,concept in enumerate(concepts):
                 break
             print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
             time.sleep(delay)
-        print(exp_name,device_idx)
+        print(f"START\t{dir_name}\t{exp_name}\tDEVICE:{device_idx}")
         os.makedirs(exp_path,exist_ok=True)   
-        log_path=os.path.join(exp_path,exp_name+'.out')
+        log_path=os.path.join(exp_path,'log.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
         command+='export MODEL_NAME="runwayml/stable-diffusion-v1-5";'
