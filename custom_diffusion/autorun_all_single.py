@@ -105,7 +105,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=7777
-rep_id=2
+rep_id=1
 dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
@@ -116,6 +116,7 @@ check_tags=['']
 num_devices=1
 port_idx=0
 for lambda_mlm in lambda_mlm_list:
+    continue
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
         lr_str=lr_str.replace('.','P')
@@ -223,12 +224,10 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [250]:
+for gen_target_step in [500]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
-        
-          
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             continue
