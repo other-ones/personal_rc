@@ -231,6 +231,7 @@ for gen_target_step in gen_target_step_list:
             if not '_ti' in exp:
                 continue
             splits=exp.split('_')
+            print(splits[-1],'splits')
             assert 'lr' in splits[-1]
             cd_exp_name=exp.split('_lr')[0]
             cd_exp_name+='_lr1e5'
