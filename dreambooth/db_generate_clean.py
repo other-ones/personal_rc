@@ -129,7 +129,7 @@ def main(args):
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
         os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
+        os.system('cp ../datasets_pkgs {} -R'.format(codepath))
         os.system('cp packages {} -R'.format(codepath))
         # copy clip
         os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
@@ -320,53 +320,12 @@ def main(args):
             prompts=eval_prompts[batch_idx*batch_size:(batch_idx+1)*batch_size]
             if not len(prompts):
                 break
-            # is_keyword_tokens_list=[]
-            # # is_prior1_list=[]
-            # for prompt in prompts:
-            #     is_keyword_tokens=[False]
-            #     is_prior1=[False]
-            #     text_words=prompt.split()
-            #     for word_idx in range(len(text_words)):
-            #         cap_word=text_words[word_idx]
-            #         word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
-            #         num_tokens=len(word_token_ids)
-            #         for tok_id in word_token_ids:
-            #             tok_decoded=tokenizer.decode(tok_id)
-            #             if args.placeholder_token1 == tok_decoded:
-            #                 is_keyword_tokens.append(True)
-            #             else:
-            #                 is_keyword_tokens.append(False)
-            #             # prior1
-            #             if tok_decoded==args.train_prior_concept1:
-            #                 is_prior1.append(True)
-            #             else:
-            #                 is_prior1.append(False)
-            #     for _ in range(len(is_keyword_tokens),tokenizer.model_max_length):
-            #         is_keyword_tokens.append(False)
-            #     for _ in range(len(is_prior1),tokenizer.model_max_length):
-            #         is_prior1.append(False)
-            #     assert len(is_keyword_tokens)==tokenizer.model_max_length
-            #     assert len(is_prior1)==tokenizer.model_max_length
-            #     if sum(is_keyword_tokens)!=1:
-            #         print(prompt,'prompt')
-            #         print(args.placeholder_token1,'placeholder_token1')
-            #         print(args.train_prior_concept1,'train_prior_concept1')
-            #         print(sum(is_keyword_tokens),'sum(is_keyword_tokens)')
-            #     assert sum(is_keyword_tokens)==1
-            #     assert sum(is_prior1)==len(args.train_prior_concept1.split())
-            #     is_keyword_tokens=torch.BoolTensor(is_keyword_tokens)
-            #     is_prior1=torch.BoolTensor(is_prior1)
-            #     is_keyword_tokens_list.append(is_keyword_tokens)
-            #     # is_prior1_list.append(is_prior1)
-            # is_keyword_tokens_list=torch.stack(is_keyword_tokens_list)
-            # is_prior1_list=torch.stack(is_prior1_list)
+            
             print(sample_dir,'sample_dir')
             images = pipeline(prompt=prompts, 
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
-                            # is_keyword_tokens1=is_keyword_tokens_list,
-                            # inj_embeddings1=target_emb1.repeat(len(prompts),1),
                             ).images
 
             num_cols=5

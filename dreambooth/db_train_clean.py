@@ -1259,38 +1259,38 @@ def main(args):
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
-    if accelerator.is_main_process:
-        pipeline_args = {}
+    # if accelerator.is_main_process:
+    #     pipeline_args = {}
 
-        if text_encoder is not None:
-            pipeline_args["text_encoder"] = unwrap_model(text_encoder)
+    #     if text_encoder is not None:
+    #         pipeline_args["text_encoder"] = unwrap_model(text_encoder)
 
-        if args.skip_save_text_encoder:
-            pipeline_args["text_encoder"] = None
+    #     if args.skip_save_text_encoder:
+    #         pipeline_args["text_encoder"] = None
 
-        pipeline = DiffusionPipeline.from_pretrained(
-            args.pretrained_model_name_or_path,
-            unet=unwrap_model(unet),
-            revision=args.revision,
-            variant=args.variant,
-            **pipeline_args,
-            feature_extractor=None,
-        safety_checker=None,
-        requires_safety_checker=False,
-        )
+    #     pipeline = DiffusionPipeline.from_pretrained(
+    #         args.pretrained_model_name_or_path,
+    #         unet=unwrap_model(unet),
+    #         revision=args.revision,
+    #         variant=args.variant,
+    #         **pipeline_args,
+    #         feature_extractor=None,
+    #     safety_checker=None,
+    #     requires_safety_checker=False,
+    #     )
 
-        # We train on the simplified learning objective. If we were previously predicting a variance, we need the scheduler to ignore it
-        scheduler_args = {}
+    #     # We train on the simplified learning objective. If we were previously predicting a variance, we need the scheduler to ignore it
+    #     scheduler_args = {}
 
-        if "variance_type" in pipeline.scheduler.config:
-            variance_type = pipeline.scheduler.config.variance_type
+    #     if "variance_type" in pipeline.scheduler.config:
+    #         variance_type = pipeline.scheduler.config.variance_type
 
-            if variance_type in ["learned", "learned_range"]:
-                variance_type = "fixed_small"
+    #         if variance_type in ["learned", "learned_range"]:
+    #             variance_type = "fixed_small"
 
-            scheduler_args["variance_type"] = variance_type
+    #         scheduler_args["variance_type"] = variance_type
 
-        pipeline.scheduler = pipeline.scheduler.from_config(pipeline.scheduler.config, **scheduler_args)
+    #     pipeline.scheduler = pipeline.scheduler.from_config(pipeline.scheduler.config, **scheduler_args)
 
     
 
