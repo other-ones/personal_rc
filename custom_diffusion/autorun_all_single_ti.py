@@ -90,6 +90,7 @@ train_target_step=250
 check_tags=['']
 
 print('\nTRAINING TI')
+port_idx=0
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     # lr_str=lr_str.replace('.','P')
@@ -97,7 +98,7 @@ for lr in lr_list:
         mask_prob_str=float_to_str(mask_prob)
         mask_prob_str=mask_prob_str.replace('.','')
         for check_tag in check_tags:
-            for port_idx,concept in enumerate(list(info_map.keys())):
+            for concept_idx,concept in enumerate(list(info_map.keys())):
                 print(concept,'concept')
                 log_dir='logs/train/{}/{}'.format(dir_name,concept)
                 unet_dir_path=os.path.join('saved_models/cd_models',dir_name)
@@ -148,7 +149,7 @@ for lr in lr_list:
                                 break
                         if found:
                             break
-                        print(f"TRAIN SLEEP {run_name}")
+                        print(f"TRAIN SLEEP\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}")
                         time.sleep(10)
                     print(run_name,device_idx)
                     os.makedirs(exp_path,exist_ok=True)
@@ -203,6 +204,7 @@ for lr in lr_list:
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
                     os.system(command)
                     print('TRAIN STARTED')
+                    port_idx+=1
                     time.sleep(25)
 
 
@@ -221,7 +223,7 @@ concepts=list(info_map.keys())
 concepts=sorted(concepts)
 gen_target_step_list=[1000,2000,3000]
 for gen_target_step in gen_target_step_list:
-    for concept in list(info_map.keys()):
+    for concept_idx,concept in enumerate(list(info_map.keys())):
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             print(concept_path,'not exists',concept)
@@ -261,7 +263,7 @@ for gen_target_step in gen_target_step_list:
                         break
                 if found:
                     break
-                print('sleep waiting for GENERATING {}'.format(ti_exp_name))
+                print(f'SLEEP GENERATING {dir_name}\t{ti_exp_name}\t{concept_idx+1}/{len(list(info_map.keys()))}')
                 time.sleep(30)
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
