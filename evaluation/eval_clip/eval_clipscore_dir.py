@@ -130,8 +130,8 @@ if __name__ == "__main__":
                             break
                 else:
                     valid=True
-                # if 'nomlm' in exp:
-                #     valid=True
+                if 'nomlm' in exp:
+                    valid=True
                 if not valid:
                     continue
                 pred_root=os.path.join(exp_path,'generated')
