@@ -1227,21 +1227,21 @@ def main(args):
             # sync_grad
             # [6] PBAR PRINTING
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
-            with torch.no_grad():
-                target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
-                norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
-                logs['sim_target']=cos_sim(target_embeds_log,initial_embed.detach()).item()
-                logs['same_target']=bool(torch.all(target_embeds_log==initial_embed).item())
-                del target_embeds_log
-            if loss_mlm is not None:
-                mask_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
-                logs['loss_mlm']=loss_mlm.detach().item()
-                norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
-                logs['norm_mask']=norm_mask.item()
-                logs['sim_mask']=cos_sim(mask_embeds_log,mask_embeds_initial.detach()).item()
-                logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
-                del mask_embeds_log
-            logs['norm_target']=norm_target.item()
+            # with torch.no_grad():
+            #     target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
+            #     norm_target=torch.norm(target_embeds_log,p=1,dim=-1)
+            #     logs['sim_target']=cos_sim(target_embeds_log,initial_embed.detach()).item()
+            #     logs['same_target']=bool(torch.all(target_embeds_log==initial_embed).item())
+            #     del target_embeds_log
+            # if loss_mlm is not None:
+            #     mask_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
+            #     logs['loss_mlm']=loss_mlm.detach().item()
+            #     norm_mask=torch.norm(mask_embeds,p=1,dim=-1)
+            #     logs['norm_mask']=norm_mask.item()
+            #     logs['sim_mask']=cos_sim(mask_embeds_log,mask_embeds_initial.detach()).item()
+            #     logs['same_mask']=bool(torch.all(mask_embeds_log==mask_embeds_initial).item())
+            #     del mask_embeds_log
+            # logs['norm_target']=norm_target.item()
             print(global_step,'before')
             progress_bar.set_postfix(**logs) #progress_Bar printing
             print(global_step,'after')
