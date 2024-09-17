@@ -589,7 +589,7 @@ def main():
     global_step = 0
     first_epoch = 0
     # Potentially load in the weights and states from a previous save
-    if not(args.silent):
+    if not(args.silent): #HERE
         progress_bar = tqdm(
             range(0, args.max_train_steps),
             initial=0,
