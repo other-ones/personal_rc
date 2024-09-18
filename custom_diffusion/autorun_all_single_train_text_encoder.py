@@ -106,7 +106,7 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
 rep_id=1
-dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+dir_name='sgpu_seed{}_qlab{}_rep{}_train_text'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
@@ -127,7 +127,7 @@ for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_bigger2_qlab{}'.format(host_suffix)
+                    run_name='cd_text_train_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
