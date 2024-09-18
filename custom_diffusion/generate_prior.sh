@@ -1,5 +1,5 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=2;
 accelerate launch generate_prior.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_teddy/ \

@@ -72,7 +72,38 @@ def seed_worker(worker_id):
     random.seed(worker_seed)
 print(torch.cuda.is_available(),'avail')
 
+def list_gpu_allocated_tensors():
+    # Initialize total memory counter
+    total_memory = 0
+    
+    # List to store information about GPU tensors
+    gpu_tensors_info = []
 
+    # Iterate over all objects tracked by the garbage collector
+    for obj in gc.get_objects():
+        try:
+            if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                # Check if the tensor is allocated on a GPU
+                if obj.is_cuda:
+                    # Calculate memory usage (in bytes)
+                    memory = obj.element_size() * obj.numel()
+                    total_memory += memory
+
+                    # Append tensor info to the list
+                    gpu_tensors_info.append({
+                        'size': obj.size(),
+                        'memory (MB)': memory / (1024 ** 2),
+                        'dtype': obj.dtype,
+                    })
+        except Exception as e:
+            pass
+
+    # Display the GPU-allocated tensors information
+    for info in gpu_tensors_info:
+        print(f"Size: {info['size']}, Memory (MB): {info['memory (MB)']:.2f}, Type: {info['dtype']}")
+
+    # Display the total GPU memory usage
+    print(f"\nTotal GPU memory allocated: {total_memory / (1024 ** 2):.2f} MB")
 def log_validation(
     text_encoder,
     tokenizer,
@@ -205,63 +236,63 @@ def import_model_class_from_model_name_or_path(pretrained_model_name_or_path: st
 
 
 def collate_fn(examples,with_prior_preservation=False):
-        if 'pixel_values' in examples[0]:
-            # 1. pixel_values
-            pixel_values = [example["pixel_values"] for example in examples]
-            # 2. input ids
-            input_ids = [example["input_ids"] for example in examples]
-            
-            # 3. prior preseravation
-            if with_prior_preservation:
-                input_ids += [example["class_prompt_ids"] for example in examples]
-                pixel_values += [example["class_images"] for example in examples]
-            input_ids=torch.stack(input_ids)
-            pixel_values = torch.stack(pixel_values)
-            pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
-            raw_captions_ti = [example["raw_caption_ti"] for example in examples]
-            # 5. For MLM 
-            input_ids_masked = []
-            input_ids_pos = []
-            masked_idxs = []
-            mlm_labels = []
-            non_special_idxs = []
-            raw_captions_mlm = []
-            
-        else:
-            pixel_values=[]
-            input_ids=[]
-            # masks=[]
-            raw_captions_mlm = [example["raw_caption_mlm"] for example in examples]
-            raw_captions_ti = []
-            # 5. For MLM 
-            input_ids_masked = [example["input_ids_masked"] for example in examples]
-            input_ids_masked=torch.stack(input_ids_masked)
-            input_ids_pos = [example["input_ids_pos"] for example in examples]
-            input_ids_pos=torch.stack(input_ids_pos)
-            masked_idxs = [example["masked_idxs"] for example in examples] #N,77, list of booleans
-            masked_idxs = torch.stack(masked_idxs)
-            mlm_labels = [example["mlm_labels"] for example in examples] #N,77, list of booleans
-            mlm_labels = torch.stack(mlm_labels)
-            non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans
-            non_special_idxs = torch.stack(non_special_idxs)
-            # 5. For MLM 
-       
+    if 'pixel_values' in examples[0]:
+        # 1. pixel_values
+        pixel_values = [example["pixel_values"] for example in examples]
+        # 2. input ids
+        input_ids = [example["input_ids"] for example in examples]
         
+        # 3. prior preseravation
+        if with_prior_preservation:
+            input_ids += [example["class_prompt_ids"] for example in examples]
+            pixel_values += [example["class_images"] for example in examples]
+        input_ids=torch.stack(input_ids)
+        pixel_values = torch.stack(pixel_values)
+        pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
+        raw_captions_ti = [example["raw_caption_ti"] for example in examples]
+        # 5. For MLM 
+        input_ids_masked = []
+        input_ids_pos = []
+        masked_idxs = []
+        mlm_labels = []
+        non_special_idxs = []
+        raw_captions_mlm = []
+        
+    else:
+        pixel_values=[]
+        input_ids=[]
+        # masks=[]
+        raw_captions_mlm = [example["raw_caption_mlm"] for example in examples]
+        raw_captions_ti = []
+        # 5. For MLM 
+        input_ids_masked = [example["input_ids_masked"] for example in examples]
+        input_ids_masked=torch.stack(input_ids_masked)
+        input_ids_pos = [example["input_ids_pos"] for example in examples]
+        input_ids_pos=torch.stack(input_ids_pos)
+        masked_idxs = [example["masked_idxs"] for example in examples] #N,77, list of booleans
+        masked_idxs = torch.stack(masked_idxs)
+        mlm_labels = [example["mlm_labels"] for example in examples] #N,77, list of booleans
+        mlm_labels = torch.stack(mlm_labels)
+        non_special_idxs = [example["non_special_idxs"] for example in examples] #N,77, list of booleans
+        non_special_idxs = torch.stack(non_special_idxs)
+        # 5. For MLM 
+    
+    
 
 
-        batch = {
-            "pixel_values": pixel_values,
-            "input_ids": input_ids, # for reconstruction
-            "input_ids_masked": input_ids_masked, # for mlm
-            "input_ids_pos": input_ids_pos, # for mlm
-            "masked_idxs": masked_idxs,
-            "mlm_labels": mlm_labels,
-            "non_special_idxs": non_special_idxs,
-            # "masks": masks,
-            "raw_captions_mlm": raw_captions_mlm,
-            "raw_captions_ti": raw_captions_ti,
-        }
-        return batch
+    batch = {
+        "pixel_values": pixel_values,
+        "input_ids": input_ids, # for reconstruction
+        "input_ids_masked": input_ids_masked, # for mlm
+        "input_ids_pos": input_ids_pos, # for mlm
+        "masked_idxs": masked_idxs,
+        "mlm_labels": mlm_labels,
+        "non_special_idxs": non_special_idxs,
+        # "masks": masks,
+        "raw_captions_mlm": raw_captions_mlm,
+        "raw_captions_ti": raw_captions_ti,
+    }
+    return batch
 
 
 class PromptDataset(Dataset):
@@ -560,7 +591,6 @@ def main(args):
         vae.requires_grad_(False)
 
     if not args.train_text_encoder:
-        # assert args.learned_embed_path1,args.learned_embed_path1
         # text_encoder.requires_grad_(False)
         text_encoder.text_model.encoder.requires_grad_(False)
         text_encoder.text_model.final_layer_norm.requires_grad_(False)
@@ -632,6 +662,7 @@ def main(args):
         params_to_optimize = [
                 {"params": text_encoder.get_input_embeddings().parameters(), "lr": args.learning_rate},
                 ]
+        print('params_to_optimize for args.resume_unet_path')
     else:
         if args.train_text_encoder:
             params_to_optimize = [
@@ -792,6 +823,7 @@ def main(args):
         #     state_dict=state_dict()
         unet.load_state_dict(state_dict,strict=True)
         print('unet parameters loaded')
+        unet.requires_grad_(False)
         del state_dict
     if args.resume_text_encoder_path and args.resume_text_encoder_path!='None':
         state_dict = torch.load(args.resume_text_encoder_path, map_location=torch.device('cpu'))
@@ -910,10 +942,15 @@ def main(args):
     orig_embeds_params = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight.data.clone()
     cos_sim=torch.nn.CosineSimilarity(dim=-1, eps=1e-08)
     for epoch in range(first_epoch, args.num_train_epochs):
-        unet.train()
-        if args.train_text_encoder:
-            text_encoder.train()
+        if args.resume_unet_path is None:
+            unet.train()
+            accumulate_target=unet
+        else:
+            accumulate_target=text_encoder
+        text_encoder.train()
+        
         for step, batch in enumerate(train_dataloader):
+            
             with accelerator.accumulate(unet):
                 # Load Batch
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
@@ -1233,6 +1270,7 @@ def main(args):
 
             # sync_grad
             # [6] PBAR PRINTING
+            # list_gpu_allocated_tensors()
             logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             with torch.no_grad():
                 target_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1].clone()
@@ -1255,7 +1293,6 @@ def main(args):
             accelerator.log(logs, step=global_step)
             if global_step >= args.max_train_steps:
                 break
-            print('here3')
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
