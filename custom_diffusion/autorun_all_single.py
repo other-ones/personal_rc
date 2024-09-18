@@ -82,8 +82,8 @@ else:
 lambda_mlm_list=[
             0.0001,
             0, 
-            0.0005,
             0.001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -208,8 +208,6 @@ for lambda_mlm in lambda_mlm_list:
                     port_idx+=1
                     # exit()
                     time.sleep(25)
-
-
 
 print('GENERATION')
 # GENERATION
