@@ -197,6 +197,7 @@ for lr in lr_list:
                     command+='--run_name="{}" \\\n'.format(run_name)
                     command+='--class_prompt1="a picture of a {}" \\\n'.format(train_prior)
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
+                    command+='--train_text_encoder=0 \\\n'
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="CD MLM SINGLE" \\\n'
