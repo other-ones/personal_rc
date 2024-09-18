@@ -8,24 +8,23 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
-    'dog6': ('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-
+    'chair1': ('chair','chair','nonliving','nonliving'),
     'dog3':  ('dog','dog','pet','living'),
     'pet_cat1':('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
     'cat2':('cat','cat','pet','living'),
 
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -83,7 +82,7 @@ else:
     assert False
 dir_name=f'sgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4]
+lr_list=[1e-4]
 mlm_batch_size=25
 train_target_step=250
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
@@ -169,7 +168,7 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_cd_path={} \\\n'.format(resume_cd_path)
                     command+='--learned_embed_path1={} \\\n'.format(learned_embed_path1)
-                    command+='--train_batch_size=4 \\\n'
+                    command+='--train_batch_size=1 \\\n'
                     command+='--scale_lr \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
