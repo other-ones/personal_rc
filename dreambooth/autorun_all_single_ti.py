@@ -9,21 +9,24 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('bear','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
+
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
     # 'can':('can','can','nonliving','nonliving'),
@@ -59,17 +62,22 @@ info_map_01={
     # 'flower1':('flower','flower'),
 }
 if '03' in hostname:
-    target_devices=[6,7]
+    target_devices=[0,1,2,3,4,5,6,7]
+    host_suffix='03'
 elif '04' in hostname:
     target_devices=[0,6,7]
+    host_suffix='04'
+elif '07' in hostname:
+    target_devices=[0,1,2,]
+    host_suffix='07'
     
     
 
 lambda_mlm_list=[
             # 0, 
             0.001,
-            # 0.0001,
-            # 0.0005,
+            0.0001,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -90,17 +98,18 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 fixte_list=[0]
-mask_prob_list=[0.25]
+mask_prob_list=[0.15]
 seed=7777
 rep_id=1
-dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
-log_dir='logs/train/{}'.format(dir_name)
-os.makedirs(log_dir,exist_ok=True)   
+# dir_name='single_mtarget_seed{}_rep{}'.format(seed,rep_id)
+dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
+# log_dir='logs/train/{}'.format(dir_name)
+# os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4,1e-4]
+lr_list=[5e-4]
 mlm_batch_size=25
 train_target_step=1000
-check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
+check_tags=['']
 
 print('\nTRAINING TI')
 for lr in lr_list:
@@ -119,8 +128,8 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='db_cnetv4'
-                    unet_exp_name='db_cnetv4'
+                    run_name=f'db_bigger_qlab{host_suffix}'
+                    unet_exp_name=f'db_bigger_qlab{host_suffix}'
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -163,13 +172,13 @@ for lr in lr_list:
                         print(f"TRAIN SLEEP {run_name}")
                         time.sleep(10)
                     print(run_name,device_idx)
-                    log_path=os.path.join(log_dir,'log.out')
+                    os.makedirs(exp_path,exist_ok=True)
+                    log_path=os.path.join(exp_path,'log.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
                     command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-                    command+='accelerate launch --main_process_port {} db_train.py \\\n'.format(ports[port_idx])
+                    command+='accelerate launch --main_process_port {} db_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-                    # command+='--initializer_token=sks \\\n'
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
@@ -178,9 +187,9 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_unet_path={} \\\n'.format(resume_unet_path)
                     command+='--resume_text_encoder_path={} \\\n'.format(resume_text_encoder_path)
-                    command+='--train_batch_size=1 \\\n'
+                    command+='--train_batch_size=4 \\\n'
                     command+='--scale_lr \\\n'
-                    command+='--gradient_accumulation_steps=4 \\\n'
+                    command+='--gradient_accumulation_steps=1 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
                     command+='--checkpoints_total_limit=20 \\\n'
                     command+='--checkpointing_steps=250 \\\n'
@@ -194,8 +203,10 @@ for lr in lr_list:
                     if check_tag:
                         command+='--check_tag={} \\\n'.format(check_tag)
                     command+='--lambda_mlm={} --freeze_mask_embedding=1 \\\n'.format(lambda_mlm)
-                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
-                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv6_nonpadding_1e4_unnorm_mprob015_batch150_bigger_synthcap/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
+                    # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
+                    # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                     # command+='--cls_net_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt" \\\n'
                     # command+='--mask_embed_path="saved_models/mlm_models/sd1_contextnetv3_nonpadding_1e4/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt" \\\n'
                     command+='--mlm_target=masked \\\n'
@@ -222,8 +233,8 @@ print('\n\n')
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/db_models',dir_name)
-gen_log_dir='logs/generate/{}'.format(dir_name)
-os.makedirs(gen_log_dir,exist_ok=True)    
+# gen_log_dir='logs/generate/{}'.format(dir_name)
+# os.makedirs(gen_log_dir,exist_ok=True)    
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -283,9 +294,10 @@ for gen_target_step in gen_target_step_list:
                 stat_idx+=1
                 stat_idx=(stat_idx%len(stats))
             print('GENERATION START\t{}\tDEVICE:{}'.format(ti_exp_name,device_idx))
-            log_path=os.path.join(gen_log_dir,'log.out')
+            os.makedirs(dst_exp_path,exist_ok=True)
+            log_path=os.path.join(dst_exp_path,'log.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-            command+='accelerate launch --main_process_port {} db_generate.py \\\n'.format(ports[port_idx],port_idx)
+            command+='accelerate launch --main_process_port {} db_generate_clean.py \\\n'.format(ports[port_idx],port_idx)
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)

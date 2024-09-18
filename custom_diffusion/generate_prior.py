@@ -1,4 +1,3 @@
-from datasets_pkgs.dataset_mlm import TextualInversionDataset
 from configs import parse_args
 # ADDED
 import sys
@@ -257,8 +256,8 @@ def main(args):
             args.pretrained_model_name_or_path,
             torch_dtype=torch_dtype,
             safety_checker=None,
-            revision=args.revision,
-            variant=args.variant,
+            revision=None,
+            variant=None,
         )
         pipeline.set_progress_bar_config(disable=True)
 

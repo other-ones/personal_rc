@@ -33,5 +33,4 @@ accelerate launch --main_process_port 4235  db_train_clean.py \
   --class_prompt1="a picture of a dog" \
   --class_data_dir1="priors/samples_dog" \
   --simple_caption=0 \
-  --debug \
   --caption_root='../datasets_pkgs/captions/v7' 

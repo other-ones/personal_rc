@@ -1,10 +1,10 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export CUDA_VISIBLE_DEVICES=4;
+export CUDA_VISIBLE_DEVICES=2;
 accelerate launch generate_prior.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
-  --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_bear/ \
+  --class_data_dir1=/data/twkim/diffusion/personalization/priors/samples_teddy/ \
   --resolution=512  \
-  --class_prompt1="bear" --num_class_images=200 \
+  --class_prompt1="teddy bear" --num_class_images=200 \
   --sample_batch_size=20
 
 
