@@ -8,24 +8,24 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
-    'dog6': ('dog','dog','pet','living'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'pet_cat1':('cat','cat','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
 
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -106,11 +106,11 @@ dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # log_dir='logs/train/{}'.format(dir_name)
 # os.makedirs(log_dir,exist_ok=True)   
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4]
+lr_list=[1e-4]
 mlm_batch_size=25
 train_target_step=1000
 check_tags=['']
-
+train_batch_size=1
 print('\nTRAINING TI')
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
@@ -141,9 +141,11 @@ for lr in lr_list:
                     else:
                         run_name+="_nomlm_{}".format(concept)
                     run_name+='_lr{}'.format(lr_str)
+                    run_name+=f'_tbatch{train_batch_size}'
                     run_name+='_ti'
 
                     unet_exp_name=run_name.replace('lr5e4','lr1e6')
+                    unet_exp_name=run_name.replace(f'_tbatch{train_batch_size}','')
                     unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')
                     unet_exp_name=unet_exp_name.replace('_ti','')
                     
@@ -187,7 +189,7 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_unet_path={} \\\n'.format(resume_unet_path)
                     command+='--resume_text_encoder_path={} \\\n'.format(resume_text_encoder_path)
-                    command+='--train_batch_size=4 \\\n'
+                    command+='--train_batch_size={} \\\n'.format(train_batch_size)
                     command+='--scale_lr \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
@@ -244,8 +246,7 @@ benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
 gen_target_step_list=[500,1000,2000,3000]
-gen_target_lr='5e4'
-gen_target_mlm='mlm000005'
+gen_target_lr='1e4'
 for gen_target_step in gen_target_step_list:
     for concept in list(info_map.keys()):
         concept_path=os.path.join(dir_path,concept)
@@ -256,11 +257,12 @@ for gen_target_step in gen_target_step_list:
         for exp_idx,exp in enumerate(exps):
             if not '_ti' in exp:
                 continue
-            # if not (gen_target_lr in exp and gen_target_mlm in exp):
-            #     continue
+            if not (gen_target_lr in exp):
+                continue
             # unet_exp_name=exp.split('_lr')
             unet_exp_name=exp.replace('lr5e4','lr1e6')
             unet_exp_name=unet_exp_name.replace('lr1e4','lr1e6')
+            unet_exp_name=unet_exp_name.replace(f'_tbatch{train_batch_size}','')
             unet_exp_name=unet_exp_name.replace('_ti','')
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
             resume_unet_path=os.path.join(concept_path,unet_exp_name,'checkpoints/checkpoint-{}/unet_s{:04d}.pt'.format(train_target_step,train_target_step))
@@ -297,6 +299,7 @@ for gen_target_step in gen_target_step_list:
             os.makedirs(dst_exp_path,exist_ok=True)
             log_path=os.path.join(dst_exp_path,'log.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
             command+='accelerate launch --main_process_port {} db_generate_clean.py \\\n'.format(ports[port_idx],port_idx)
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)

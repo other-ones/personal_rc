@@ -99,7 +99,7 @@ ports=np.arange(1111,2222)
 fixte_list=[0]
 mask_prob_list=[0.15]
 seed=7777
-rep_id=1
+rep_id=2
 dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
@@ -159,6 +159,7 @@ for lr in lr_list:
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     command+='--initializer_token=sks \\\n'
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
+                    command+='--checkpoints_total_limit=2 \\\n'
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                     command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
@@ -166,7 +167,7 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--train_batch_size=1 \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
-                    command+='--max_train_steps=1001 \\\n'
+                    command+='--max_train_steps=751 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
