@@ -9,23 +9,23 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'cat2':('cat','cat','pet','living'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -104,8 +104,8 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
-seed=7777
-rep_id=2
+seed=2940
+rep_id=3
 dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
@@ -223,7 +223,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [250]:
+for gen_target_step in [500]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue

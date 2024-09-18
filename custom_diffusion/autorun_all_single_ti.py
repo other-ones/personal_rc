@@ -18,13 +18,13 @@ info_map={
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'cat2':('cat','cat','pet','living'),
 
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
