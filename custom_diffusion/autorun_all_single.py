@@ -116,7 +116,6 @@ check_tags=['']
 num_devices=1
 port_idx=0
 for lambda_mlm in lambda_mlm_list:
-    continue
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
         lr_str=lr_str.replace('.','P')
