@@ -121,6 +121,7 @@ if __name__=='__main__':
     parser.add_argument('--exclude_attr_change',type=int,default=0)
     parser.add_argument('--exclude',type=str)
     parser.add_argument('--ignore_legacy',type=int)
+    parser.add_argument('--strict',type=int,default=0)
     args=parser.parse_args()
     if args.ignore_legacy:
         inp=input('IGNORE LEGACY RESULTS? (DINO) y/n')
@@ -132,6 +133,10 @@ if __name__=='__main__':
         keywords=args.keywords.split('-')
     else:
         keywords=None
+    if args.exclude:
+        exclude=args.exclude.split('-')
+    else:
+        exclude=None
     dino_eval=DINOEvaluator(device='cuda:0')
     results=[]
     concepts=os.listdir(dir_path)
@@ -150,20 +155,28 @@ if __name__=='__main__':
         # if any("_ti" in exp or "nomlm" in exp for exp in exps):
         if True:
             for exp in sorted_exps:
-                if args.exclude is not None and args.exclude in exp:
-                    continue
                 exp_path=os.path.join(concept_path,exp)
                 if keywords is not None:
-                    valid=True
+                    valid1=True
                     for keyword in keywords:
                         if keyword not in exp_path:
-                            valid=False
+                            valid1=False
                             break
                 else:
-                    valid=True
-                # if 'nomlm' in exp:
-                #     valid=True
-                if not valid:
+                    valid1=True
+
+                if exclude is not None:
+                    valid2=True
+                    for item in exclude:
+                        if item in exp_path:
+                            valid2=False
+                            break
+                else:
+                    valid2=True
+                if 'nomlm' in exp and not args.strict:
+                    valid1=True
+                    valid2=True
+                if not (valid1 and valid2):
                     continue
                 caption_path=os.path.join(exp_path,'captions.json')
                 if not os.path.exists(caption_path):
