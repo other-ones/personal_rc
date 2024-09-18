@@ -82,8 +82,8 @@ else:
 lambda_mlm_list=[
             0.0001,
             0, 
-            0.0005,
             0.001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -209,8 +209,6 @@ for lambda_mlm in lambda_mlm_list:
                     # exit()
                     time.sleep(25)
 
-
-
 print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/cd_models',dir_name)
@@ -223,7 +221,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [500]:
+for gen_target_step in [250]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
