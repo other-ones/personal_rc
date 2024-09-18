@@ -523,12 +523,12 @@ def main(args):
         cls_net=ContextNet(hidden_dim, cls_output_dim) # -1 for placeholder
 
     # Freeze all parameters except for the token embeddings in text encoder
-    params_to_freeze = itertools.chain(
-            text_encoder.text_model.encoder.parameters(),
-            text_encoder.text_model.final_layer_norm.parameters(),
-            text_encoder.text_model.embeddings.position_embedding.parameters(),
-        )
-    freeze_params(params_to_freeze)
+    # params_to_freeze = itertools.chain(
+    #         text_encoder.text_model.encoder.parameters(),
+    #         text_encoder.text_model.final_layer_norm.parameters(),
+    #         text_encoder.text_model.embeddings.position_embedding.parameters(),
+    #     )
+    # freeze_params(params_to_freeze)
     # if not args.train_text_encoder:
         
     # else:
@@ -593,6 +593,9 @@ def main(args):
         text_encoder.text_model.encoder.requires_grad_(False)
         text_encoder.text_model.final_layer_norm.requires_grad_(False)
         text_encoder.text_model.embeddings.position_embedding.requires_grad_(False)
+    else:
+        # assert args.learned_embed_path1,args.learned_embed_path1
+        text_encoder.requires_grad_(True)
     
             
     # now we will add new Custom Diffusion weights to the attention layers
