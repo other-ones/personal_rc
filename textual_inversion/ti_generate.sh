@@ -1,17 +1,17 @@
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
-export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/chair1/";
+export DATA_DIR="/data/twkim/diffusion/personalization/custom_images/charmander/simple";
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export CUDA_VISIBLE_DEVICES=7;
 accelerate launch --main_process_port 2737  ti_generate.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
-  --placeholder_token1="<chair1>" \
+  --placeholder_token1="<charmander>" \
   --resolution=512 \
   --seed=1234 \
   --mask_tokens="[MASK]" \
-  --learned_embed_path1='saved_models/ti_models/disen/chair1/tmp_prior_single_chair1_mlm0001_pot/checkpoints/learned_embeds_s3000.pt' \
-  --train_prior_concept1='pot' \
-  --eval_prior_concept1='pot' \
+  --learned_embed_path1='saved_models/ti_models/custom/charmander/charmander_nomlm/checkpoints/learned_embeds_s3000.pt' \
+  --train_prior_concept1='toy' \
+  --eval_prior_concept1='stuffed animal' \
   --include_prior_concept=1 \
   --eval_prompt_type='nonliving' \
   --eval_batch_size=15 \
@@ -21,7 +21,7 @@ accelerate launch --main_process_port 2737  ti_generate.py \
   --dst_exp_path=results/ti_results/disen/chair1/tmp_prior_single_chair1_mlm0001_pot_s3000
 
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
-export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/chair1/";
+export DATA_DIR="/data/twkim/diffusion/personalization/custom_images/charmander/simple";
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export CUDA_VISIBLE_DEVICES=6;
 accelerate launch --main_process_port 2736  ti_generate.py \
