@@ -958,7 +958,7 @@ def main(args):
                     else:
                         masks = batch["masks"]
                         loss_diff = F.mse_loss(model_pred.float(), target.float(), reduction="none")
-                        loss_diff = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
+                        loss_diff = ((loss_diff * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
 
                 # 3. MLM Loss
                 loss_mlm=None
@@ -1108,7 +1108,6 @@ def main(args):
                             input_image=Image.fromarray(input_image)
                             input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
                             # [3] INPUT LOGGING
-sh pus
 
                         # [4] MLM LOGGING
                         if args.lambda_mlm:
