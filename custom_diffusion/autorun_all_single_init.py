@@ -15,18 +15,18 @@ info_map={
     'cat1': ('cat','cat','pet','living'),
     'backpack':('backpack','backpack','nonliving','nonliving'),
     
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'cat2':('cat','cat','pet','living'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -81,10 +81,10 @@ elif '04' in hostname:
 else:
     assert False
 lambda_mlm_list=[
-            # 0.0001,
+            0.0001,
             0, 
-            # 0.001,
-            # 0.0005,
+            0.001,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -111,9 +111,7 @@ dir_name='init_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
-# ['VERB', 'ADJ','ADV','PROPN','ADP','NOUN']
 check_tags=['']
-# target_tags=''
 num_devices=1
 port_idx=0
 for lambda_mlm in lambda_mlm_list:

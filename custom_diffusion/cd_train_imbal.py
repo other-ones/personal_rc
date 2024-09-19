@@ -987,6 +987,8 @@ def main(args):
                     )
                     loss_mlm=loss_mlm[mlm_labels_flat!=(-100)]
                     loss_mlm=loss_mlm.mean()
+
+                    
                 if loss_diff is not None:
                     loss=((loss_mlm*args.lambda_mlm)+loss_diff)
                 else:

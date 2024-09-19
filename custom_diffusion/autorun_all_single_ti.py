@@ -14,18 +14,18 @@ info_map={
     'rc_car':('toy','toy','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
     'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'cat2':('cat','cat','pet','living'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -51,8 +51,8 @@ lambda_mlm_list=[
             # 0, 
             0.001,
             # 0.01,
-            # 0.0001,
-            # 0.0005,
+            0.0001,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -83,7 +83,7 @@ elif '03' in hostname:
     host_suffix='03'
 else:
     assert False
-dir_name=f'sgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
+dir_name=f'init_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-4]
 mlm_batch_size=25
@@ -94,6 +94,19 @@ check_tags=['']
 print('\nTRAINING TI')
 port_idx=0
 train_batch_size=1
+num_devices=4
+while True:
+    stats=get_gpu_memory()
+    found=False
+    available_devices=[]
+    for stat_idx in target_devices:
+        stat=stats[stat_idx]    
+        if stat>2e4 :
+            available_devices.append(stat_idx)
+    if len(available_devices)>=num_devices:
+        break
+    print('waiting..')
+    time.sleep(30)
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     # lr_str=lr_str.replace('.','P')
@@ -111,7 +124,7 @@ for lr in lr_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_bigger2_qlab{}'.format(host_suffix)
+                    run_name='cd_init_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
