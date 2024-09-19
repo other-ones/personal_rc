@@ -13,9 +13,8 @@ info_map={
     'backpack_dog':('backpack','backpack','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
-
     'backpack':('backpack','backpack','nonliving','nonliving'),
-    'pet_dog1':('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'chair1': ('chair','chair','nonliving','nonliving'),
     # 'dog6': ('dog','dog','pet','living'),
@@ -52,8 +51,8 @@ lambda_mlm_list=[
             # 0, 
             0.001,
             # 0.01,
-            0.0001,
-            0.0005,
+            # 0.0001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -175,7 +174,7 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_cd_path={} \\\n'.format(resume_cd_path)
                     command+='--learned_embed_path1={} \\\n'.format(learned_embed_path1)
-                    command+='--train_batch_size={} \\\n'.foramt(train_batch_size)
+                    command+='--train_batch_size={} \\\n'.format(train_batch_size)
                     command+='--scale_lr \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
@@ -228,7 +227,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[1000,2000,3000]
+gen_target_step_list=[500,1000]
 for gen_target_step in gen_target_step_list:
     for concept_idx,concept in enumerate(list(info_map.keys())):
         concept_path=os.path.join(dir_path,concept)
@@ -240,7 +239,7 @@ for gen_target_step in gen_target_step_list:
             if not '_ti' in exp:
                 continue
             splits=exp.split('_')
-            assert 'lr' in splits[-2]
+            assert 'lr' in splits[-3]
             cd_exp_name=exp.split('_lr')[0]
             cd_exp_name+='_lr1e5'
             print(cd_exp_name,'cd_exp_name')

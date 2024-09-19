@@ -922,61 +922,47 @@ def main(args):
             text_encoder.train()
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(unet), accelerator.accumulate(text_encoder):
-                # Load Batch
-                pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
-                input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
-                masks=batch["masks"]# B,77 list of booleans (tensor)
-                raw_captions_ti=batch["raw_captions_ti"]
-                # masks64=torch.nn.functional.interpolate(masks,(64,64))
-                
-                # Load Batch
-
-
-
-
-                # Convert images to latent space
-                latents = vae.encode(pixel_values.to(dtype=weight_dtype)).latent_dist.sample()
-                latents = latents * vae.config.scaling_factor
-                noise = torch.randn_like(latents)
-                bsz = latents.shape[0]
-                timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (bsz,), device=latents.device)
-                timesteps = timesteps.long()
-                noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
-
-
-
-                # learned_embeds=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                # if args.normalize_target1:
-                #     target_emb=F.normalize(learned_embeds,p=1,dim=-1)*args.normalize_target1
-                # else:
-                #     target_emb=learned_embeds
-                encoder_hidden_states = text_encoder(
-                                                    input_ids,
-                                                     )[0].to(dtype=weight_dtype)
-                model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
-                if noise_scheduler.config.prediction_type == "epsilon":
-                    target = noise
-                elif noise_scheduler.config.prediction_type == "v_prediction":
-                    target = noise_scheduler.get_velocity(latents, noise, timesteps)
-                else:
-                    raise ValueError(f"Unknown prediction type {noise_scheduler.config.prediction_type}")
-
-                if args.with_prior_preservation:
-                    # Chunk the noise and model_pred into two parts and compute the loss on each part separately.
-                    model_pred, model_pred_prior = torch.chunk(model_pred, 2, dim=0)
-                    target, target_prior = torch.chunk(target, 2, dim=0)
-                    masks = torch.chunk(batch["masks"], 2, dim=0)[0]
-                    loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
-                    loss = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
-                    prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
-                    loss = loss + args.prior_loss_weight * prior_loss
-                else:
-                    masks = batch["masks"]
-                    loss = F.mse_loss(model_pred.float(), target.float(), reduction="none")
-                    loss = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
+                loss_diff=None
+                if (global_step%args.imbalance) ==0:
+                    # Load Batch
+                    pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
+                    input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
+                    masks=batch["masks"]# B,77 list of booleans (tensor)
+                    raw_captions_ti=batch["raw_captions_ti"]
+                    # Load Batch
+                    # Convert images to latent space
+                    latents = vae.encode(pixel_values.to(dtype=weight_dtype)).latent_dist.sample()
+                    latents = latents * vae.config.scaling_factor
+                    noise = torch.randn_like(latents)
+                    bsz = latents.shape[0]
+                    timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (bsz,), device=latents.device)
+                    timesteps = timesteps.long()
+                    noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
+                    encoder_hidden_states = text_encoder(input_ids)[0].to(dtype=weight_dtype)
+                    model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
+                    if noise_scheduler.config.prediction_type == "epsilon":
+                        target = noise
+                    elif noise_scheduler.config.prediction_type == "v_prediction":
+                        target = noise_scheduler.get_velocity(latents, noise, timesteps)
+                    else:
+                        raise ValueError(f"Unknown prediction type {noise_scheduler.config.prediction_type}")
+                    if args.with_prior_preservation:
+                        # Chunk the noise and model_pred into two parts and compute the loss on each part separately.
+                        model_pred, model_pred_prior = torch.chunk(model_pred, 2, dim=0)
+                        target, target_prior = torch.chunk(target, 2, dim=0)
+                        masks = torch.chunk(batch["masks"], 2, dim=0)[0]
+                        loss_diff = F.mse_loss(model_pred.float(), target.float(), reduction="none")
+                        loss_diff = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
+                        prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
+                        loss_diff = loss_diff + args.prior_loss_weight * prior_loss
+                    else:
+                        masks = batch["masks"]
+                        loss_diff = F.mse_loss(model_pred.float(), target.float(), reduction="none")
+                        loss_diff = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
 
                 # 3. MLM Loss
                 loss_mlm=None
+                assert args.lambda_mlm
                 if args.lambda_mlm:
                     # for MLM
                     batch_mlm=load_mlm_batch(mlm_loader)
@@ -1001,14 +987,10 @@ def main(args):
                     )
                     loss_mlm=loss_mlm[mlm_labels_flat!=(-100)]
                     loss_mlm=loss_mlm.mean()
-                    # # masked_idxs_flat
-                    # if args.mlm_target in ['non_special','non_padding']:
-                    # elif args.mlm_target in ['masked']:
-                    #     # masked
-                    #     loss_mlm=loss_mlm[masked_idxs_flat]
-                    # else:
-                    #     assert False
-                    loss+=(loss_mlm*args.lambda_mlm)
+                if loss_diff is not None:
+                    loss=((loss_mlm*args.lambda_mlm)+loss_diff)
+                else:
+                    loss=(loss_mlm*args.lambda_mlm)
 
                 
                 accelerator.backward(loss)
@@ -1049,7 +1031,6 @@ def main(args):
             if accelerator.sync_gradients:
                 progress_bar.update(1)
                 global_step += 1
-
                 # [1] CHECKPOINTING
                 if ((global_step % args.checkpointing_steps == 0) or (global_step==1)):
                     if accelerator.is_main_process:
@@ -1119,13 +1100,14 @@ def main(args):
                     
 
                     if ((global_step % args.validation_steps == 0)  or (global_step==1 )or (global_step==250)):
-                        # [3] INPUT LOGGING
-                        input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
-                        input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
-                        input_image=input_image.astype(np.uint8)
-                        input_image=Image.fromarray(input_image)
-                        input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
-                        # [3] INPUT LOGGING
+                        if (global_step%args.imbalance)==0:
+                            # [3] INPUT LOGGING
+                            input_image=(pixel_values[0].permute(1,2,0).detach().cpu().numpy()+1)*127.5
+                            input_mask=masks[0].permute(1,2,0).detach().cpu().numpy()
+                            input_image=input_image.astype(np.uint8)
+                            input_image=Image.fromarray(input_image)
+                            input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
+                            # [3] INPUT LOGGING
 
 
                         # [4] MLM LOGGING

@@ -6,7 +6,6 @@ import socket
 hostname = socket.gethostname()
 print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'pet_cat1':('cat','cat','pet','living'),
@@ -16,18 +15,18 @@ info_map={
     'cat1': ('cat','cat','pet','living'),
     'backpack':('backpack','backpack','nonliving','nonliving'),
     
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    'dog3':  ('dog','dog','pet','living'),
-    'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'cat2':('cat','cat','pet','living'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -108,7 +107,7 @@ ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
 rep_id=1
-dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+dir_name='init_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
@@ -129,7 +128,7 @@ for lambda_mlm in lambda_mlm_list:
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
                     train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-                    run_name='cd_bigger2_qlab{}'.format(host_suffix)
+                    run_name='cd_init_qlab{}'.format(host_suffix)
                     if lambda_mlm:
                         run_name+="_mlm{}_{}".format(lambda_mlm_str,concept)
                         run_name+='_mprob{}'.format(mask_prob_str)
@@ -166,7 +165,7 @@ for lambda_mlm in lambda_mlm_list:
                     command+='accelerate launch --main_process_port {} cd_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-                    command+='--initializer_token=sks \\\n'
+                    command+='--initializer_token={} \\\n'.format(train_prior)
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
@@ -223,7 +222,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [250]:
+for gen_target_step in [500,250]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
