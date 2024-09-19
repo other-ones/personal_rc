@@ -277,6 +277,7 @@ def main():
     # Initializer
     if args.initialize_token:
         initializer_token_ids = tokenizer.encode(args.initializer_token, add_special_tokens=False)
+        print(initializer_token_ids,'initializer_token_ids')
         assert len(initializer_token_ids)==1,args.initializer_token
         initializer_token_id = initializer_token_ids[0]
         initial_embed=token_embeds[initializer_token_ids]
