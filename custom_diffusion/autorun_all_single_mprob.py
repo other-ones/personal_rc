@@ -104,7 +104,7 @@ for stat_idx,stat in enumerate(stats):
         break
 
 ports=np.arange(1111,2222)
-mask_prob_list=[0.15,0.2,0.15]
+mask_prob_list=[0.15,0.2,0.25]
 seed=2940
 rep_id=1
 dir_name='mprob_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
