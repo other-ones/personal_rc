@@ -115,6 +115,7 @@ check_tags=['']
 # target_tags=''
 num_devices=1
 port_idx=0
+lr_te=1e-6
 for lambda_mlm in lambda_mlm_list:
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
@@ -138,6 +139,7 @@ for lambda_mlm in lambda_mlm_list:
                     else:
                         run_name+="_nomlm_{}".format(concept)
                     run_name+='_lr{}'.format(lr_str)
+                    run_name+='_lrte{}'.format(lr_str)
                     output_dir=os.path.join('saved_models/cd_models/{}'.format(dir_name),concept)
                     exp_path=os.path.join(output_dir,run_name)
                     if os.path.exists(exp_path):
@@ -178,6 +180,7 @@ for lambda_mlm in lambda_mlm_list:
                     command+='--max_train_steps=501 \\\n'
                     command+='--validation_steps=100 \\\n'
                     command+='--learning_rate={} \\\n'.format(lr)
+                    command+='--learning_rate_text_encoder={} \\\n'.format(lr)
                     command+='--lr_scheduler="constant" \\\n'
                     command+='--lr_warmup_steps=0 \\\n'
                     command+='--output_dir="{}" \\\n'.format(output_dir)
