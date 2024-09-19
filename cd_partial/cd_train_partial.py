@@ -128,13 +128,32 @@ def log_validation(
             ]
     else:
         assert False, 'undefined eval prompt type'
+    
     logger.info(
         f"Running validation... \n Generating {args.num_validation_images} images with prompt:"
         '\t'.join(validation_prompts)
     )
+    is_keyword_tokens_list1=[]
+    for prompt in validation_prompts:
+        is_keyword_tokens1=[False]
+        text_words=prompt.split()
+        for word_idx in range(len(text_words)):
+            cap_word=text_words[word_idx]
+            word_token_ids=tokenizer.encode(cap_word,add_special_tokens=False)
+            num_tokens=len(word_token_ids)
+            for tok_id in word_token_ids:
+                tok_decoded=tokenizer.decode(tok_id)
+                if args.placeholder_token1 == tok_decoded:
+                    is_keyword_tokens1.append(True)
+                else:
+                    is_keyword_tokens1.append(False)
+        for _ in range(len(is_keyword_tokens1),tokenizer.model_max_length):
+            is_keyword_tokens1.append(False)
+        assert len(is_keyword_tokens1)==tokenizer.model_max_length
+        is_keyword_tokens1=torch.BoolTensor(is_keyword_tokens1)
+        is_keyword_tokens_list1.append(is_keyword_tokens1)
 
-
-
+    is_keyword_tokens_list1 = torch.stack(is_keyword_tokens_list1)
     # run inference
     generator = None if args.seed is None else torch.Generator(device=accelerator.device).manual_seed(args.seed)
     images = []
@@ -148,6 +167,7 @@ def log_validation(
                             num_inference_steps=25, 
                             generator=generator,
                             verbose=True,
+                            is_keyword_tokens=is_keyword_tokens_list1,
                             ).images
         print('Generated')
     
@@ -940,8 +960,7 @@ def main(args):
             with accelerator.accumulate(unet), accelerator.accumulate(text_encoder):
                 # Load Batch
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
-                is_keyword_tokens = batch["is_keyword_tokens"].to(dtype=weight_dtype)
-                print(is_keyword_tokens.shape,'is_keyword_tokens')
+                is_keyword_tokens = batch["is_keyword_tokens"]
                 input_ids=batch["input_ids"]# B,77 list of booleans (tensor)
                 masks=batch["masks"]# B,77 list of booleans (tensor)
                 raw_captions_ti=batch["raw_captions_ti"]
@@ -1004,8 +1023,7 @@ def main(args):
                     input_ids_masked=batch_mlm["input_ids_masked"].to(accelerator.device)
                     input_ids_pos=batch_mlm["input_ids_pos"].to(accelerator.device)
                     raw_captions_mlm=batch_mlm["raw_captions_mlm"]
-                    is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
-                    print(is_keyword_tokens_mlm.shape,'is_keyword_tokens_mlm.shape')
+                    # is_keyword_tokens_mlm=batch_mlm["is_keyword_tokens_mlm"]
                     # for MLM
                     clip_text_embedding_masked = text_encoder(input_ids_masked,
                                                             )[0].to(accelerator.device, dtype=weight_dtype)

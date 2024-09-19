@@ -770,6 +770,7 @@ class StableDiffusionPipeline(
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         guidance_rescale: float = 0.0,
         clip_skip: Optional[int] = None,
+        is_keyword_tokens = None,
         callback_on_step_end: Optional[
             Union[Callable[[int, int, Dict], None], PipelineCallback, MultiPipelineCallbacks]
         ] = None,
@@ -993,7 +994,12 @@ class StableDiffusionPipeline(
                     continue
 
                 # expand the latents if we are doing classifier free guidance
-                latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                if self.do_classifier_free_guidance:
+                    latent_model_input = torch.cat([latents] * 2)  
+                    is_keyword_tokens_input=torch.cat([torch.zeros_like(is_keyword_tokens).bool(),is_keyword_tokens])
+                else:
+                    latent_model_input=latents
+                    is_keyword_tokens_input=is_keyword_tokens
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
                 # predict the noise residual
@@ -1005,6 +1011,7 @@ class StableDiffusionPipeline(
                     cross_attention_kwargs=self.cross_attention_kwargs,
                     added_cond_kwargs=added_cond_kwargs,
                     return_dict=False,
+                    is_keyword_tokens=is_keyword_tokens_input,
                 )[0]
 
                 # perform guidance

@@ -349,6 +349,7 @@ class UNet2DConditionModel(
         # down
         output_channel = block_out_channels[0]
         for i, down_block_type in enumerate(down_block_types):
+            print(down_block_type,'down_block_type')
             input_channel = output_channel
             output_channel = block_out_channels[i]
             is_final_block = i == len(block_out_channels) - 1
@@ -1047,6 +1048,7 @@ class UNet2DConditionModel(
         down_intrablock_additional_residuals: Optional[Tuple[torch.Tensor]] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
         return_dict: bool = True,
+        is_keyword_tokens = None,
     ) -> Union[UNet2DConditionOutput, Tuple]:
         r"""
         The [`UNet2DConditionModel`] forward method.
@@ -1208,7 +1210,6 @@ class UNet2DConditionModel(
                 additional_residuals = {}
                 if is_adapter and len(down_intrablock_additional_residuals) > 0:
                     additional_residuals["additional_residuals"] = down_intrablock_additional_residuals.pop(0)
-
                 sample, res_samples = downsample_block(
                     hidden_states=sample,
                     temb=emb,
@@ -1216,6 +1217,7 @@ class UNet2DConditionModel(
                     attention_mask=attention_mask,
                     cross_attention_kwargs=cross_attention_kwargs,
                     encoder_attention_mask=encoder_attention_mask,
+                    is_keyword_tokens=is_keyword_tokens,
                     **additional_residuals,
                 )
             else:
@@ -1246,6 +1248,7 @@ class UNet2DConditionModel(
                     attention_mask=attention_mask,
                     cross_attention_kwargs=cross_attention_kwargs,
                     encoder_attention_mask=encoder_attention_mask,
+                    is_keyword_tokens=is_keyword_tokens,
                 )
             else:
                 sample = self.mid_block(sample, emb)
@@ -1283,6 +1286,7 @@ class UNet2DConditionModel(
                     upsample_size=upsample_size,
                     attention_mask=attention_mask,
                     encoder_attention_mask=encoder_attention_mask,
+                    is_keyword_tokens=is_keyword_tokens,
                 )
             else:
                 sample = upsample_block(

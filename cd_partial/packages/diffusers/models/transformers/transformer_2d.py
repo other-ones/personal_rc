@@ -335,6 +335,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
         attention_mask: Optional[torch.Tensor] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
         return_dict: bool = True,
+        is_keyword_tokens= True,
     ):
         """
         The [`Transformer2DModel`] forward method.
@@ -416,7 +417,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
         # 2. Blocks
         for block in self.transformer_blocks:
             if self.training and self.gradient_checkpointing:
-
+                assert False,'checkpointing'
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
                         if return_dict is not None:
@@ -447,6 +448,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
                     timestep=timestep,
                     cross_attention_kwargs=cross_attention_kwargs,
                     class_labels=class_labels,
+                    is_keyword_tokens=is_keyword_tokens,
                 )
 
         # 3. Output

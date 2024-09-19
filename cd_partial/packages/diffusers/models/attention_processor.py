@@ -440,6 +440,7 @@ class Attention(nn.Module):
         hidden_states: torch.Tensor,
         encoder_hidden_states: Optional[torch.Tensor] = None,
         attention_mask: Optional[torch.Tensor] = None,
+        is_keyword_tokens = None,
         **cross_attention_kwargs,
     ) -> torch.Tensor:
         r"""
@@ -478,6 +479,7 @@ class Attention(nn.Module):
             hidden_states,
             encoder_hidden_states=encoder_hidden_states,
             attention_mask=attention_mask,
+            is_keyword_tokens=is_keyword_tokens,
             **cross_attention_kwargs,
         )
 
@@ -2305,7 +2307,11 @@ class CustomDiffusionAttnProcessorPartial(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         is_keyword_tokens=None,
     ) -> torch.Tensor:
-        # print('CustomDiffusionAttnProcessorPartial')
+        # if is_keyword_tokens is not None:
+        #     print('CustomDiffusionAttnProcessorPartial',is_keyword_tokens.shape)
+        #     print(encoder_hidden_states is not None,'encoder_hidden_states is not None')
+        # else:
+        #     print(encoder_hidden_states is None, 'encoder_hidden_states is None')
         batch_size, sequence_length, _ = hidden_states.shape
         attention_mask = attn.prepare_attention_mask(attention_mask, sequence_length, batch_size)
         if self.train_q_out:
@@ -2322,14 +2328,22 @@ class CustomDiffusionAttnProcessorPartial(nn.Module):
                 encoder_hidden_states = attn.norm_encoder_hidden_states(encoder_hidden_states)
 
         if self.train_kv:
-            key = self.to_k_custom_diffusion(encoder_hidden_states.to(self.to_k_custom_diffusion.weight.dtype))
-            value = self.to_v_custom_diffusion(encoder_hidden_states.to(self.to_v_custom_diffusion.weight.dtype))
+            # key = self.to_k_custom_diffusion(encoder_hidden_states.to(self.to_k_custom_diffusion.weight.dtype))
+            # value = self.to_v_custom_diffusion(encoder_hidden_states.to(self.to_v_custom_diffusion.weight.dtype))
+            key = attn.to_k(encoder_hidden_states)
+            value = attn.to_v(encoder_hidden_states)
             # print(key.shape,'key.shape')
-            # key: [2*bsz,77,D]
-            if is_keyword_tokens:
-                pass
-                # print(ke)
-                # key[is_keyword_tokens]
+            # key: [(prior_preserv)*bsz,77,D]
+            assert crossattn,'crossattn'
+            # torch.Size([4, 77]) is_keyword_tokens.shape
+            # torch.Size([4, 77, 768]) encoder_hidden_states.shape
+            custom_key=self.to_k_custom_diffusion(encoder_hidden_states[is_keyword_tokens].to(self.to_k_custom_diffusion.weight.dtype))
+            custom_value=self.to_v_custom_diffusion(encoder_hidden_states[is_keyword_tokens].to(self.to_k_custom_diffusion.weight.dtype))
+            # encoder_hidden_states: 2,768
+            # custom_value: 2,320
+            # key[is_keyword_tokens]: 2,320
+            key[is_keyword_tokens]=custom_key
+            value[is_keyword_tokens]=custom_value
             key = key.to(attn.to_q.weight.dtype)
             value = value.to(attn.to_q.weight.dtype)
 
@@ -2338,8 +2352,15 @@ class CustomDiffusionAttnProcessorPartial(nn.Module):
             value = attn.to_v(encoder_hidden_states)
 
         if crossattn:
+            # detaching first token
             detach = torch.ones_like(key)
-            detach[:, :1, :] = detach[:, :1, :] * 0.0
+            # detach:4,77,320
+            detach[:, :1, :] = detach[:, :1, :] * 0.0 # [4,1,320]
+            # set first token=0 other=1
+            # print(detach.shape,'detach.shape')
+            # print(key.shape,'key.shape')
+            # print(torch.sum(1 - detach),'(1 - detach)')
+            # print(torch.sum(detach),'(detach)')
             key = detach * key + (1 - detach) * key.detach()
             value = detach * value + (1 - detach) * value.detach()
 

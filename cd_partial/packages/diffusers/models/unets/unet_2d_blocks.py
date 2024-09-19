@@ -852,15 +852,16 @@ class UNetMidBlock2DCrossAttn(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
+        is_keyword_tokens = None,
     ) -> torch.Tensor:
         if cross_attention_kwargs is not None:
             if cross_attention_kwargs.get("scale", None) is not None:
                 logger.warning("Passing `scale` to `cross_attention_kwargs` is deprecated. `scale` will be ignored.")
-
+        # print(is_keyword_tokens.shape,'UNetMid')
         hidden_states = self.resnets[0](hidden_states, temb)
         for attn, resnet in zip(self.attentions, self.resnets[1:]):
             if self.training and self.gradient_checkpointing:
-
+                assert False,'checkpointing'
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
                         if return_dict is not None:
@@ -893,6 +894,7 @@ class UNetMidBlock2DCrossAttn(nn.Module):
                     attention_mask=attention_mask,
                     encoder_attention_mask=encoder_attention_mask,
                     return_dict=False,
+                    is_keyword_tokens=is_keyword_tokens,
                 )[0]
                 hidden_states = resnet(hidden_states, temb)
 
@@ -1172,6 +1174,7 @@ class CrossAttnDownBlock2D(nn.Module):
         attention_type: str = "default",
     ):
         super().__init__()
+        print('CrossAttnDownBlock2D_init')
         resnets = []
         attentions = []
 
@@ -1247,18 +1250,19 @@ class CrossAttnDownBlock2D(nn.Module):
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
         additional_residuals: Optional[torch.Tensor] = None,
+        is_keyword_tokens = None,
     ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, ...]]:
         if cross_attention_kwargs is not None:
             if cross_attention_kwargs.get("scale", None) is not None:
                 logger.warning("Passing `scale` to `cross_attention_kwargs` is deprecated. `scale` will be ignored.")
 
         output_states = ()
-
+        # print(is_keyword_tokens.shape,'CrossDownBlock')
         blocks = list(zip(self.resnets, self.attentions))
 
         for i, (resnet, attn) in enumerate(blocks):
             if self.training and self.gradient_checkpointing:
-
+                assert False,'checkpointing'
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
                         if return_dict is not None:
@@ -1291,6 +1295,7 @@ class CrossAttnDownBlock2D(nn.Module):
                     cross_attention_kwargs=cross_attention_kwargs,
                     attention_mask=attention_mask,
                     encoder_attention_mask=encoder_attention_mask,
+                    is_keyword_tokens=is_keyword_tokens,
                     return_dict=False,
                 )[0]
 
@@ -1362,7 +1367,8 @@ class DownBlock2D(nn.Module):
         self.gradient_checkpointing = False
 
     def forward(
-        self, hidden_states: torch.Tensor, temb: Optional[torch.Tensor] = None, *args, **kwargs
+        self, hidden_states: torch.Tensor, temb: Optional[torch.Tensor] = None, 
+        *args, **kwargs,
     ) -> Tuple[torch.Tensor, Tuple[torch.Tensor, ...]]:
         if len(args) > 0 or kwargs.get("scale", None) is not None:
             deprecation_message = "The `scale` argument is deprecated and will be ignored. Please remove it, as passing it will raise an error in the future. `scale` should directly be passed while calling the underlying pipeline component i.e., via `cross_attention_kwargs`."
@@ -2489,11 +2495,12 @@ class CrossAttnUpBlock2D(nn.Module):
         upsample_size: Optional[int] = None,
         attention_mask: Optional[torch.Tensor] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
+        is_keyword_tokens = None,
     ) -> torch.Tensor:
         if cross_attention_kwargs is not None:
             if cross_attention_kwargs.get("scale", None) is not None:
                 logger.warning("Passing `scale` to `cross_attention_kwargs` is deprecated. `scale` will be ignored.")
-
+        # print(is_keyword_tokens.shape,'CrossAttnUp')
         is_freeu_enabled = (
             getattr(self, "s1", None)
             and getattr(self, "s2", None)
@@ -2521,7 +2528,7 @@ class CrossAttnUpBlock2D(nn.Module):
             hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
             if self.training and self.gradient_checkpointing:
-
+                assert False,'checkpointing'
                 def create_custom_forward(module, return_dict=None):
                     def custom_forward(*inputs):
                         if return_dict is not None:
@@ -2555,6 +2562,7 @@ class CrossAttnUpBlock2D(nn.Module):
                     attention_mask=attention_mask,
                     encoder_attention_mask=encoder_attention_mask,
                     return_dict=False,
+                    is_keyword_tokens=is_keyword_tokens,
                 )[0]
 
         if self.upsamplers is not None:
