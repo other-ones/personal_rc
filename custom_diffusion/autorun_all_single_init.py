@@ -81,10 +81,10 @@ elif '04' in hostname:
 else:
     assert False
 lambda_mlm_list=[
-            # 0.0001,
+            0.0001,
             0, 
-            # 0.001,
-            # 0.0005,
+            0.001,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
