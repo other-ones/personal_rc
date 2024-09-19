@@ -91,6 +91,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_samples',type=int)
     parser.add_argument('--exclude',type=str)
     parser.add_argument('--ignore_legacy',type=int)
+    parser.add_argument('--strict',type=int,default=0)
     args=parser.parse_args()
     if args.ignore_legacy:
         inp=input('IGNORE EXISTING RESULTS? y/n')
@@ -103,10 +104,13 @@ if __name__ == "__main__":
     # /home/twkim/project/textual_inversion/results/single_normalized/tmp
     dir_path=args.dir_path
     keywords=args.keywords
+    exclude=args.exclude
     num_samples=args.num_samples
     concepts=os.listdir(dir_path)
     if keywords is not None:
         keywords=keywords.split('-')
+    if exclude is not None:
+        exclude=exclude.split('-')
     
     for concept in concepts:
         # if 'chair' in concept:
@@ -119,20 +123,28 @@ if __name__ == "__main__":
         if True:
         # if True:
             for exp in sorted_exps:
-                if args.exclude is not None and args.exclude in exp:
-                        continue
                 exp_path=os.path.join(concept_path,exp)
                 if keywords is not None:
-                    valid=True
+                    valid1=True
                     for keyword in keywords:
                         if keyword not in exp_path:
-                            valid=False
+                            valid1=False
                             break
                 else:
-                    valid=True
-                if 'nomlm' in exp:
-                    valid=True
-                if not valid:
+                    valid1=True
+
+                if exclude is not None:
+                    valid2=True
+                    for item in exclude:
+                        if item in exp_path:
+                            valid2=False
+                            break
+                else:
+                    valid2=True
+                if 'nomlm' in exp and not args.strict:
+                    valid1=True
+                    valid2=True
+                if not (valid1 and valid2):
                     continue
                 pred_root=os.path.join(exp_path,'generated')
                 result_path=os.path.join(exp_path, 'clip.json')

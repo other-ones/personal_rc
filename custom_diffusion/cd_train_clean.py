@@ -614,6 +614,7 @@ def main(args):
     custom_diffusion_attn_procs = {}
     st = unet.state_dict()
     for name, _ in unet.attn_processors.items():
+        print(name,'name')
         cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
         if name.startswith("mid_block"):
             hidden_size = unet.config.block_out_channels[-1]

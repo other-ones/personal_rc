@@ -9,23 +9,23 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+    'dog6': ('dog','dog','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'cat2':('cat','cat','pet','living'),
 
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -82,13 +82,13 @@ else:
 lambda_mlm_list=[
             0.0001,
             0, 
-            0.0005,
             0.001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
 masked_loss=0
-
+train_text_encoder=1
 
 import subprocess as sp
 def get_gpu_memory():
@@ -104,8 +104,8 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
-seed=7777
-rep_id=2
+seed=2940
+rep_id=1
 dir_name='sgpu_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
@@ -199,7 +199,7 @@ for lambda_mlm in lambda_mlm_list:
                     command+='--class_prompt1="a picture of a {}" \\\n'.format(train_prior)
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
-                    command+='--train_text_encoder=0 \\\n'
+                    command+='--train_text_encoder={} \\\n'.format(train_text_encoder)
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="CD MLM SINGLE" \\\n'
                     command+='--include_prior_concept=1 > {} 2>&1 &'.format(log_path)
@@ -208,8 +208,6 @@ for lambda_mlm in lambda_mlm_list:
                     port_idx+=1
                     # exit()
                     time.sleep(25)
-
-
 
 print('GENERATION')
 # GENERATION

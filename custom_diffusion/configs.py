@@ -5,6 +5,7 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--learning_rate_text',type=float)
     parser.add_argument('--nonmask_weight',type=float,default=1)
     parser.add_argument('--log_steps',type=int,default=10)
     parser.add_argument('--benchmark_path',type=str)

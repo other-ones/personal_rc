@@ -8,24 +8,25 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'cat1': ('cat','cat','pet','living'),
-    'dog6': ('dog','dog','pet','living'),
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-
-    'dog3':  ('dog','dog','pet','living'),
     'pet_cat1':('cat','cat','pet','living'),
-    'cat2':('cat','cat','pet','living'),
-
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
     'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'pet_dog1':('dog','dog','pet','living'),
     'rc_car':('toy','toy','nonliving','nonliving'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'pet_dog1':('dog','dog','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'cat2':('cat','cat','pet','living'),
+
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -73,24 +74,27 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
-seed=7777
-rep_id=2
+seed=2940
+rep_id=1
 if '04' in hostname:
     host_suffix='04'
 elif '07' in hostname:
     host_suffix='07'
+elif '03' in hostname:
+    host_suffix='03'
 else:
     assert False
 dir_name=f'sgpu_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
-lr_list=[5e-4]
+lr_list=[1e-4]
 mlm_batch_size=25
-train_target_step=250
+train_target_step=500
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
 check_tags=['']
 
 print('\nTRAINING TI')
 port_idx=0
+train_batch_size=1
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     # lr_str=lr_str.replace('.','P')
@@ -120,13 +124,15 @@ for lr in lr_list:
                     else:
                         run_name+="_nomlm_{}".format(concept)
                     run_name+='_lr{}'.format(lr_str)
-                    run_name+='_ti'
+                    run_name+=f'_tbatch{train_batch_size}'
+                    run_name+='_ti{}'.format(train_target_step)
 
-                    cd_exp_name=run_name.replace('lr5e4','lr1e5')
-                    cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')
-                    cd_exp_name=cd_exp_name.replace('lr5e5','lr1e5')
-                    cd_exp_name=cd_exp_name.replace('_ti','')
-                    
+                    # cd_exp_name=run_name.replace('lr5e4','lr1e5')
+                    # cd_exp_name=cd_exp_name.replace('lr1e4','lr1e5')
+                    # cd_exp_name=cd_exp_name.replace('lr5e5','lr1e5')
+                    # cd_exp_name=cd_exp_name.replace('_ti','')
+                    cd_exp_name=run_name.split('_lr')[0]
+                    cd_exp_name+=f'_lr1e5'
                     resume_cd_path=os.path.join(unet_concept_path,cd_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step))
                     learned_embed_path1=os.path.join(unet_concept_path,cd_exp_name,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(train_target_step))
                     output_dir=os.path.join('saved_models/cd_models/{}'.format(dir_name),concept)
@@ -169,7 +175,7 @@ for lr in lr_list:
                     command+='--resolution=512 \\\n'
                     command+='--resume_cd_path={} \\\n'.format(resume_cd_path)
                     command+='--learned_embed_path1={} \\\n'.format(learned_embed_path1)
-                    command+='--train_batch_size=4 \\\n'
+                    command+='--train_batch_size={} \\\n'.foramt(train_batch_size)
                     command+='--scale_lr \\\n'
                     command+='--gradient_accumulation_steps=1 \\\n'
                     # command+='--gradient_accumulation_steps=1 \\\n'
@@ -198,6 +204,7 @@ for lr in lr_list:
                     command+='--run_name="{}" \\\n'.format(run_name)
                     command+='--class_prompt1="a picture of a {}" \\\n'.format(train_prior)
                     command+='--class_data_dir1="priors/samples_{}" \\\n'.format(train_prior)
+                    command+='--train_text_encoder=0 \\\n'
                     command+='--caption_root="../datasets_pkgs/captions/v7" \\\n'
                     # command+='--report_to="wandb" \\\n'
                     # command+='--project_name="CD MLM SINGLE" \\\n'
