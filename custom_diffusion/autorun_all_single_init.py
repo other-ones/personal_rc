@@ -220,7 +220,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [250]:
+for gen_target_step in [250,500]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
