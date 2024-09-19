@@ -40,6 +40,7 @@ from diffusers import (
 from diffusers.models.attention_processor import (
     CustomDiffusionAttnProcessor,
     CustomDiffusionAttnProcessor2_0,
+    CustomDiffusionAttnProcessorPartial,
     CustomDiffusionXFormersAttnProcessor,
 )
 from diffusers.optimization import get_scheduler
@@ -204,7 +205,7 @@ def main(args):
     train_q_out = False if args.freeze_model == "crossattn_kv" else True
     custom_diffusion_attn_procs = {}
     attention_class = (
-        CustomDiffusionAttnProcessor2_0 if hasattr(F, "scaled_dot_product_attention") else CustomDiffusionAttnProcessor
+        CustomDiffusionAttnProcessorPartial if hasattr(F, "scaled_dot_product_attention") else CustomDiffusionAttnProcessor
     )
     train_kv = True
     for name, _ in unet.attn_processors.items():
@@ -398,7 +399,7 @@ def main(args):
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
                             num_images_per_prompt=1,
-                            # is_keyword_tokens1=is_keyword_tokens_list,
+                            is_keyword_tokens=is_keyword_tokens_list,
                             # inj_embeddings1=target_emb1.repeat(len(prompts),1),
                             ).images
             

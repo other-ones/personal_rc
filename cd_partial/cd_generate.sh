@@ -2,7 +2,7 @@ export DATA_DIR="/data/twkim/diffusion/personalization/collected/images/teapot"
 export MODEL_NAME="runwayml/stable-diffusion-v1-5"
 export CUDA_VISIBLE_DEVICES=1;
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
-accelerate launch --main_process_port 2731  cd_generate.py \
+accelerate launch --main_process_port 2731  cd_generate_partial.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --train_data_dir1=$DATA_DIR \
   --placeholder_token1="<teapot>" \
