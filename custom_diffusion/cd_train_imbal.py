@@ -1216,6 +1216,8 @@ def main(args):
                 del target_embeds_log
             if loss_diff is not None:
                 logs['loss_diff']=loss_diff.detach().item()
+            else:
+                logs['loss_diff']='None'
             if loss_mlm is not None:
                 mask_embeds_log = accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(mask_token_ids) : max(mask_token_ids) + 1].clone()
                 logs['loss_mlm']=loss_mlm.detach().item()
