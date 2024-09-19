@@ -1,12 +1,10 @@
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
-export OUTPUT_DIR="saved_models/cd_models/single/dog6";
 export CUBLAS_WORKSPACE_CONFIG=:4096:8;
 export INSTANCE_DIR="/data/twkim/diffusion/personalization/collected/images/dog6";
 export CUDA_VISIBLE_DEVICES=7;
 accelerate launch --main_process_port=9980 cd_train_imbal.py \
   --pretrained_model_name_or_path=$MODEL_NAME  \
   --train_data_dir1=$INSTANCE_DIR \
-  --output_dir=$OUTPUT_DIR \
   --resolution=512  \
   --train_batch_size=2  \
   --learning_rate=1e-5  \
@@ -34,6 +32,7 @@ accelerate launch --main_process_port=9980 cd_train_imbal.py \
   --seed=2940 \
   --mlm_batch_size=25 \
   --initializer_token="sks" \
+  --output_dir="saved_models/cd_models/single/dog6" \
   --run_name="tmp_imbalance" \
   --mask_prob=0.15 \
   --imbalance 2
