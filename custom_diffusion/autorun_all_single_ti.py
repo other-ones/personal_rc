@@ -51,8 +51,8 @@ lambda_mlm_list=[
             # 0, 
             0.001,
             # 0.01,
-            0.0001,
-            0.0005,
+            # 0.0001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -74,7 +74,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
-rep_id=1
+rep_id=2
 if '04' in hostname:
     host_suffix='04'
 elif '07' in hostname:
@@ -87,26 +87,26 @@ dir_name=f'init_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 # for port_idx,concept in enumerate(list(info_map.keys())):
 lr_list=[1e-4]
 mlm_batch_size=25
-train_target_step=500
+train_target_step=250
 # check_tags=['VERB-ADJ-ADV-PROPN-ADP-NOUN']
 check_tags=['']
 
 print('\nTRAINING TI')
 port_idx=0
 train_batch_size=1
-num_devices=4
-while True:
-    stats=get_gpu_memory()
-    found=False
-    available_devices=[]
-    for stat_idx in target_devices:
-        stat=stats[stat_idx]    
-        if stat>2e4 :
-            available_devices.append(stat_idx)
-    if len(available_devices)>=num_devices:
-        break
-    print('waiting..')
-    time.sleep(30)
+# num_devices=4
+# while True:
+#     stats=get_gpu_memory()
+#     found=False
+#     available_devices=[]
+#     for stat_idx in target_devices:
+#         stat=stats[stat_idx]    
+#         if stat>2e4 :
+#             available_devices.append(stat_idx)
+#     if len(available_devices)>=num_devices:
+#         break
+#     print('waiting..')
+#     time.sleep(30)
 for lr in lr_list:
     lr_str=invert_scientific_notation(lr)
     # lr_str=lr_str.replace('.','P')
@@ -240,7 +240,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[500,1000]
+gen_target_step_list=[500,1000,2000,3000]
 for gen_target_step in gen_target_step_list:
     for concept_idx,concept in enumerate(list(info_map.keys())):
         concept_path=os.path.join(dir_path,concept)

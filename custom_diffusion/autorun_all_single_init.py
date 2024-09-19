@@ -81,9 +81,9 @@ elif '04' in hostname:
 else:
     assert False
 lambda_mlm_list=[
+            0.001,
             0.0001,
             0, 
-            0.001,
             0.0005,
             # 0.00005,
             # 0.002,
@@ -106,7 +106,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
-rep_id=1
+rep_id=2
 dir_name='init_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
@@ -220,7 +220,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [250]:
+for gen_target_step in [250,500]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue

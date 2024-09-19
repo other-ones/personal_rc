@@ -564,7 +564,6 @@ def main(args):
     custom_diffusion_attn_procs = {}
     st = unet.state_dict()
     for name, _ in unet.attn_processors.items():
-        print(name,'name')
         cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
         if name.startswith("mid_block"):
             hidden_size = unet.config.block_out_channels[-1]
@@ -584,6 +583,7 @@ def main(args):
             weights["to_out_custom_diffusion.0.weight"] = st[layer_name + ".to_out.0.weight"]
             weights["to_out_custom_diffusion.0.bias"] = st[layer_name + ".to_out.0.bias"]
         if cross_attention_dim is not None:
+            print('here1')
             custom_diffusion_attn_procs[name] = attention_class(
                 train_kv=train_kv,
                 train_q_out=train_q_out,
@@ -592,6 +592,7 @@ def main(args):
             ).to(unet.device)
             custom_diffusion_attn_procs[name].load_state_dict(weights)
         else:
+            print('here2')
             custom_diffusion_attn_procs[name] = attention_class(
                 train_kv=False,
                 train_q_out=False,
