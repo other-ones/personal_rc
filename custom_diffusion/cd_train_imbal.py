@@ -952,7 +952,7 @@ def main(args):
                         target, target_prior = torch.chunk(target, 2, dim=0)
                         masks = torch.chunk(batch["masks"], 2, dim=0)[0]
                         loss_diff = F.mse_loss(model_pred.float(), target.float(), reduction="none")
-                        loss_diff = ((loss * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
+                        loss_diff = ((loss_diff * masks).sum([1, 2, 3]) / masks.sum([1, 2, 3])).mean()
                         prior_loss = F.mse_loss(model_pred_prior.float(), target_prior.float(), reduction="mean")
                         loss_diff = loss_diff + args.prior_loss_weight * prior_loss
                     else:
@@ -1108,7 +1108,7 @@ def main(args):
                             input_image=Image.fromarray(input_image)
                             input_image.save(os.path.join(viz_dir,'input_image_s{:05d}.jpg'.format(global_step)))
                             # [3] INPUT LOGGING
-
+sh pus
 
                         # [4] MLM LOGGING
                         if args.lambda_mlm:
