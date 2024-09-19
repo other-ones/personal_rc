@@ -16,18 +16,18 @@ info_map={
     'cat1': ('cat','cat','pet','living'),
     'backpack':('backpack','backpack','nonliving','nonliving'),
     
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
 
-    'dog3':  ('dog','dog','pet','living'),
-    'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'cat2':('cat','cat','pet','living'),
 
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -155,7 +155,7 @@ for lambda_mlm in lambda_mlm_list:
                                 available_devices.append(str(stat_idx))
                         if len(available_devices)>=num_devices:
                             break
-                        print(f'TRAINING\tDIR:{dir_name}\tEXP:{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}')
+                        print(f'SLEEP TRAINING\tDIR:{dir_name}\tEXP:{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}')
                         time.sleep(10)
                     device_idxs=','.join(available_devices[:num_devices])
                     print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idxs}")
