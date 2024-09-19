@@ -371,7 +371,6 @@ class CustomDiffusionDataset(Dataset):
             example["mlm_labels"]=[]
             example['masked_idxs']=[]
             example['non_special_idxs']=[]
-            example["is_keyword_tokens_mlm"]=[]
             # mlm data
         else:
             # 3. MLM
@@ -394,7 +393,6 @@ class CustomDiffusionDataset(Dataset):
 
 
             words_mlm=mlm_caption.split()
-            is_keyword_tokens_mlm=[False] # first token for <startoftext>
             masked_idxs=[False]
             if self.mlm_target in ['all','non_padding']:
                 mlm_labels=[self.tokenizer.bos_token_id]
@@ -446,23 +444,12 @@ class CustomDiffusionDataset(Dataset):
                         input_ids_masked.append(tok_id)
                         mlm_labels.append(-100)
                     
-                    if self.placeholder_token == tok_decoded:
-                        assert num_tokens==1
-                        is_keyword_tokens_mlm.append(True)
-                    else:
-                        is_keyword_tokens_mlm.append(False)
 
 
                     
             
 
             
-            # 3) is_keyword_tokens_mlm - keyword indices for MLM
-            for _ in range(len(is_keyword_tokens_mlm),self.tokenizer.model_max_length):
-                is_keyword_tokens_mlm.append(False)
-            assert len(is_keyword_tokens_mlm)==self.tokenizer.model_max_length
-            assert sum(is_keyword_tokens_mlm)==1
-            example["is_keyword_tokens_mlm"]=torch.BoolTensor(is_keyword_tokens_mlm)
             
             # 4) input_ids or MLM
             # In case 77th token is appended, remove it and replace with EOS token

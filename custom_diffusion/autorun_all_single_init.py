@@ -106,8 +106,8 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
-rep_id=2
-dir_name='init_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+rep_id=999
+dir_name='reptest_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
