@@ -104,7 +104,7 @@ for stat_idx,stat in enumerate(stats):
         break
 
 ports=np.arange(1111,2222)
-mask_prob_list=[0.15,0.2,0.25]
+mask_prob_list=[0.15]
 seed=2940
 rep_id=1
 dir_name='init_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
@@ -152,7 +152,7 @@ for lambda_mlm in lambda_mlm_list:
                                 available_devices.append(str(stat_idx))
                         if len(available_devices)>=num_devices:
                             break
-                        print(f'TRAINING\tDIR:{dir_name}\tEXP:{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}')
+                        print(f'SLEEP TRAINING\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}')
                         time.sleep(10)
                     device_idxs=','.join(available_devices[:num_devices])
                     print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idxs}")
