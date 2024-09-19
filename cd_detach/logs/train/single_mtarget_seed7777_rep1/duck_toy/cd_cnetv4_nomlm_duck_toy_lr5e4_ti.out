@@ -1,0 +1,312 @@
+INFO:albumentations.check_version:A new version of Albumentations is available: 1.4.15 (you have 1.4.11). Upgrade using: pip install --upgrade albumentations
+/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/accelerator.py:394: UserWarning: `log_with=tensorboard` was passed but no supported trackers are currently installed.
+  warnings.warn(f"`log_with={log_with}` was passed but no supported trackers are currently installed.")
+/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+You are using a model of type clip_text_model to instantiate a model of type . This is not supported for all configurations of models and can yield errors.
+{'timestep_spacing', 'variance_type', 'prediction_type', 'thresholding', 'rescale_betas_zero_snr', 'dynamic_thresholding_ratio', 'clip_sample_range', 'sample_max_value'} was not found in config. Values will be initialized to default values.
+{'use_quant_conv', 'shift_factor', 'force_upcast', 'latents_std', 'latents_mean', 'mid_block_add_attention', 'use_post_quant_conv', 'scaling_factor'} was not found in config. Values will be initialized to default values.
+{'class_embed_type', 'resnet_time_scale_shift', 'mid_block_only_cross_attention', 'only_cross_attention', 'addition_embed_type_num_heads', 'cross_attention_norm', 'addition_time_embed_dim', 'transformer_layers_per_block', 'time_embedding_dim', 'resnet_skip_time_act', 'time_cond_proj_dim', 'encoder_hid_dim', 'addition_embed_type', 'num_class_embeds', 'projection_class_embeddings_input_dim', 'num_attention_heads', 'time_embedding_act_fn', 'conv_out_kernel', 'dropout', 'mid_block_type', 'resnet_out_scale_factor', 'dual_cross_attention', 'upcast_attention', 'time_embedding_type', 'timestep_post_act', 'encoder_hid_dim_type', 'reverse_transformer_layers_per_block', 'use_linear_projection', 'class_embeddings_concat', 'attention_type', 'conv_in_kernel'} was not found in config. Values will be initialized to default values.
+set seed 7777
+saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy/cd_cnetv4_nomlm_duck_toy_lr5e4_ti/src/command.txt command_path
+cd_train.py item
+--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 item
+--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/duck_toy item
+--placeholder_token1=<duck_toy> item
+--train_prior_concept1=duck item
+--eval_prior_concept1=duck toy item
+--eval_prompt_type=nonliving item
+--train_prompt_type=nonliving item
+--resolution=512 item
+--resume_cd_path=saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy/cd_cnetv4_nomlm_duck_toy_lr1e5/checkpoints/checkpoint-500/custom_diffusion.pt item
+--learned_embed_path1=saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy/cd_cnetv4_nomlm_duck_toy_lr1e5/checkpoints/checkpoint-500/learned_embeds.pt item
+--train_batch_size=1 item
+--scale_lr item
+--gradient_accumulation_steps=4 item
+--checkpoints_total_limit=20 item
+--checkpointing_steps=250 item
+--max_train_steps=3001 item
+--learning_rate=0.0005 item
+--lr_scheduler=constant item
+--lr_warmup_steps=0 item
+--output_dir=saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy item
+--seed=7777 item
+--mask_tokens=[MASK] item
+--lambda_mlm=0 item
+--freeze_mask_embedding=1 item
+--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt item
+--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt item
+--mlm_target=masked item
+--mlm_batch_size=25 item
+--mask_prob=0.25 item
+--silent=0 item
+--simple_caption=0 item
+--masked_loss=0 item
+--normalize_target1=0 item
+--run_name=cd_cnetv4_nomlm_duck_toy_lr5e4_ti item
+--class_prompt1=a picture of a duck item
+--class_data_dir1=priors/samples_duck item
+--caption_root=../datasets_pkgs/captions/v7 item
+--include_prior_concept=1 item
+True text_model.embeddings.token_embedding.weight text_encoder requires_grad
+False text_model.embeddings.position_embedding.weight text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.0.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.0.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.0.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.0.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.0.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.0.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.0.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.0.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.0.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.1.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.1.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.1.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.1.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.1.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.1.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.1.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.1.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.1.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.2.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.2.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.2.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.2.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.2.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.2.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.2.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.2.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.2.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.3.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.3.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.3.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.3.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.3.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.3.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.3.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.3.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.3.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.4.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.4.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.4.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.4.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.4.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.4.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.4.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.4.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.4.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.5.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.5.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.5.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.5.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.5.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.5.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.5.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.5.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.5.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.6.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.6.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.6.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.6.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.6.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.6.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.6.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.6.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.6.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.7.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.7.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.7.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.7.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.7.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.7.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.7.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.7.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.7.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.8.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.8.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.8.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.8.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.8.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.8.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.8.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.8.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.8.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.9.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.9.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.9.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.9.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.9.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.9.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.9.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.9.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.9.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.10.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.10.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.10.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.10.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.10.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.10.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.10.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.10.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.10.layer_norm2.bias text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.k_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.k_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.v_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.v_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.q_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.q_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.out_proj.weight text_encoder requires_grad
+False text_model.encoder.layers.11.self_attn.out_proj.bias text_encoder requires_grad
+False text_model.encoder.layers.11.layer_norm1.weight text_encoder requires_grad
+False text_model.encoder.layers.11.layer_norm1.bias text_encoder requires_grad
+False text_model.encoder.layers.11.mlp.fc1.weight text_encoder requires_grad
+False text_model.encoder.layers.11.mlp.fc1.bias text_encoder requires_grad
+False text_model.encoder.layers.11.mlp.fc2.weight text_encoder requires_grad
+False text_model.encoder.layers.11.mlp.fc2.bias text_encoder requires_grad
+False text_model.encoder.layers.11.layer_norm2.weight text_encoder requires_grad
+False text_model.encoder.layers.11.layer_norm2.bias text_encoder requires_grad
+False text_model.final_layer_norm.weight text_encoder requires_grad
+False text_model.final_layer_norm.bias text_encoder requires_grad
+down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+mid_block.attentions.0.transformer_blocks.0.attn2.processor.to_k_custom_diffusion.weight layer_name
+mid_block.attentions.0.transformer_blocks.0.attn2.processor.to_v_custom_diffusion.weight layer_name
+seeded
+captions_nonliving_backgrounds	552
+captions_nonliving_creatives	117
+captions_nonliving_human_interactions	4176
+captions_nonliving_relations	29376
+captions_nonliving_styles	378
+seeded
+captions_nonliving_backgrounds	552
+captions_nonliving_creatives	117
+captions_nonliving_human_interactions	4176
+captions_nonliving_relations	29376
+captions_nonliving_styles	378
+Traceback (most recent call last):
+  File "/home/twkim/project/rich_context_qlab04/custom_diffusion/cd_train.py", line 1326, in <module>
+    main(args)
+  File "/home/twkim/project/rich_context_qlab04/custom_diffusion/cd_train.py", line 862, in main
+    saved_state_dict = torch.load(cd_layers_path, map_location=torch.device('cpu'))
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/serialization.py", line 986, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/serialization.py", line 435, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/torch/serialization.py", line 416, in __init__
+    super().__init__(open(name, mode))
+NotADirectoryError: [Errno 20] Not a directory: 'saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy/cd_cnetv4_nomlm_duck_toy_lr1e5/checkpoints/checkpoint-500/custom_diffusion.pt/custom_diffusion.pt'
+Traceback (most recent call last):
+  File "/home/twkim/anaconda3/envs/context/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/accelerate_cli.py", line 47, in main
+    args.func(args)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 1023, in launch_command
+    simple_launcher(args)
+  File "/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/accelerate/commands/launch.py", line 643, in simple_launcher
+    raise subprocess.CalledProcessError(returncode=process.returncode, cmd=cmd)
+subprocess.CalledProcessError: Command '['/home/twkim/anaconda3/envs/context/bin/python', 'cd_train.py', '--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5', '--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/duck_toy', '--placeholder_token1=<duck_toy>', '--train_prior_concept1=duck', '--eval_prior_concept1=duck toy', '--eval_prompt_type=nonliving', '--train_prompt_type=nonliving', '--resolution=512', '--resume_cd_path=saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy/cd_cnetv4_nomlm_duck_toy_lr1e5/checkpoints/checkpoint-500/custom_diffusion.pt', '--learned_embed_path1=saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy/cd_cnetv4_nomlm_duck_toy_lr1e5/checkpoints/checkpoint-500/learned_embeds.pt', '--train_batch_size=1', '--scale_lr', '--gradient_accumulation_steps=4', '--checkpoints_total_limit=20', '--checkpointing_steps=250', '--max_train_steps=3001', '--learning_rate=0.0005', '--lr_scheduler=constant', '--lr_warmup_steps=0', '--output_dir=saved_models/cd_models/single_mtarget_seed7777_rep1/duck_toy', '--seed=7777', '--mask_tokens=[MASK]', '--lambda_mlm=0', '--freeze_mask_embedding=1', '--cls_net_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt', '--mask_embed_path=saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt', '--mlm_target=masked', '--mlm_batch_size=25', '--mask_prob=0.25', '--silent=0', '--simple_caption=0', '--masked_loss=0', '--normalize_target1=0', '--run_name=cd_cnetv4_nomlm_duck_toy_lr5e4_ti', '--class_prompt1=a picture of a duck', '--class_data_dir1=priors/samples_duck', '--caption_root=../datasets_pkgs/captions/v7', '--include_prior_concept=1']' returned non-zero exit status 1.
