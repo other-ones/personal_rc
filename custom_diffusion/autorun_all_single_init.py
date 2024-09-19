@@ -75,7 +75,7 @@ elif '07' in hostname:
     target_devices=[0,1,2]
     host_suffix='07'
 elif '04' in hostname:
-    target_devices=[2,3,4,5,6,7]
+    target_devices=[0,1,2,3,4,5,6,7]
     host_suffix='04'
     info_map=info_map
 else:
