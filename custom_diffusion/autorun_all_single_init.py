@@ -75,16 +75,16 @@ elif '07' in hostname:
     target_devices=[0,1,2]
     host_suffix='07'
 elif '04' in hostname:
-    target_devices=[0,1,2,3,4,5,6,7]
+    target_devices=[4,5,6,7]
     host_suffix='04'
     info_map=info_map
 else:
     assert False
 lambda_mlm_list=[
-            0.0001,
+            # 0.0001,
             0, 
-            0.001,
-            0.0005,
+            # 0.001,
+            # 0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -104,7 +104,7 @@ for stat_idx,stat in enumerate(stats):
         break
 
 ports=np.arange(1111,2222)
-mask_prob_list=[0.15]
+mask_prob_list=[0.15,0.2,0.25]
 seed=2940
 rep_id=1
 dir_name='init_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
