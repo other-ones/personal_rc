@@ -166,7 +166,7 @@ for lambda_mlm in lambda_mlm_list:
                     command+='accelerate launch --main_process_port {} cd_train_clean.py \\\n'.format(ports[port_idx])
                     command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-                    command+='--initializer_token=sks \\\n'
+                    command+='--initializer_token={} \\\n'.format(train_prior)
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
