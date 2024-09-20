@@ -21,7 +21,6 @@ accelerate launch --main_process_port=9980 cd_train_rescale.py \
   --cls_net_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/cls_net_100000_ckpt.pt' \
   --mask_embed_path='saved_models/mlm_models/sd1_contextnetv4_nonpadding_1e4_unnorm_mprob015_batch150/checkpoints/checkpoint-100000/mask_embeds_100000_ckpt.pt' \
   --class_data_dir1=./priors/samples_dog/ \
-  --lambda_mlm=0.01 \
   --class_prompt1="a picture of a dog" \
   --train_prompt_type="pet" \
   --eval_prompt_type="living" \
@@ -35,8 +34,8 @@ accelerate launch --main_process_port=9980 cd_train_rescale.py \
   --mlm_batch_size=25 \
   --initializer_token="sks" \
   --run_name="tmp" \
-  --mask_prob=0.25 \
-  --lambda_diff=0.5 
+  --mask_prob=0.15 \
+  --lambda_mlm=0.01 --lambda_diff=0.5 
 
 export MODEL_NAME="runwayml/stable-diffusion-v1-5";
 export OUTPUT_DIR="saved_models/cd_models/single/dog6";
