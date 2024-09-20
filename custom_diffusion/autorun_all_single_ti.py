@@ -74,7 +74,7 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
-rep_id=2
+rep_id=3
 if '04' in hostname:
     host_suffix='04'
 elif '07' in hostname:
@@ -240,8 +240,9 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-gen_target_step_list=[500,1000,2000,3000]
-for gen_target_step in gen_target_step_list:
+gen_cd_target_step=500
+gen_emb_target_step_list=[1000,2000]
+for gen_emb_target_step in gen_emb_target_step_list:
     for concept_idx,concept in enumerate(list(info_map.keys())):
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
@@ -249,23 +250,24 @@ for gen_target_step in gen_target_step_list:
             continue
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
-            if not '_ti' in exp:
+            if not f'_ti{gen_cd_target_step}' in exp:
                 continue
+
             splits=exp.split('_')
             assert 'lr' in splits[-3]
             cd_exp_name=exp.split('_lr')[0]
             cd_exp_name+='_lr1e5'
             print(cd_exp_name,'cd_exp_name')
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-            resume_cd_path=os.path.join(concept_path,cd_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(train_target_step,train_target_step))
-            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_target_step,gen_target_step))
+            resume_cd_path=os.path.join(concept_path,cd_exp_name,'checkpoints/checkpoint-{}/custom_diffusion.pt'.format(gen_cd_target_step,gen_cd_target_step))
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/checkpoint-{}/learned_embeds.pt'.format(gen_emb_target_step,gen_emb_target_step))
             if not os.path.exists(resume_cd_path):
                 print(resume_cd_path,'UNET does not exist')
                 continue
             if not os.path.exists(learned_embed_path1):
                 print(learned_embed_path1,'EMB does not exist',concept)
                 continue
-            ti_exp_name=exp+'_s{}'.format(gen_target_step)
+            ti_exp_name=exp+'_s{}'.format(gen_emb_target_step)
             output_dir=os.path.join('results/cd_results/{}/{}'.format(dir_name,concept))
             dst_exp_path=os.path.join(output_dir,ti_exp_name)
             if os.path.exists(dst_exp_path):

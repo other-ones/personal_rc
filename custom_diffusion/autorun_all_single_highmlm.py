@@ -83,7 +83,9 @@ else:
 lambda_mlm_list=[
             0.005,
             0.01,
-            # 0.0001,
+            0.05,
+            0.1,
+            # 0.001,
             # 0, 
             # 0.0005,
             # 0.00005,
@@ -107,22 +109,23 @@ for stat_idx,stat in enumerate(stats):
 ports=np.arange(1111,2222)
 mask_prob_list=[0.15]
 seed=2940
-rep_id=999
+rep_id=1
 dir_name='highmlm_seed{}_qlab{}_rep{}'.format(seed,host_suffix,rep_id)
+# dir_name='highmlm_seed{}_qlab{}_rep_tmp'.format(seed,host_suffix,rep_id)
 
 lr_list=[1e-5]
 mlm_batch_size=25
 check_tags=['']
 num_devices=1
 port_idx=0
-for lambda_mlm in lambda_mlm_list:
+for concept_idx,concept in enumerate(list(info_map.keys())):
     for lr in lr_list:
         lr_str=invert_scientific_notation(lr)
         lr_str=lr_str.replace('.','P')
         for mask_prob in mask_prob_list:
             mask_prob_str=float_to_str(mask_prob)
             mask_prob_str=mask_prob_str.replace('.','')
-            for concept_idx,concept in enumerate(list(info_map.keys())):
+            for lambda_mlm in lambda_mlm_list:
                 for check_tag in check_tags:        
                     lambda_mlm_str=float_to_str(lambda_mlm)
                     lambda_mlm_str=lambda_mlm_str.replace('.','')
@@ -156,7 +159,7 @@ for lambda_mlm in lambda_mlm_list:
                         print(f'SLEEP TRAINING\t{dir_name}\t{run_name}\t{concept_idx+1}/{len(list(info_map.keys()))}')
                         time.sleep(10)
                     device_idxs=','.join(available_devices[:num_devices])
-                    print(f"DIR:{dir_name}\tEXP:{run_name}\tDEVICE:{device_idxs}")
+                    print(f"RUNNING\t{dir_name}\t{run_name}\tDEVICE:{device_idxs}")
                     os.makedirs(exp_path,exist_ok=True) 
                     log_path=os.path.join(exp_path,'log.out')
                     command='export CUDA_VISIBLE_DEVICES={};'.format(device_idxs)
