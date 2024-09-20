@@ -5,6 +5,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
     parser.add_argument('--dst_exp_path',type=str)
+    parser.add_argument('--max_grad_norm',type=float,default=1)
     parser.add_argument('--benchmark_path',type=str)
     parser.add_argument('--mlm_idxs',type=str)
     parser.add_argument('--log_steps',type=int,default=10)

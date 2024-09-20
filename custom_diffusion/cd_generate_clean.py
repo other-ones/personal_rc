@@ -364,7 +364,6 @@ def main(args):
             if not len(prompts):
                 break
 
-
             
             print(sample_dir,'sample_dir')
             images = pipeline(prompt=prompts, 
