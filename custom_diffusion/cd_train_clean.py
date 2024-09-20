@@ -1051,8 +1051,10 @@ def main(args):
                     assert isinstance(placeholder_token_id1,list)
                     updated_ids=copy.deepcopy(placeholder_token_id1)
                     index_no_updates[min(updated_ids) : max(updated_ids) + 1] = False # everything except placeholder
+                    print(orig_embeds_params.shape,'orig_embeds_params.shape')
                     print(orig_embeds_params[index_no_updates].shape,'orig_embeds_params[index_no_updates].shape')
                     print(orig_embeds_params[updated_ids].shape,'orig_embeds_params[updated_ids].shape')
+                    print(orig_embeds_params[mask_token_ids].shape,'orig_embeds_params[mask_token_ids].shape')
                     with torch.no_grad():
                         accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[
                             index_no_updates] = orig_embeds_params[index_no_updates]
