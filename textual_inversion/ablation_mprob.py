@@ -13,18 +13,18 @@ info_map_03={
     'dog6': ('dog','dog','pet','living'),
     'teapot':('teapot','teapot','nonliving','nonliving'),
 
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'pet_cat1':('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+    'pet_cat1':('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
 
 
     # NOT USED
@@ -125,7 +125,7 @@ nonmask_weight_list=[1]
 
 
 
-num_devices=4
+num_devices=1
 while True:
     stats=get_gpu_memory()
     found=False
