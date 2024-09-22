@@ -384,6 +384,7 @@ def main():
         exclude_cap_types=exclude_cap_types,
         target_image=args.target_image,
         check_tag=check_tag,
+        prompt_size=args.prompt_size,
     )
     train_dataset_mlm = TextualInversionDataset(
         include_prior_concept=args.include_prior_concept,
@@ -404,6 +405,7 @@ def main():
         seed=args.seed,
         exclude_cap_types=exclude_cap_types,
         check_tag=check_tag,
+        prompt_size=args.prompt_size,
     )
     
     def collate_fn(examples):

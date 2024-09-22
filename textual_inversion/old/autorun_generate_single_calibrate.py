@@ -1,52 +1,26 @@
-from utils import float_to_str
 import time
 import numpy as np
 import os
-import socket
-hostname = socket.gethostname()
-print(hostname,'hostname')
+from utils import float_to_str
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
-info_map_03={
-    'backpack':('backpack','nonliving'),
+info_map={
+    'cat1': ('cat','cat'),
+    'backpack':('backpack','backpack'),
+    'teddybear':('bear','teddybear'),
+    'wooden_pot':('pot','wooden_pot'),
+    'vase':('vase','vase'),
     'pet_cat1':('cat','pet'),
     'pet_dog1':('dog','pet'),
-    'vase':('vase','nonliving'),
-    # 'teddybear':('bear','nonliving'),
-    # 'dog6': ('dog','pet'),
-    # 'cat1': ('cat','pet'),
-    # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
-
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'flower1':('flower','flower'),
-}
-info_map_01={
-    # 'backpack':('backpack','nonliving'),
-    # 'pet_cat1':('cat','pet'),
-    # 'pet_dog1':('dog','pet'),
-    # 'vase':('vase','nonliving'),
-    'teddybear':('bear','nonliving'),
+    'barn': ('barn','building'),
+    'chair1': ('chair','chair'),
+    'cat_statue': ('toy','toy'),
+    'rc_car':('toy','toy'),
+    'pink_sunglasses':('sunglasses','sunglasses'),
+    'dog3': ('dog','pet'),
     'dog6': ('dog','pet'),
-    # 'cat1': ('cat','pet'),
-    # 'barn': ('barn','building'),
-    # 'wooden_pot':('pot','nonliving'),
+    'flower1':('flower','flower'),
 
-    # 'dog3': ('dog','pet'),
-    # 'chair1': ('chair','nonliving'),
-    # 'cat_statue': ('toy','nonliving'),
-    # 'rc_car':('toy','nonliving'),
-    # 'pink_sunglasses':('sunglasses','sunglasses'),
-    # 'flower1':('flower','flower'),
 }
-
-if '03' in hostname:
-    info_map=info_map_03
-elif 'ubuntu' in hostname:
-    info_map=info_map_01
 lambda_mlm=0.001
 
 
@@ -58,83 +32,108 @@ def get_gpu_memory():
     return memory_free_values
 
 
-log_dir='logs/ti_models/generate/calibrate/single_prior'
-os.makedirs(log_dir,exist_ok=True)    
 
 
 ports=np.arange(5000,6000)
+target_devices=[0,1,2,3,4,5,6,7]
 stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
-    if stat>2e4:
+    if stat>2e4 and stat_idx in target_devices:
         break
 device_idx=stat_idx
-
-target_norm=0
+idx=0
+# dirs=['multi','single']
+seed=2940
 include_prior_concept=1
-pos_values=[0,1,0.1,10]
-lambda_mlms=[0,0.001]
-for lambda_mlm in lambda_mlms:
-    lambda_mlm_str=float_to_str(lambda_mlm).replace('.','')
-    for pos_value in pos_values:
-        pos_value_str=float_to_str(pos_value).replace('.','')
-        for idx,concept in enumerate(list(info_map.keys())):
-            prior,category=info_map[concept]
-            if include_prior_concept:
-                if lambda_mlm:
-                    learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
-                else:
-                    learned_embed_path1='saved_models/ti_models/single_prior/{}/ti_norm{}_prior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
+ppos_list=[0.2,0.1,0.3,0.5,1.0]
+
+
+
+
+if include_prior_concept:
+    dir_name='singlev3_prior_seed{}'.format(seed)
+else:
+    dir_name='singlev3_noprior_seed{}'.format(seed)
+dir_path=os.path.join('saved_models/ti_models',dir_name)
+log_dir='logs/generate/{}'.format(dir_name)
+os.makedirs(log_dir,exist_ok=True)    
+delay=30
+num_images_per_prompt=8
+concepts=os.listdir(dir_path)
+
+
+
+    
+for cidx,concept in enumerate(info_map.keys()):
+    for ppos in ppos_list:
+        ppos_str=float_to_str(ppos)
+        ppos_str=ppos_str.replace('.','P')
+        if concept not in info_map:
+            continue
+        concept_path=os.path.join(dir_path,concept)
+        exps=os.listdir(concept_path)
+        for exp_idx,exp in enumerate(exps):
+            if '_rev' in exp:
+                rev=1
             else:
-                if lambda_mlm:
-                    learned_embed_path1='saved_models/ti_models/single/{}/ti_norm{}_noprior_mlm{}_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,lambda_mlm_str,concept)
-                else:
-                    learned_embed_path1='saved_models/ti_models/single/{}/ti_norm{}_noprior_nomlm_{}/checkpoints/learned_embeds_s3000.pt'.format(concept,target_norm,concept)
-            if not os.path.exists(learned_embed_path1):
-                print(learned_embed_path1,'does not exists')
+                rev=0
+            if not 'specific2' in exp:
                 continue
-            
-            exp_name=learned_embed_path1.split('/')[-3]
-            output_dir=os.path.join('results/ti_results/single_prior/calibrate/{}'.format(concept))
-            dst_exp_path=os.path.join(output_dir,exp_name)
-            dst_exp_path+='_kpos1_{}_ppos1_{}'.format(pos_value_str,pos_value_str)
-            if os.path.exists(dst_exp_path):
-                print(dst_exp_path,'exists')
+            # if not ('nomlm' in exp or 'mprob015' in exp):
+            #     continue
+            prior,category=info_map[concept]
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s3000.pt')
+            if not os.path.exists(learned_embed_path1):
+                print(learned_embed_path1,'does not exist')
+                continue
+            exp_name=exp
+            exp_name+='_s3000'
+            exp_name+='_ppos{}'.format(ppos_str)
+
+            output_dir=os.path.join('results/{}/{}'.format(dir_name,concept))
+            exp_path=os.path.join(output_dir,exp_name)
+            if os.path.exists(exp_path):
+                print(exp_path,'exists')
                 continue
             while True:
                 stats=get_gpu_memory()
-                stat=stats[stat_idx%len(stats)]
-                if stat>2e4:
-                    device_idx=stat_idx
-                    stat_idx+=1
+                found=False
+                for stat_idx in target_devices:
+                    stat=stats[stat_idx]    
+                    if stat>2e4 :
+                        device_idx=stat_idx
+                        found=True
+                        break
+                if found:
                     break
-                print('sleep waiting for {}'.format(exp_name),'GPU[{}] is busy FREE: {}MB'.format(stat_idx,stat),'# Remaining Exps: {}'.format(len(info_map)-idx))
-                time.sleep(10)
-                stat_idx+=1
-                stat_idx=(stat_idx%len(stats))
-            print(dst_exp_path,device_idx)
+                print(exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
+                time.sleep(delay)
+            print(exp_name,device_idx)
             log_path=os.path.join(log_dir,exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
             command+='accelerate launch --main_process_port {} generate_single.py \\\n'.format(ports[idx],idx)
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)
             command+='--prior_concept1="{}" \\\n'.format(prior)
             command+='--resolution=512 \\\n'
-            command+='--eval_batch_size=18 \\\n'
-            command+='--num_images_per_prompt=15 \\\n'
+            command+='--dst_exp_path={} \\\n'.format(exp_path)
+            command+='--eval_batch_size=15 \\\n'
+            command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
+            command+='--rev={} \\\n'.format(rev)
             command+='--output_dir="{}" \\\n'.format(output_dir)
-            command+='--dst_exp_path="{}" \\\n'.format(dst_exp_path)
-            command+='--seed=1234 \\\n'
-            command+='--calibrate_kpos1={} \\\n'.format(pos_value)
-            command+='--calibrate_ppos1={} \\\n'.format(pos_value)
+            command+='--seed={} \\\n'.format(seed)
             command+='--mask_tokens="[MASK]" \\\n'
             command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
+            command+='--calibrate_ppos1="{}" \\\n'.format(ppos)
             command+='--prompt_type="{}" \\\n'.format(category)
             command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior_concept,log_path)
-            
             os.system(command)
             print('STARTED')
-            time.sleep(20)
-        
+            idx+=1
+            time.sleep(15)
+
+
 
 

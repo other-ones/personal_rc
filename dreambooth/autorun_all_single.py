@@ -73,11 +73,11 @@ elif '07' in hostname:
     host_suffix='07'
 
 lambda_mlm_list=[
-            0.002,
-            0.005,
+            # 0.002,
+            # 0.005,
             # 0.001,
             # 0, 
-            # 0.0001,
+            0.0002,
             # 0.0005,
             # 0.00005,
             # 0.002,
@@ -96,6 +96,22 @@ stats=get_gpu_memory()
 for stat_idx,stat in enumerate(stats):
     if stat>2e4:
         break
+
+
+num_devices=4
+while True:
+    stats=get_gpu_memory()
+    found=False
+    available_devices=[]
+    for stat_idx in target_devices:
+        stat=stats[stat_idx]    
+        if stat>2e4 :
+            available_devices.append(stat_idx)
+    if len(available_devices)>=num_devices:
+        break
+    print('waiting..')
+    time.sleep(30)
+
 
 ports=np.arange(1111,2222)
 fixte_list=[0]

@@ -133,7 +133,9 @@ class TextualInversionDataset(Dataset):
         prompt_type=None,
         target_image=None,
         check_tag=None,
+        prompt_size=None,
     ):  
+        self.prompt_size=prompt_size
         self.check_tag=check_tag
         self.nlp = spacy.load("en_core_web_sm")
         # randomness
@@ -166,7 +168,9 @@ class TextualInversionDataset(Dataset):
                 continue
             cap_file_path=os.path.join(caption_dir_path,cap_file)
             self.captions[fname]=sorted(list(set(open(cap_file_path).readlines())))
-            print('{}\t{}'.format(fname,len(self.captions[fname])))
+            if prompt_size:
+                self.captions[fname]=np.random.choice(self.captions[fname],size=prompt_size)
+            print('PROMPT_SIZE\t{}\t{}'.format(fname,len(self.captions[fname])))
         if exclude_cap_types is not None:
             if len(exclude_cap_types)!=invalid_counts:
                 print(invalid_counts,'invalid_counts',exclude_cap_types,'exclude_cap_types')
