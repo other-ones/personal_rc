@@ -1,3 +1,5 @@
+from utils import render_caption
+import time
 from configs import parse_args
 # ADDED
 import sys
@@ -193,16 +195,24 @@ def main(args):
             " Please use `huggingface-cli login` to authenticate with the Hub."
         )
 
-    logging_dir = Path(args.output_dir, args.logging_dir)
-    accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
-
+    accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=None)
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
         log_with=args.report_to,
         project_config=accelerator_project_config,
     )
+    if accelerator.is_main_process:
+        exp_dir=args.dst_exp_path
+        sample_dir = os.path.join(exp_dir,'generated')
+        merged_dir = os.path.join(exp_dir,'merged')
+        caption_path = os.path.join(exp_dir,'captions.json')
+        caption_file=open(caption_path,'w')
+        os.makedirs(sample_dir, exist_ok=True)
+        os.makedirs(merged_dir, exist_ok=True)
 
+    
+    
     # Disable AMP for MPS.
     if torch.backends.mps.is_available():
         accelerator.native_amp = False
@@ -231,8 +241,8 @@ def main(args):
 
     # We need to initialize the trackers we use, and also store our configuration.
     # The trackers initializes automatically on the main process.
-    if accelerator.is_main_process:
-        accelerator.init_trackers("custom-diffusion", config=vars(args))
+    # if accelerator.is_main_process:
+    #     accelerator.init_trackers("custom-diffusion", config=vars(args))
 
     # If passed along, set the training seed now.
     if args.seed is not None:
@@ -254,12 +264,14 @@ def main(args):
         revision=None,
         variant=None,
     )
-    pipeline.set_progress_bar_config(disable=True)
+    pipeline.set_progress_bar_config(disable=False)
     pipeline.to(accelerator.device)
     # ADDED
     eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
-    eval_prompts=[item.format(placeholder) for item in eval_prompts]
+    eval_prompts=[item.format(args.eval_prior_concept1) for item in eval_prompts]
     eval_prompts=eval_prompts*args.num_images_per_prompt
+
+
     batch_size=args.eval_batch_size
     num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
     count=0
@@ -270,7 +282,7 @@ def main(args):
             prompts=eval_prompts[batch_idx*batch_size:(batch_idx+1)*batch_size]
             if not len(prompts):
                 break
-            print(sample_dir,'sample_dir')
+            print(prompts)
             images = pipeline(prompt=prompts, 
                             num_inference_steps=50, 
                             guidance_scale=7.5, width=512, height=512,
@@ -285,12 +297,10 @@ def main(args):
             margin_right=10
             render_delay=0
             merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols), (512+margin_bottom)*num_rows), (255, 255, 255))
-            for ridx in range(num_rows):
-                merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
                 image_name='{:04d}'.format(count+1)
                 img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
-                prompt_saved=prompt.replace(placeholder,args.eval_prior_concept1)
+                prompt_saved=prompt
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)
@@ -310,10 +320,10 @@ def main(args):
             print(f'{batch_idx+1}/{num_batches}\tDELAY\t{render_delay}')
             merged_viz.save(os.path.join(merged_dir,'merged_{:03d}.jpg'.format(batch_idx+1)))
             #
-
-        del pipeline
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+    json.dump(caption_data,caption_file,indent=1)
+    del pipeline
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":
