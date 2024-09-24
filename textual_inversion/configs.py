@@ -4,6 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # Added
+    parser.add_argument('--teaser_prompt',type=str)
     parser.add_argument('--prompt_size',type=int,default=0)
     parser.add_argument('--check_tag',type=str)
     parser.add_argument('--max_grad_norm',type=float,default=1)

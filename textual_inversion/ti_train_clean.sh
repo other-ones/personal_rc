@@ -32,4 +32,5 @@ accelerate launch --main_process_port 4230  ti_train_clean.py \
   --initializer_token='dog' \
   --validation_steps=100 \
   --caption_root='../datasets_pkgs/captions/v7' \
-  --mask_prob=0.001
+  --mask_prob=1 \
+  --debug

@@ -6,6 +6,8 @@
 **/*.jpg
 **/priors
 evaluation/dinoscore/grounded_segment
+evaluation/grounded_segment/results
+evaluation/grounded_segment
 
 
 # custom_diffusion

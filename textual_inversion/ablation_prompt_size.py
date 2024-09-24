@@ -13,19 +13,19 @@ info_map_03={
     'pet_cat1':('cat','cat','pet','living'),
     'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
 
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
 
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    'cat1': ('cat','cat','pet','living'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
 
 
     # NOT USED

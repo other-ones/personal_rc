@@ -5,6 +5,7 @@ import argparse
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     # ADDED
+    parser.add_argument('--teaser_prompt',type=str)
     parser.add_argument('--imbalance',type=int)
     parser.add_argument('--lambda_diff',type=float,default=1)
     parser.add_argument('--learning_rate_text',type=float)
