@@ -1,0 +1,46 @@
+{
+    "living":[
+        "A {} is running in a purple field at sunset.",
+        "A {} is chasing tiny lights in a quiet forest.",
+        "A {} is playing in the water on a sunny beach.",
+        "{} is running across the football stadium.",
+        "{} is jumping through the water at the edge of the lake.",
+        "{} is rolling around in the soft sand at the beach.",
+        "{} is running in a field of yellow flowers.",
+        "{} is lying under a tree, watching the clouds in the sky.",
+        "{} with a wheat field in the background",
+        "{} is running down a quiet street as the sun sets.",
+        "{} is floating among the stars in a dark sky",
+        "{} watching comets in the night sky",
+        "{} watching shooting stars in the night sky",
+        "{} watching aurora in the night sky",
+        "{} is exploring the surface of the moon with glowing stars above",
+        "{} is playing with a glowing ball in the forest",
+        "{} with a tree and autumn leaves in the background",
+        "{} is sitting on a rock, looking up at the sky",
+        "{} is running across the surface of Mars under a pink sky",
+        "{} floating in space with the full moon in the background",
+        "{} is riding on a spaceship through the Milky Way",
+        "a picture of {} in space wearing a spacesuit"
+    ],
+    "nonliving":[
+        "{} at Taj Mahal",
+        "{} with Egyptian Pyramid in the background",
+        "{} with mountains and sunset in the background",
+        "{} in Chinese Great Wall",
+        "{} in Grand Canyon",
+        "{} at Roman Colosseum",
+        "{} is standing in a dusty field with the sun setting",
+        "{} made of lego blocks",
+        "a marble sculpture of {}",
+        "a sand sculpture of {}",
+        "an ice sculpture of {}",
+        "{} is resting on the roof of a house under the stars",
+        "{} surrounded by red roses",
+        "{} glowing in the forest",
+        "{} with Mount Fuji in the background",
+        "{} with fireworks over the New York skyline in the background"
+    ]
+    
+}
+

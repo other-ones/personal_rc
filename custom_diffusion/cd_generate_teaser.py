@@ -1,4 +1,3 @@
-from datetime import datetime
 from utils import render_caption
 import time
 
@@ -115,9 +114,9 @@ def main(args):
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
     )
-    np.random.seed(int(time.time())) 
-    # if args.seed is not None:
-    #     set_seed(args.seed)
+    
+    if args.seed is not None:
+        set_seed(args.seed)
     if args.learned_embed_path1 is not None:
         exp_name=args.learned_embed_path1.split('/')[-3]
         step=args.learned_embed_path1.split('-')[-1]
@@ -127,11 +126,6 @@ def main(args):
     exp_name+='_s{}'.format(step)
     # exp_dir=os.path.join(args.output_dir,exp_name)
     exp_dir=args.dst_exp_path
-
-    # exp_dir+='_{:06d}'.format(np.random.randint(low=0,high=99999))
-    current_time = datetime.now()
-    time_str = current_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-    exp_dir+=f'_{time_str}'
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
     os.makedirs(sample_dir, exist_ok=True)
@@ -139,14 +133,14 @@ def main(args):
     if accelerator.is_main_process:
         print(exp_dir,'exp_dir')
         codepath=os.path.join(exp_dir,'src')
-        if os.path.exists(codepath) and 'tmp' not in codepath:
-            assert False
+        # if os.path.exists(codepath) and 'tmp' not in codepath:
+        #     assert False
         caption_path = os.path.join(exp_dir,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
-        os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
-        os.system('cp packages {} -R'.format(codepath))
+        # os.system('cp *.py {}'.format(codepath))
+        # os.system('cp datasets_pkgs {} -R'.format(codepath))
+        # os.system('cp packages {} -R'.format(codepath))
         # 1. command
         command_path=os.path.join(codepath,'command.txt')
         command_file=open(command_path,'w')
@@ -354,8 +348,8 @@ def main(args):
         placeholder='{} {}'.format(args.placeholder_token1,args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
-    # eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
-    eval_prompts=[args.teaser_prompt.format(placeholder)]
+    eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
+    eval_prompts=[item.format(placeholder) for item in eval_prompts]
     eval_prompts=eval_prompts*args.num_images_per_prompt
     batch_size=args.eval_batch_size
     num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
@@ -390,9 +384,13 @@ def main(args):
             for ridx in range(num_rows):
                 merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
-                image_name='{:04d}'.format(count+1)
-                img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
+                # image_name='{:04d}'.format(count+1)
                 prompt_saved=prompt.replace(placeholder,args.eval_prior_concept1)
+                prompt_splits=prompt_saved.split()
+                image_name='_'.join(prompt_splits)
+                image_name=image_name.replace('.','')
+                image_name='{:04d}_{}'.format(count+1,image_name)
+                img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)

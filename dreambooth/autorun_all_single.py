@@ -8,23 +8,23 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'pet_cat1':('cat','cat','pet','living'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
 
-    'cat1': ('cat','cat','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
-    'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'dog3':  ('dog','dog','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
 
-    'backpack':('backpack','backpack','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
     'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
@@ -75,10 +75,13 @@ elif '07' in hostname:
 lambda_mlm_list=[
             # 0.002,
             # 0.005,
-            # 0.001,
-            # 0, 
+            0.001,
+            0.002,
+            0.005,
+            0, 
+            0.0001,
             0.0002,
-            # 0.0005,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]
@@ -98,7 +101,7 @@ for stat_idx,stat in enumerate(stats):
         break
 
 
-num_devices=4
+num_devices=0
 while True:
     stats=get_gpu_memory()
     found=False
@@ -117,7 +120,7 @@ ports=np.arange(1111,2222)
 fixte_list=[0]
 mask_prob_list=[0.15]
 seed=7777
-rep_id=2
+rep_id=1
 dir_name=f'bigger_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 log_dir='logs/train/{}'.format(dir_name)
 os.makedirs(log_dir,exist_ok=True)   
@@ -177,7 +180,7 @@ for lr in lr_list:
                     command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
                     command+='--initializer_token=sks \\\n'
                     command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-                    command+='--checkpoints_total_limit=2 \\\n'
+                    command+='--checkpoints_total_limit=3 \\\n'
                     command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
                     command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
                     command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
@@ -236,7 +239,7 @@ ppos_list=[0]
 benchmark='dreambooth'
 concepts=list(info_map.keys())
 concepts=sorted(concepts)
-for gen_target_step in [500,750]:
+for gen_target_step in [500,750,1000]:
     for concept_idx,concept in enumerate(concepts):
         if concept not in info_map:
             continue

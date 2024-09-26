@@ -9,12 +9,12 @@ concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'pet_cat1':('cat','cat','pet','living'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
-    'cat1': ('cat','cat','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'pet_cat1':('cat','cat','pet','living'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
+    # 'cat1': ('cat','cat','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
     
     # 'teapot':('teapot','teapot','nonliving','nonliving'),
     # 'chair1': ('chair','chair','nonliving','nonliving'),
@@ -27,7 +27,7 @@ info_map={
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
     # 'poop_emoji':('toy','toy','nonliving','nonliving'),
     # 'pet_dog1':('dog','dog','pet','living'),
-    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     
@@ -82,10 +82,10 @@ elif '04' in hostname:
 else:
     assert False
 lambda_mlm_list=[
-            # 0.0001,
+            0.0001,
             0, 
-            # 0.001,
-            # 0.0005,
+            0.001,
+            0.0005,
             # 0.00005,
             # 0.002,
             ]

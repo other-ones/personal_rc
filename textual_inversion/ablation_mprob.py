@@ -125,7 +125,7 @@ nonmask_weight_list=[1]
 
 
 
-num_devices=1
+num_devices=0
 while True:
     stats=get_gpu_memory()
     found=False
@@ -273,7 +273,7 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/ti_models',dir_name)
 
-target_step=3000
+gen_target_step=2000
 delay=30
 num_images_per_prompt=8
 port_idx=0
@@ -290,12 +290,12 @@ for cidx,concept in enumerate(concepts):
         else:
             rev=0
         train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(target_step))
+        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(gen_target_step))
         if not os.path.exists(learned_embed_path1):
             print(learned_embed_path1,'does not exist')
             continue
         exp_name=exp
-        exp_name+='_s{}'.format(target_step)
+        exp_name+='_s{}'.format(gen_target_step)
         output_dir=os.path.join('results/ti_results/{}/{}'.format(dir_name,concept))
         exp_path=os.path.join(output_dir,exp_name)
         if os.path.exists(exp_path):
@@ -316,7 +316,7 @@ for cidx,concept in enumerate(concepts):
             time.sleep(delay)
         print(exp_name,device_idx)
         os.makedirs(exp_path,exist_ok=True)   
-        log_path=os.path.join(exp_path,exp_name+'.out')
+        log_path=os.path.join(exp_path,'log.out')
         command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
         command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
         command+='accelerate launch --main_process_port {} ti_generate.py \\\n'.format(ports[port_idx])

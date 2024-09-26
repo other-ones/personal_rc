@@ -26,15 +26,16 @@ def extract_values(exp):
     lr_match = re.search(r'_lr(\d+e\d+)_', exp)
     s_match = re.search(r'_s(\d+)$', exp)
     mprob_match = re.search(r'_mprob(\d+)_', exp)
+    psize_match = re.search(r'_psize(\d+)_', exp)
 
     # Default values if not found
     mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
     lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
     step = -int(s_match.group(1)) if s_match else float('inf')
-    mprob = (mprob_match.group(1))[::-1] if mprob_match else 'inf'
-
+    mprob = (mprob_match.group(1)) if mprob_match else 'inf'
+    psize = (psize_match.group(1)) if psize_match else 'inf'
     # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
-    return (not is_nomlm,tagged, mprob, mlm, lr,step)
+    return (not is_nomlm,psize, mprob, mlm, lr,step)
 def eval_clipscore(pred_root, caption_path, device="cuda:0",num_samples=None):
     image_list=[]
     image_ids=[]
@@ -169,6 +170,9 @@ if __name__ == "__main__":
                 fsize=os.stat(caption_path).st_size
                 if fsize==0:
                     continue
+                # if 'teddybear' in exp_path:
+                #     loaded=json.load(open(caption_path))
+                #     assert '000'
                 dataset_res=evaluate_results(pred_root, caption_path,num_samples=None)
                 with open(result_path, 'w') as fw:
                     json.dump(dataset_res, fw)

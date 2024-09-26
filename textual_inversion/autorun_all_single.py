@@ -88,7 +88,9 @@ lambda_mlm_list=[
             # 0.01,
             # 0.002,
             # 0.0001,
-            0.0002,
+            0.00001,
+            0.00005,
+            # 0.0002,
             # 0.0005,
             # 0.001,
             # 0.0002,
@@ -113,7 +115,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
-target_devices=[0,1,2,3,4,5,6,7]
+target_devices=[2,3,4,5,6,7]
 seed=7777
 include_prior=1
 delay=25
@@ -126,7 +128,19 @@ nonmask_weight_list=[1]
 
 
 
-
+# num_devices=4
+# while True:
+#     stats=get_gpu_memory()
+#     found=False
+#     available_devices=[]
+#     for stat_idx in target_devices:
+#         stat=stats[stat_idx]    
+#         if stat>2e4 :
+#             available_devices.append(stat_idx)
+#     if len(available_devices)>=num_devices:
+#         break
+#     print('waiting..',num_devices)
+#     time.sleep(30)
 
 
 
@@ -268,11 +282,11 @@ dir_path=os.path.join('saved_models/ti_models',dir_name)
 delay=30
 num_images_per_prompt=8
 port_idx=0
-for gen_target_step in [1500,2000,3000]:
+gen_target_step_list=[2000,3000]
+for gen_idx,gen_target_step in enumerate(gen_target_step_list):
     for cidx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
-        
         concept_path=os.path.join(dir_path,concept)
         if not os.path.exists(concept_path):
             continue
@@ -305,9 +319,9 @@ for gen_target_step in [1500,2000,3000]:
                         break
                 if found:
                     break
-                print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
+                print(f'SLEEP GENEARTING\t{exp}\t{cidx+1}/{len(concepts)}\t{gen_idx+1}/{len(gen_target_step_list)}')
                 time.sleep(delay)
-            print(exp_name,device_idx)
+            print(f'{exp_name}\t{device_idx}\t{cidx+1}/{len(concepts)}\t{gen_idx+1}/{len(gen_target_step_list)}')
             os.makedirs(exp_path,exist_ok=True)   
             log_path=os.path.join(exp_path,exp_name+'.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)

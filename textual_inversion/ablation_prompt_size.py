@@ -129,7 +129,7 @@ else:
     assert False
 
 
-num_devices=4
+num_devices=0
 while True:
     stats=get_gpu_memory()
     found=False
@@ -140,7 +140,7 @@ while True:
             available_devices.append(stat_idx)
     if len(available_devices)>=num_devices:
         break
-    print('waiting..')
+    print('waiting..',num_devices)
     time.sleep(30)
 
 exp_prefix='abl_prompt_size'
@@ -150,7 +150,7 @@ else:
     dir_name=f'{exp_prefix}_noprior_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 train_steps=3001
 mlm_batch=25
-prompt_size_list=[1,10,100]
+prompt_size_list=[1,10,100,1000]
 for lambda_mlm in lambda_mlm_list:
     for prompt_size in prompt_size_list:
         for mlm_target in mlm_target_list:
@@ -253,74 +253,75 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/ti_models',dir_name)
 
-target_step=3000
+
 delay=30
 num_images_per_prompt=8
 port_idx=0
-for cidx,concept in enumerate(concepts):
-    if concept not in info_map:
-        continue
-    concept_path=os.path.join(dir_path,concept)
-    if not os.path.exists(concept_path):
-        continue
-    exps=os.listdir(concept_path)
-    for exp_idx,exp in enumerate(exps):
-        if '_rev' in exp:
-            rev=1
-        else:
-            rev=0
-        train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
-        learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(target_step))
-        if not os.path.exists(learned_embed_path1):
-            print(learned_embed_path1,'does not exist')
+for gen_target_step in [3000,2000]:
+    for cidx,concept in enumerate(concepts):
+        if concept not in info_map:
             continue
-        exp_name=exp
-        exp_name+='_s{}'.format(target_step)
-        output_dir=os.path.join('results/ti_results/{}/{}'.format(dir_name,concept))
-        exp_path=os.path.join(output_dir,exp_name)
-        if os.path.exists(exp_path):
-            print(exp_path,'exists')
+        concept_path=os.path.join(dir_path,concept)
+        if not os.path.exists(concept_path):
             continue
-        while True:
-            stats=get_gpu_memory()
-            found=False
-            for stat_idx in target_devices:
-                stat=stats[stat_idx]    
-                if stat>2e4 :
-                    device_idx=stat_idx
-                    found=True
+        exps=os.listdir(concept_path)
+        for exp_idx,exp in enumerate(exps):
+            if '_rev' in exp:
+                rev=1
+            else:
+                rev=0
+            train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
+            learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(gen_target_step))
+            if not os.path.exists(learned_embed_path1):
+                print(learned_embed_path1,'does not exist')
+                continue
+            exp_name=exp
+            exp_name+='_s{}'.format(gen_target_step)
+            output_dir=os.path.join('results/ti_results/{}/{}'.format(dir_name,concept))
+            exp_path=os.path.join(output_dir,exp_name)
+            if os.path.exists(exp_path):
+                print(exp_path,'exists')
+                continue
+            while True:
+                stats=get_gpu_memory()
+                found=False
+                for stat_idx in target_devices:
+                    stat=stats[stat_idx]    
+                    if stat>2e4 :
+                        device_idx=stat_idx
+                        found=True
+                        break
+                if found:
                     break
-            if found:
-                break
-            print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
+                print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
+                time.sleep(delay)
+            print(exp_name,device_idx)
+            os.makedirs(exp_path,exist_ok=True)   
+            log_path=os.path.join(exp_path,exp_name+'.out')
+            command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
+            command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
+            command+='accelerate launch --main_process_port {} ti_generate.py \\\n'.format(ports[port_idx])
+            command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
+            command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
+            command+='--placeholder_token1="<{}>" \\\n'.format(concept)
+            command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
+            command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
+            command+='--resolution=512 \\\n'
+            command+='--dst_exp_path={} \\\n'.format(exp_path)
+            command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
+            command+='--eval_batch_size=15 \\\n'
+            # command+='--add_pe={} \\\n'.format(add_pe)
+            command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
+            command+='--output_dir="{}" \\\n'.format(output_dir)
+            command+='--seed={} \\\n'.format(seed)
+            command+='--mask_tokens="[MASK]" \\\n'
+            command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
+            command+='--calibrate_ppos1=0 \\\n'
+            command+='--rev={} \\\n'.format(rev)
+            command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
+            command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
+            command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
+            os.system(command)
+            print('GENERATION STARTED')
+            port_idx+=1
             time.sleep(delay)
-        print(exp_name,device_idx)
-        os.makedirs(exp_path,exist_ok=True)   
-        log_path=os.path.join(exp_path,exp_name+'.out')
-        command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
-        command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-        command+='accelerate launch --main_process_port {} ti_generate.py \\\n'.format(ports[port_idx])
-        command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
-        command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
-        command+='--placeholder_token1="<{}>" \\\n'.format(concept)
-        command+='--train_prior_concept1="{}" \\\n'.format(train_prior)
-        command+='--eval_prior_concept1="{}" \\\n'.format(eval_prior)
-        command+='--resolution=512 \\\n'
-        command+='--dst_exp_path={} \\\n'.format(exp_path)
-        command+='--benchmark_path="../datasets_pkgs/eval_prompts/{}.json" \\\n'.format(benchmark)
-        command+='--eval_batch_size=15 \\\n'
-        # command+='--add_pe={} \\\n'.format(add_pe)
-        command+='--num_images_per_prompt={} \\\n'.format(num_images_per_prompt)
-        command+='--output_dir="{}" \\\n'.format(output_dir)
-        command+='--seed={} \\\n'.format(seed)
-        command+='--mask_tokens="[MASK]" \\\n'
-        command+='--learned_embed_path1="{}" \\\n'.format(learned_embed_path1)
-        command+='--calibrate_ppos1=0 \\\n'
-        command+='--rev={} \\\n'.format(rev)
-        command+='--train_prompt_type="{}" \\\n'.format(train_prompt_type)
-        command+='--eval_prompt_type="{}" \\\n'.format(eval_prompt_type)
-        command+='--include_prior_concept={} > {} 2>&1 &'.format(include_prior,log_path)
-        os.system(command)
-        print('GENERATION STARTED')
-        port_idx+=1
-        time.sleep(delay)

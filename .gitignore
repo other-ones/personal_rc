@@ -5,7 +5,9 @@
 **/output
 **/*.jpg
 **/priors
+evaluation/results
 evaluation/dinoscore/grounded_segment
+evaluation/eval_clip/results
 evaluation/grounded_segment/results
 evaluation/grounded_segment
 

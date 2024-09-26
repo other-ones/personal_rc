@@ -1,0 +1,25 @@
+{
+    
+    "living":[
+        "{} at Taj Mahal.",
+        "{} with Chinese Great Wall in the background.",
+        "{} at New York Times Square.",
+        "{} in Grand Canyon.",
+        "{} at Roman Colosseum.",
+        "{} with Sydney Opera House in the background.",
+        "{} in a spacesuit",
+        "{} in space wearing a spacesuit"
+    ],
+    "nonliving":[
+        "{} at Taj Mahal.",
+        "{} with Chinese Great Wall in the background.",
+        "{} at New York Times Square.",
+        "{} in Grand Canyon.",
+        "{} at Roman Colosseum.",
+        "{} with Sydney Opera House in the background.",
+        "{} in a spacesuit",
+        "{} in space wearing a spacesuit"
+    ]
+
+}
+

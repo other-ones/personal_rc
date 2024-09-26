@@ -1,0 +1,36 @@
+{
+    
+    "living":[
+        "{} is running across the surface of Mars under a pink sky",
+        "{} is running down a quiet street as the sun sets.",
+        "{} is playing with a glowing ball in the forest",
+        "{} is sitting on a rock",
+        "{} is resting on a sofa",
+        "{} in a superman outfit",
+        "{} on a boat wearing a sailor outift",
+        "{} inside a bucket",
+        "{} watching comets in the night sky",
+        "{} watching shooting stars in the night sky",
+        "{} watching aurora in the night sky",
+        "{} with a tree and autumn leaves in the background",
+        "{} with a volcano eruption in the background",
+        "{} surrounded by a rainbow colored smoke",
+        "{} surrounded by a rainbow colorful balloons",
+        "{} made of glass"
+    ],
+    "nonliving":[
+       "{} on the surface of Mars under a pink sky",
+        "{} under the starry sky with a bright moon",
+        "{} under the aurora in the night sky",
+        "a man holding a {}",
+        "a girl holding a {}",
+        "a woman holding a {}",
+        "{} with a volcano eruption in the background",
+        "{} surrounded by a rainbow colored smoke",
+        "{} surrounded by colorful balloons",
+        "{} made of glass",
+        "{} with a tree and autumn leaves in the background"
+    ]
+
+}
+

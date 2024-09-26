@@ -1,4 +1,3 @@
-from datetime import datetime
 import shutil
 from utils import render_caption
 import time
@@ -115,23 +114,18 @@ def main(args):
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
     )
-    np.random.seed(int(time.time())) 
-    # if args.seed is not None:
-    #     # set_seed(args.seed)
-    #     torch.manual_seed(args.seed)
-    #     torch.cuda.manual_seed(args.seed)
-    #     torch.cuda.manual_seed_all(args.seed)  # if use multi-GPU
-    #     torch.backends.cudnn.deterministic = True
-    #     torch.backends.cudnn.benchmark = False
-    #     np.random.seed(args.seed)
-    #     random.seed(args.seed)
+    
+    if args.seed is not None:
+        # set_seed(args.seed)
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)  # if use multi-GPU
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        np.random.seed(args.seed)
+        random.seed(args.seed)
 
     exp_dir=args.dst_exp_path
-    # exp_dir+='_{:06d}'.format(np.random.randint(low=0,high=999999))
-    current_time = datetime.now()
-    time_str = current_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-    exp_dir+=f'_{time_str}'
-
     sample_dir = os.path.join(exp_dir,'generated')
     merged_dir = os.path.join(exp_dir,'merged')
     os.makedirs(sample_dir, exist_ok=True)
@@ -139,20 +133,20 @@ def main(args):
     if accelerator.is_main_process:
         print(exp_dir,'exp_dir')
         codepath=os.path.join(exp_dir,'src')
-        # if os.path.exists(codepath) and 'tmp' not in codepath:
-        #     assert False
+        if os.path.exists(codepath) and 'tmp' not in codepath:
+            assert False
         caption_path = os.path.join(exp_dir,'captions.json')
         caption_file=open(caption_path,'w')
         os.makedirs(codepath,exist_ok=True)
-        os.system('cp *.py {}'.format(codepath))
-        os.system('cp datasets_pkgs {} -R'.format(codepath))
-        os.system('cp packages {} -R'.format(codepath))
+        # os.system('cp *.py {}'.format(codepath))
+        # os.system('cp datasets_pkgs {} -R'.format(codepath))
+        # os.system('cp packages {} -R'.format(codepath))
         # copy clip
-        os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
-        target = os.readlink('clip_src/modeling_clip.py')
-        shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
-        target = os.readlink('clip_src/modeling_outputs.py')
-        shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
+        # os.makedirs(os.path.join(codepath,'clip_src'),exist_ok=True)
+        # target = os.readlink('clip_src/modeling_clip.py')
+        # shutil.copy2(target, '{}/clip_src/modeling_clip.py'.format(codepath))
+        # target = os.readlink('clip_src/modeling_outputs.py')
+        # shutil.copy2(target, '{}/clip_src/modeling_outputs.py'.format(codepath))
         # copy clip
         # 1. command
         command_path=os.path.join(codepath,'command.txt')
@@ -289,31 +283,9 @@ def main(args):
             placeholder='{} {}'.format(args.placeholder_token1, args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
-    # eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
-    # eval_prompts=[item.format(placeholder) for item in eval_prompts]
-    # eval_prompts=[
-    #     "a picture of {} in space wearing a spacesuit",
-    #     # "{} is skateboarding at Times Square",
-    #     # "{} at North Pole",
-    #     # # "{} at Amazon Forest",
-    #     # "a sand sculpture of {}",
-    #     # "an ice sculpture of {}",
-    #     # "a marble sculpture of {}",
-    #     # "{} is watching sunset",
-    #     # "{} is watching sunset on the boat",
-    #     # "a picture of Tom Cruise holding {}",
-    #     # "Anne Hathaway is holding {}",
-    #     # "a picture of Isaac Newton holding {}",
-    #     # "{} next to Elon Musk",
-    #     # "Isaac Newton is watching TV with {}",
-    #     # "A ninja is running with {}",
-    #     # "{} is watching sunset with a man",
-    #     # "Tom Cruise is taking a selfie with {}",
-    #     # "Beethoven is celebrating a birthday with {}",
-    #     # "a magician is doing trick with {}",
-    #     ]
-    # eval_prompts=[for item in]
-    eval_prompts=[args.teaser_prompt.format(placeholder)]
+    print(args.benchmark_path,'args.benchmark_path')
+    eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
+    eval_prompts=[item.format(placeholder) for item in eval_prompts]
     eval_prompts=eval_prompts*args.num_images_per_prompt
     batch_size=args.eval_batch_size
 
@@ -355,7 +327,6 @@ def main(args):
             target_emb1=learned_embed1
         for batch_idx in range(num_batches):
             prompts=eval_prompts[batch_idx*batch_size:(batch_idx+1)*batch_size]
-            print(prompts)
             if not len(prompts):
                 break
             is_keyword_tokens_list=[]
@@ -425,9 +396,13 @@ def main(args):
             for ridx in range(num_rows):
                 merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
             for iidx,(image, prompt) in enumerate(zip(images[:],prompts[:])):
-                image_name='{:04d}'.format(count+1)
-                img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
                 prompt_saved=prompt.replace(placeholder,args.eval_prior_concept1)
+                prompt_splits=prompt_saved.split()
+                prompt_cat='_'.join(prompt_splits)
+                prompt_cat=prompt_cat.replace('.','')
+                prompt_cat=prompt_cat.replace(',','')
+                image_name='{:04d}_{}'.format(count+1,prompt_cat)
+                img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
                 caption_data[image_name]=prompt_saved
                 st=time.time()
                 render_delay+=(time.time()-st)

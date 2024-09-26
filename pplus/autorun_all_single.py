@@ -8,9 +8,9 @@ print(hostname,'hostname')
 # concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
+    'dog6': ('dog','dog','pet','living'),
     'chair1': ('chair','chair','nonliving','nonliving'),
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
     'teapot':('teapot','teapot','nonliving','nonliving'),
     'cat1': ('cat','cat','pet','living'),
 
@@ -25,6 +25,7 @@ info_map_03={
     'teddybear':('teddy','teddy bear','nonliving','nonliving'),
     'cat_statue': ('toy','toy','nonliving','nonliving'),
     'rc_car':('toy','toy','nonliving','nonliving'),
+    'vase':('vase','vase','nonliving','nonliving'),
 
 
     # NOT USED
@@ -89,7 +90,7 @@ lambda_mlm_list=[
             # 0.001,
             # 0.0005,
             # 0.0001,
-            0.0002,
+            0.00025,
             # 0.002,
             # 0.0001,
             # 0.0005,
@@ -156,6 +157,7 @@ mlm_batch=12
 check_tags=['']
 mlm_idxs_list=['']
 for mlm_idxs in mlm_idxs_list:
+    continue
     if not mlm_idxs:
         mlm_idxs_str='none'
     else:
@@ -285,8 +287,7 @@ num_images_per_prompt=8
 port_idx=0
 exclude_key='mtarget_nonspec'
 include_key='mlm00005'
-gen_target_step=2000
-for gen_target_step in [1500,2000,3000]:
+for gen_target_step in [750,1000]:
     for cidx,concept in enumerate(concepts):
         if concept not in info_map:
             continue
@@ -325,7 +326,7 @@ for gen_target_step in [1500,2000,3000]:
                         break
                 if found:
                     break
-                print('SLEEP GENEARTING',exp,'sleep','{}/{}'.format(cidx+1,len(concepts)))
+                print('SLEEP GENERATING',exp_name,'sleep','{}/{}'.format(cidx+1,len(concepts)))
                 time.sleep(delay)
             print(f"START\t{dir_name}\t{exp_name}\tDEVICE:{device_idx}")
             os.makedirs(exp_path,exist_ok=True)   

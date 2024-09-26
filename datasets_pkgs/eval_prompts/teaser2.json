@@ -1,0 +1,39 @@
+{
+    "living":[
+        "{} watching stars in the night sky",
+        "{} in Grand Canyon",
+        "{} in Chinese Great Wall",
+        "{} with mountains and sunset in the background",
+        "{} in cowboy outfit",
+        "{} in superman outfit",
+        "{} at Roman Colosseum",
+        "{} at Sahara Desert",
+        "{} at electric rock concert",
+        "{} at Hollywood movie set",
+        "{} with Egyptian Pyramid in the background",
+        "{} with tokyo skyline in the background",
+        "{} at Taj Mahal",
+        "{} on the boat wearing a sailor outfit"
+    ],
+    "nonliving":[
+        "{} at Taj Mahal",
+        "{} with Egyptian Pyramid in the background",
+        "{} with mountains and sunset in the background",
+        "{} in Chinese Great Wall",
+        "{} in Grand Canyon",
+        "{} at Roman Colosseum",
+        "{} is glowing softly in the corner of the room",
+        "{} is on a beach with waves nearby.",
+        "{} is on a cliff looking at the ocean.",
+        "{} is floating in the night sky.",
+        "{} is on a stone bench in a park.",
+        "{} is on a table in a cafe.",
+        "{} is sitting by a river under the bright sky.",
+        "{} is floating in a quiet pond surrounded by trees",
+        "{} is placed on a balcony looking out at the mountains",
+        "{} is standing in a dusty field with the sun setting",
+        "{} is lying on a wooden deck by the lake",
+        "{} is resting on the roof of a house under the stars"
+    ]
+}
+
