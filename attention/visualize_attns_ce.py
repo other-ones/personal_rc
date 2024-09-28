@@ -367,12 +367,12 @@ def main(args):
     eval_prompts_aug=[item.format(placeholder) for item in eval_prompts]
     eval_prompts_raw=[item.format(placeholder).replace('<k>','') for item in eval_prompts]
     eval_prompts_save=[item.format(args.eval_prior_concept1).replace('<k>','') for item in eval_prompts]
-
+    del eval_prompts
     eval_prompts_aug=eval_prompts_aug*args.num_images_per_prompt
     eval_prompts_raw=eval_prompts_raw*args.num_images_per_prompt
     eval_prompts_save=eval_prompts_save*args.num_images_per_prompt
     batch_size=args.eval_batch_size
-    num_batches=(len(eval_prompts_save)//batch_size)+int((len(eval_prompts)/batch_size)>0)
+    num_batches=(len(eval_prompts_save)//batch_size)+int((len(eval_prompts_save)/batch_size)>0)
     ce_data={}
     caption_data={}
     count=0
