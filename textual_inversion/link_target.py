@@ -1,6 +1,10 @@
 import os
 import shutil
+<<<<<<< HEAD
 mlm_list=['_nomlm_','_mlm00001_','_mlm000001_','_mlm0001_']
+=======
+mlm_list=['nomlm','_mlm00001_','_mlm0001_']
+>>>>>>> bf68a428b21608c575eddc3f7c0cf1e1ce0dcece
 src_root='/home/twkim/project/rich_context/textual_inversion/saved_models/ti_models/bigger_reduced4_prior_seed7777_qlab03_rep2'
 dst_root='/home/twkim/project/rich_context/textual_inversion/saved_models/ti_attn_models/bigger_reduced4_prior_seed7777_qlab03_rep2'
 os.makedirs(dst_root,exist_ok=True)

@@ -1,0 +1,50 @@
+/home/twkim/anaconda3/envs/context/lib/python3.9/site-packages/huggingface_hub/file_download.py:1150: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+`text_config_dict` is provided which will be used to initialize `CLIPTextConfig`. The value `text_config["id2label"]` will be overriden.
+`text_config_dict` is provided which will be used to initialize `CLIPTextConfig`. The value `text_config["bos_token_id"]` will be overriden.
+`text_config_dict` is provided which will be used to initialize `CLIPTextConfig`. The value `text_config["eos_token_id"]` will be overriden.
+results/ti_attns_seed7777/bigger_reduced4_prior_seed7777_qlab03_rep2/ti_bigger_qlab03_prior_nomlm_duck_toy_s2000_seed7777 exp_dir
+results/ti_attns_seed7777/bigger_reduced4_prior_seed7777_qlab03_rep2/ti_bigger_qlab03_prior_nomlm_duck_toy_s2000_seed7777/src/command.txt command_path
+visualize_attns_ce.py item
+--pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 item
+--train_data_dir1=/data/twkim/diffusion/personalization/collected/images/duck_toy item
+--placeholder_token1=<duck_toy> item
+--train_prior_concept1=duck item
+--eval_prior_concept1=duck toy item
+--resolution=512 item
+--dst_exp_path=results/ti_attns_seed7777/bigger_reduced4_prior_seed7777_qlab03_rep2/ti_bigger_qlab03_prior_nomlm_duck_toy_s2000 item
+--benchmark_path=../datasets_pkgs/eval_prompts/analysis_ce.json item
+--eval_batch_size=5 item
+--num_images_per_prompt=8 item
+--output_dir=results/ti_attns_seed7777/bigger_reduced4_prior_seed7777_qlab03_rep2 item
+--seed=7777 item
+--mask_tokens=[MASK] item
+--learned_embed_path1=saved_models/ti_attn_models/bigger_reduced4_prior_seed7777_qlab03_rep2/duck_toy/ti_bigger_qlab03_prior_nomlm_duck_toy/checkpoints/learned_embeds_s2000.pt item
+--calibrate_ppos1=0 item
+--eval_prompt_type=all item
+--include_prior_concept=1 item
+torch.Size([49408, 768]) token_embeds.shape before
+torch.Size([49410, 768]) token_embeds.shape after
+32 norm_num_groups
+320 block_out_channels[0]
+32 norm_num_groups
+/home/twkim/project/rich_context_qlab04/attention/./packages/diffusers/models/modeling_utils.py inspect
+unet param loaded
+  0%|          | 0/50 [00:00<?, ?it/s]  2%|▏         | 1/50 [00:01<01:11,  1.46s/it]  4%|▍         | 2/50 [00:02<00:47,  1.01it/s]  6%|▌         | 3/50 [00:02<00:39,  1.19it/s]  8%|▊         | 4/50 [00:03<00:35,  1.30it/s] 10%|█         | 5/50 [00:04<00:32,  1.37it/s] 12%|█▏        | 6/50 [00:04<00:31,  1.42it/s] 14%|█▍        | 7/50 [00:05<00:29,  1.45it/s] 16%|█▌        | 8/50 [00:06<00:28,  1.47it/s] 18%|█▊        | 9/50 [00:06<00:27,  1.48it/s] 20%|██        | 10/50 [00:07<00:26,  1.49it/s] 22%|██▏       | 11/50 [00:08<00:26,  1.49it/s] 24%|██▍       | 12/50 [00:08<00:25,  1.50it/s] 26%|██▌       | 13/50 [00:09<00:24,  1.50it/s] 28%|██▊       | 14/50 [00:10<00:23,  1.50it/s] 30%|███       | 15/50 [00:10<00:23,  1.50it/s] 32%|███▏      | 16/50 [00:11<00:22,  1.50it/s] 34%|███▍      | 17/50 [00:12<00:21,  1.51it/s] 36%|███▌      | 18/50 [00:12<00:21,  1.51it/s] 38%|███▊      | 19/50 [00:13<00:20,  1.51it/s] 40%|████      | 20/50 [00:14<00:19,  1.51it/s] 42%|████▏     | 21/50 [00:14<00:19,  1.51it/s] 44%|████▍     | 22/50 [00:15<00:18,  1.51it/s] 46%|████▌     | 23/50 [00:16<00:17,  1.51it/s] 48%|████▊     | 24/50 [00:16<00:17,  1.51it/s] 50%|█████     | 25/50 [00:17<00:16,  1.51it/s] 52%|█████▏    | 26/50 [00:18<00:15,  1.51it/s] 54%|█████▍    | 27/50 [00:18<00:15,  1.51it/s] 56%|█████▌    | 28/50 [00:19<00:14,  1.51it/s] 58%|█████▊    | 29/50 [00:19<00:13,  1.51it/s] 60%|██████    | 30/50 [00:20<00:13,  1.51it/s] 62%|██████▏   | 31/50 [00:21<00:12,  1.51it/s] 64%|██████▍   | 32/50 [00:21<00:11,  1.51it/s] 66%|██████▌   | 33/50 [00:22<00:11,  1.51it/s] 68%|██████▊   | 34/50 [00:23<00:10,  1.50it/s] 70%|███████   | 35/50 [00:23<00:09,  1.50it/s] 72%|███████▏  | 36/50 [00:24<00:09,  1.50it/s] 74%|███████▍  | 37/50 [00:25<00:08,  1.50it/s] 76%|███████▌  | 38/50 [00:25<00:07,  1.50it/s] 78%|███████▊  | 39/50 [00:26<00:07,  1.50it/s] 80%|████████  | 40/50 [00:27<00:06,  1.50it/s] 82%|████████▏ | 41/50 [00:27<00:05,  1.50it/s] 84%|████████▍ | 42/50 [00:28<00:05,  1.50it/s] 86%|████████▌ | 43/50 [00:29<00:04,  1.50it/s] 88%|████████▊ | 44/50 [00:29<00:03,  1.50it/s] 90%|█████████ | 45/50 [00:30<00:03,  1.50it/s] 92%|█████████▏| 46/50 [00:31<00:02,  1.50it/s] 94%|█████████▍| 47/50 [00:31<00:02,  1.50it/s] 96%|█████████▌| 48/50 [00:32<00:01,  1.50it/s] 98%|█████████▊| 49/50 [00:33<00:00,  1.50it/s]100%|██████████| 50/50 [00:33<00:00,  1.50it/s]100%|██████████| 50/50 [00:33<00:00,  1.47it/s]
+5 len(attention_maps_list)
+torch.Size([1]) input_ids_key.shape
+torch.Size([3]) input_ids_bg.shape
+
+batch1
+
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+Input		|a        <duck_toy> duck     on       a        cobble   stone    street  
+----------------------------------------------------------------------------------------------------
+Key1		|<duck_toy>
+BG		|cobble   stone    street  
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+a <duck_toy> duck on a cobblestone street 11.145535 avg_entropy
+results/ti_attns_seed7777/bigger_reduced4_prior_seed7777_qlab03_rep2/ti_bigger_qlab03_prior_nomlm_duck_toy_s2000_seed7777
