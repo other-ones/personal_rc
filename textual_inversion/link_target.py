@@ -1,6 +1,6 @@
 import os
 import shutil
-mlm_list=['_mlm00001_','_mlm0001_']
+mlm_list=['_nomlm_','_mlm00001_','_mlm000001_','_mlm0001_']
 src_root='/home/twkim/project/rich_context/textual_inversion/saved_models/ti_models/bigger_reduced4_prior_seed7777_qlab03_rep2'
 dst_root='/home/twkim/project/rich_context/textual_inversion/saved_models/ti_attn_models/bigger_reduced4_prior_seed7777_qlab03_rep2'
 os.makedirs(dst_root,exist_ok=True)
