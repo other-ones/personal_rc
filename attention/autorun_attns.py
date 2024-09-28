@@ -9,22 +9,23 @@ print(hostname,'hostname')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
     'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
     'chair1': ('chair','chair','nonliving','nonliving'),
     'dog6': ('dog','dog','pet','living'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-
     'cat1': ('cat','cat','pet','living'),
     'pet_cat1':('cat','cat','pet','living'),
-    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    'poop_emoji':('toy','toy','nonliving','nonliving'),
-    'cat2':('cat','cat','pet','living'),
     'dog3':  ('dog','dog','pet','living'),
-    'pet_dog1':('dog','dog','pet','living'),
-    'backpack':('backpack','backpack','nonliving','nonliving'),
     'teddybear':('teddy','teddy bear','nonliving','nonliving'),
-    'cat_statue': ('toy','toy','nonliving','nonliving'),
-    'rc_car':('toy','toy','nonliving','nonliving'),
+
+    
+    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
+    # 'cat2':('cat','cat','pet','living'),
+    # 'pet_dog1':('dog','dog','pet','living'),
+    # 'backpack':('backpack','backpack','nonliving','nonliving'),
+    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
+    # 'rc_car':('toy','toy','nonliving','nonliving'),
 
 
     # NOT USED
@@ -132,7 +133,7 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/ti_attn_models',dir_name)
 delay=30
-num_images_per_prompt=8
+num_images_per_prompt=4
 port_idx=0
 gen_target_step_list=[2000]
 for gen_idx,gen_target_step in enumerate(gen_target_step_list):
@@ -154,7 +155,7 @@ for gen_idx,gen_target_step in enumerate(gen_target_step_list):
 
             exp_name=exp
             exp_name+='_s{}'.format(gen_target_step)
-            output_dir=os.path.join('results/ti_attns_seed{}/{}'.format(gen_seed,dir_name,concept))
+            output_dir=os.path.join('results/ti_attns_seed{}/{}/{}'.format(gen_seed,dir_name,concept))
             exp_path=os.path.join(output_dir,exp_name)
             if os.path.exists(exp_path):
                 print(exp_path,'exists')
@@ -170,10 +171,10 @@ for gen_idx,gen_target_step in enumerate(gen_target_step_list):
                         break
                 if found:
                     break
-                print(f'SLEEP GENEARTING\t{exp}\t{cidx+1}/{len(concepts)}\t{exp_idx+1}/{len(exp)}')
+                print(f'SLEEP GENEARTING\t{exp}\t{cidx+1}/{len(concepts)}\t{exp_idx+1}/{len(exps)}')
                 time.sleep(delay)
             
-            print(f'{exp_name}\t{device_idx}\t{cidx+1}/{len(concepts)}\t{gen_idx+1}/{len(gen_target_step_list)}')
+            print(f'{exp_name}\t{device_idx}\t{cidx+1}/{len(concepts)}\t{exp_idx+1}/{len(exps)}')
             os.makedirs(exp_path,exist_ok=True)   
             log_path=os.path.join(exp_path,'log.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)

@@ -364,19 +364,24 @@ def main(args):
     else:
         placeholder="{}".format(args.placeholder_token1)
     eval_prompts=json.load(open(args.benchmark_path))[args.eval_prompt_type]
-    eval_prompts=eval_prompts[:1]
     eval_prompts_aug=[item.format(placeholder) for item in eval_prompts]
     eval_prompts_raw=[item.format(placeholder).replace('<k>','') for item in eval_prompts]
     eval_prompts_save=[item.format(args.eval_prior_concept1).replace('<k>','') for item in eval_prompts]
 
     eval_prompts_aug=eval_prompts_aug*args.num_images_per_prompt
     eval_prompts_raw=eval_prompts_raw*args.num_images_per_prompt
+    eval_prompts_save=eval_prompts_save*args.num_images_per_prompt
     batch_size=args.eval_batch_size
-    num_batches=(len(eval_prompts)//batch_size)+int((len(eval_prompts)/batch_size)>0)
+    num_batches=(len(eval_prompts_save)//batch_size)+int((len(eval_prompts)/batch_size)>0)
     ce_data={}
     caption_data={}
     count=0
-
+    ce_list=[]
+    if args.target_image is not None:
+        validation_target=Image.open(os.path.join(args.train_data_dir1,args.target_image)).resize((512,512)).convert('RGB')
+    else:
+        validation_files=sorted(os.listdir(args.train_data_dir1))
+        validation_target=Image.open(os.path.join((args.train_data_dir1),validation_files[0])).resize((512,512)).convert('RGB')
     for batch_idx in range(num_batches):
         prompts_aug=eval_prompts_aug[batch_idx*batch_size:(batch_idx+1)*batch_size]
         prompts_raw=eval_prompts_raw[batch_idx*batch_size:(batch_idx+1)*batch_size]
@@ -435,6 +440,7 @@ def main(args):
 
         attn_res=256
         ce_criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+        print(prompts_raw,'prompts_raw')
         image_list,attention_maps_list=syngen_pipeline(
         # image_list=syngen_pipeline(
                             prompts_raw,
@@ -445,8 +451,45 @@ def main(args):
                             guidance_scale=7.5,
                             verbose=True,
                             )
-        # exit(0)
         image_list=image_list.images
+        # exit(0)
+        # 
+        # 
+        num_cols=5
+        num_viz_samples=5
+        num_rows=len(image_list[:num_viz_samples])//num_cols
+        num_rows=max(1,num_rows)
+        margin_bottom=150
+        margin_right=10
+        render_delay=0
+        merged_viz = Image.new('RGB', ((512+margin_right)*(num_cols+1), (512+margin_bottom)*num_rows), (255, 255, 255))
+        for ridx in range(num_rows):
+            merged_viz.paste(validation_target,(0,ridx*(512+margin_bottom)))
+        # for iidx,(image, prompt) in enumerate(zip(image_list[:],prompts_raw[:])):
+        #     image_name='{:04d}'.format(count+1)
+        #     img_path=os.path.join(sample_dir,'{}.jpg'.format(image_name))
+        #     prompt_saved=prompt.replace(placeholder,args.eval_prior_concept1)
+        #     caption_data[image_name]=prompt_saved
+        #     st=time.time()
+        #     render_delay+=(time.time()-st)
+        #     image.save(img_path)
+        #     count+=1
+        for iidx,(image, prompt) in enumerate(zip(image_list[:num_viz_samples],prompts_raw[:num_viz_samples])):
+            row_idx=iidx//num_cols
+            col_idx=iidx-(num_cols*row_idx)
+            x0=(col_idx+1)*(512+margin_right)
+            y0=row_idx*(512+margin_bottom)+512
+            x1=x0+(512+margin_right)
+            y1=y0+margin_bottom
+            st=time.time()
+            merged_viz=render_caption(merged_viz,prompt,[x0,y0+20,x1,y1])
+            render_delay+=(time.time()-st)
+            merged_viz.paste(image.convert('RGB'),((col_idx+1)*(512+margin_right),row_idx*(512+margin_bottom)))
+        print(batch_idx+1,num_batches,render_delay)
+        print(merged_viz.size,'merged_viz.size',len(image_list),'len(images)')
+        merged_viz.save(os.path.join(merged_dir,'merged_{:03d}.jpg'.format(batch_idx+1)))
+        # 
+        # 
         print(len(attention_maps_list),'len(attention_maps_list)') # eval_batch_size
         for img_idx,img in enumerate(image_list):
             is_keywords_tokens=is_keyword_tokens_list[img_idx]
@@ -527,6 +570,7 @@ def main(args):
             bg_maps=attention_maps[is_bg_tokens]
             keyword_maps=keyword_maps.repeat(len(bg_maps),1,1)
             ce_loss=ce_criterion(keyword_maps,bg_maps).mean().item()
+            ce_list.append(ce_loss)
             ce_data[img_name]={"cross_entropy":ce_loss,"prompt":prompt_save}
             # cross entropy 
             # save image - attention map
@@ -545,8 +589,9 @@ def main(args):
             # save image - attention map
             torch.cuda.empty_cache()
             avg_entropy=np.mean(avg_entropy)
-            print(prompt,avg_entropy,'avg_entropy')
-            print(exp_dir)
+            # print(prompt,avg_entropy,'avg_entropy')
+            # print(exp_dir)
+            print(batch_idx,'avg_ce',np.mean(ce_list))
     # for item in attention_maps_list:
     #     print(item.shape,'attention_maps_list.shape')
     # print(attention_maps_list,'attention_maps_list')
