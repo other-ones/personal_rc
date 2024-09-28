@@ -225,8 +225,8 @@ def main(args):
         set_seed(args.seed)
 
     exp_dir=args.dst_exp_path
-    exp_dir+='_seed{}'.format(args.seed)
-    load_fname=args.learned_embed_path1.split('/')[-1].split('.')[0]
+    # exp_dir+='_seed{}'.format(args.seed)
+    # load_fname=args.learned_embed_path1.split('/')[-1].split('.')[0]
     # sname=load_fname.split('_s')[-1]
     # exp_dir+='_s{}'.format(sname)
     sample_dir = os.path.join(exp_dir,'generated')
@@ -547,7 +547,6 @@ def main(args):
             avg_entropy=np.mean(avg_entropy)
             print(prompt,avg_entropy,'avg_entropy')
             print(exp_dir)
-            break
     # for item in attention_maps_list:
     #     print(item.shape,'attention_maps_list.shape')
     # print(attention_maps_list,'attention_maps_list')

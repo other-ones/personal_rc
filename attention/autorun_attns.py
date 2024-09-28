@@ -170,7 +170,7 @@ for gen_idx,gen_target_step in enumerate(gen_target_step_list):
                         break
                 if found:
                     break
-                print(f'SLEEP GENEARTING\t{exp}\t{cidx+1}/{len(concepts)}\t{gen_idx+1}/{len(gen_target_step_list)}')
+                print(f'SLEEP GENEARTING\t{exp}\t{cidx+1}/{len(concepts)}\t{exp_idx+1}/{len(exp)}')
                 time.sleep(delay)
             
             print(f'{exp_name}\t{device_idx}\t{cidx+1}/{len(concepts)}\t{gen_idx+1}/{len(gen_target_step_list)}')
