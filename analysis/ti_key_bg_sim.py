@@ -163,7 +163,7 @@ def main():
         placeholder_token_id1 = tokenizer.convert_tokens_to_ids(placeholder_token1)
 
     mask_token_ids = tokenizer.convert_tokens_to_ids(mask_tokens)
-    # initializer_token_id1 = tokenizer.encode(args.prior_concept1, add_special_tokens=False)
+    # initializer_token_id1 = tokenizer.encode(args.train_prior_concept1, add_special_tokens=False)
     # initializer_token_id1 = initializer_token_id1[0]
     text_encoder.resize_token_embeddings(len(tokenizer))
     token_embeds = text_encoder.get_input_embeddings().weight.data
@@ -244,7 +244,7 @@ def main():
         mask_token_ids=mask_token_ids[0],
         get_images=False,
         prompt_type=args.prompt_type,
-        prior_concept=args.prior_concept1,
+        train_prior_concept=args.train_prior_concept1,
         placeholder_token=args.placeholder_token1,
         prior_only=(args.learned_embed_path1 is None),
     )
@@ -406,7 +406,7 @@ def main():
     import time
     text_encoder.train()
     if args.include_prior_concept:
-        placeholder='{} {}'.format(args.placeholder_token1, args.prior_concept1)
+        placeholder='{} {}'.format(args.placeholder_token1, args.train_prior_concept1)
     else:
         placeholder='{}'.format(args.placeholder_token1)
    
@@ -433,8 +433,14 @@ def main():
 
             # 1. MLM Result Logging
             input_ids_key1=input_ids[is_keyword_tokens1]
+            input_ids_bg=input_ids[is_bg_tokens]
+            input_ids_bg_simple=input_ids_simple[is_bg_tokens_simple]
             decoded_key1=tokenizer.batch_decode(input_ids_key1)
+            decoded_bg=tokenizer.batch_decode(input_ids_bg)
+            decoded_bg_simple=tokenizer.batch_decode(input_ids_bg_simple)
             decoded_key1_list=[]
+            decoded_bg_list=[]
+            decoded_bg_list_simple=[]
             num_logs=10
             print()
             print()
@@ -444,8 +450,14 @@ def main():
             print('Step\t\t|{}'.format(global_step))
             print(dots)
             for dec1 in decoded_key1:
-                    decoded_key1_list.append('{:8}'.format(dec1))
+                decoded_key1_list.append('{:8}'.format(dec1))
+            for dec_bg in decoded_bg:
+                decoded_bg_list.append('{:8}'.format(dec_bg))
+            for dec_bg_simple in decoded_bg_simple:
+                decoded_bg_list_simple.append('{:8}'.format(dec_bg_simple))
             decoded_key1=' '.join(decoded_key1_list[:num_logs])
+            decoded_bg=' '.join(decoded_bg_list[:num_logs])
+            decoded_bg_simple=' '.join(decoded_bg_list_simple[:num_logs])
             
             
             
@@ -462,6 +474,8 @@ def main():
                 print('Input\t\t|{}'.format(decoded))
             print(dots)
             print('Key1\t\t|{}'.format(decoded_key1))
+            print('BG\t\t|{}'.format(decoded_bg))
+            print('SBG\t\t|{}'.format(decoded_bg_simple))
             print(dots)
             print(dots)
             print()
@@ -472,10 +486,10 @@ def main():
             # Target Encodings
             if args.learned_embed_path1:
                 learned_embed1=accelerator.unwrap_model(text_encoder).get_input_embeddings().weight[min(placeholder_token_id1) : max(placeholder_token_id1) + 1]
-                if args.normalize_target1:
-                    target_emb1=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
-                else:
-                    target_emb1=learned_embed1
+                # if args.normalize_target1:
+                #     target_emb1=F.normalize(learned_embed1,p=1,dim=-1)*args.normalize_target1
+                # else:
+                #     target_emb1=learned_embed1
             print(torch.sum(is_keyword_tokens1),len(is_keyword_tokens1))
             
             if accelerator.is_main_process:
@@ -483,44 +497,21 @@ def main():
                 # for iip in input_ids:
                 #     print(torch.sum(iip).sum(),'iip')
                 
-                if args.learned_embed_path1:
-                    out = text_encoder(input_ids,
-                                        is_keyword_tokens1=is_keyword_tokens1,
-                                        is_prior1=is_prior1,
-                                        inj_embeddings1=target_emb1,
-                                        output_attentions=True,
-                                        # non_keyword_idxs=non_keyword_idxs,
-                                        # attn_mod_params=attn_mod_params
-                                        )
-                    out_simple_bg = text_encoder(input_ids_simple,
-                                        is_keyword_tokens1=is_keyword_tokens1,
-                                        is_prior1=is_prior1,
-                                        inj_embeddings1=target_emb1,
-                                        output_attentions=True,
-                                        # non_keyword_idxs=non_keyword_idxs,
-                                        # attn_mod_params=attn_mod_params
-                                        )
-                    out_simple_concept = text_encoder(input_ids_simple_concept,output_attentions=True,)
-                    
-                    
-                else:
-                    out = text_encoder(input_ids,
-                                        is_keyword_tokens1=None,
-                                        is_prior1=is_prior1,
-                                        inj_embeddings1=None,
-                                        output_attentions=True,
-                                        # non_keyword_idxs=non_keyword_idxs,
-                                        # attn_mod_params=attn_mod_params
-                                        )
-                    out_simple_bg = text_encoder(input_ids_simple,
-                                        is_keyword_tokens1=None,
-                                        is_prior1=is_prior1,
-                                        inj_embeddings1=None,
-                                        output_attentions=True,
-                                        # non_keyword_idxs=non_keyword_idxs,
-                                        # attn_mod_params=attn_mod_params
-                                        )
-                    out_simple_concept = text_encoder(input_ids_simple_concept,output_attentions=True,)
+                out = text_encoder(input_ids,
+                                    # is_keyword_tokens1=is_keyword_tokens1,
+                                    # is_prior1=is_prior1,
+                                    # inj_embeddings1=target_emb1,
+                                    output_attentions=True,
+                                    # non_keyword_idxs=non_keyword_idxs,
+                                    # attn_mod_params=attn_mod_params
+                                    )
+                out_simple_bg = text_encoder(input_ids_simple,
+                                    # is_keyword_tokens1=is_keyword_tokens1,
+                                    # is_prior1=is_prior1,
+                                    # inj_embeddings1=target_emb1,
+                                    output_attentions=True,
+                                    )
+                out_simple_concept = text_encoder(input_ids_simple_concept,output_attentions=True,)
                 encoder_hidden_states=out[0]                
                 encoder_hidden_states_simple_bg=out_simple_bg[0]                
                 encoder_hidden_states_simple_concept=out_simple_concept[0]                
@@ -545,8 +536,11 @@ def main():
                     bg_sim_list.append(sim.item())
                 # key_bg_sim=pairwise_cosine_similarity(key_embeds,bg_embeds).mean().item()
                 # key_bg_sim_simple_bg=pairwise_cosine_similarity(key_embeds,bg_embeds_simple_bg).mean().item()
-                print('{}\t{}\tKEY-BG'.format(args.run_name,np.mean(key_bg_sim_list)))
-                print('{}\t{}\tBG-BG'.format(args.run_name,np.mean(bg_sim_list)))
+                print('\tKEY-BG\tBG-BG')
+                print(f'{args.run_name}\t{np.mean(key_bg_sim_list)}\t{np.mean(bg_sim_list)}')
+
+                # print('{}\t{}\tKEY-BG'.format(args.run_name,np.mean(key_bg_sim_list)))
+                # print('{}\t{}\tBG-BG'.format(args.run_name,np.mean(bg_sim_list)))
                 # print(np.mean(bg_sim_list),'bg_sim_list',exp_dir)
                 # print(key_bg_sim_simple_bg,'key_bg_sim_simple_bg',exp_dir)
                 

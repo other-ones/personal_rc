@@ -87,7 +87,7 @@ lambda_mlm_list=[
             # 0,
             # 0.01,
             # 0.002,
-            0.0001,
+            0.00001,
             # 0.0005,
             # 0.001,
             # 0.0002,
@@ -116,7 +116,7 @@ target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
 include_prior=1
 delay=25
-mask_prob_list=[0.01,0.05,0.25,0.5,0.7,0.9]
+mask_prob_list=[0.07,0.1,0.2,0.3]
 rev_list=[0]
 benchmark='dreambooth'
 mlm_target_list=['masked']
@@ -125,7 +125,7 @@ nonmask_weight_list=[1]
 
 
 
-num_devices=0
+num_devices=3
 while True:
     stats=get_gpu_memory()
     found=False
@@ -136,7 +136,7 @@ while True:
             available_devices.append(stat_idx)
     if len(available_devices)>=num_devices:
         break
-    print('waiting..')
+    print('waiting..',num_devices)
     time.sleep(30)
 
 

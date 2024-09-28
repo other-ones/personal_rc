@@ -50,7 +50,7 @@ def parse_args():
     parser.add_argument("--train_data_dir2", type=str, default=None, required=False, help="A folder containing the training data.")
     parser.add_argument("--placeholder_token1",type=str,default=None,required=False,help="A token to use as a placeholder for the concept.")
     parser.add_argument("--placeholder_token2",type=str,default=None,required=False,help="A token to use as a placeholder for the concept.")
-    parser.add_argument('--prior_concept1',type=str)
+    parser.add_argument('--train_prior_concept1',type=str)
     parser.add_argument('--prior_concept2',type=str)
     parser.add_argument('--masked_loss',type=int,default=0)
     parser.add_argument('--augmenter_path1',type=str)

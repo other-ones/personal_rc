@@ -84,7 +84,7 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0.0001,
+            0.00001,
             ]
 target_norms=[0]
 
@@ -129,7 +129,9 @@ else:
     assert False
 
 
-num_devices=0
+num_devices=2
+avail_count=0
+count_threshold=0
 while True:
     stats=get_gpu_memory()
     found=False
@@ -139,7 +141,9 @@ while True:
         if stat>2e4 :
             available_devices.append(stat_idx)
     if len(available_devices)>=num_devices:
-        break
+        avail_count+=1
+        if avail_count>=count_threshold:
+            break
     print('waiting..',num_devices)
     time.sleep(30)
 
@@ -150,7 +154,7 @@ else:
     dir_name=f'{exp_prefix}_noprior_seed{seed}_qlab{host_suffix}_rep{rep_id}'
 train_steps=3001
 mlm_batch=25
-prompt_size_list=[1,10,100,1000]
+prompt_size_list=[1,5,10,50,100,1000]
 for lambda_mlm in lambda_mlm_list:
     for prompt_size in prompt_size_list:
         for mlm_target in mlm_target_list:
@@ -257,7 +261,7 @@ dir_path=os.path.join('saved_models/ti_models',dir_name)
 delay=30
 num_images_per_prompt=8
 port_idx=0
-for gen_target_step in [3000,2000]:
+for gen_target_step in [2000]:
     for cidx,concept in enumerate(concepts):
         if concept not in info_map:
             continue

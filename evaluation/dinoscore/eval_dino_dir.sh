@@ -18,11 +18,11 @@ results/ti_results/abl_mprob_prior_seed7777_qlab03_rep1
 results/ti_results/abl_prompt_size_prior_seed7777_qlab03_rep1
 
 # ti
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=4;
 python eval_dino_dir.py \
 --dir_path='results/ti_results/bigger_reduced4_prior_seed7777_qlab03_rep2' \
 --grounded=0 --ignore_legacy=0
-export CUDA_VISIBLE_DEVICES=7;
+export CUDA_VISIBLE_DEVICES=3;
 python eval_dino_dir.py \
 --dir_path='results/ti_results/bigger_reduced4_prior_seed7777_qlab03_rep2' \
 --grounded=1 --ignore_legacy=0

@@ -84,7 +84,7 @@ concepts=list(info_map.keys())
 # cuda_ids
 # cuda_ids=[0,1,2,3,4,5,6,7]
 lambda_mlm_list=[
-            0.0001,
+            0.00001,
             ]
 target_norms=[0]
 
@@ -103,7 +103,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
-target_devices=[2,3,4,5,6,7]
+target_devices=[0,1,2,3,4,5,6,7]
 seed=7777
 include_prior=1
 delay=25
@@ -112,7 +112,6 @@ rev_list=[0]
 benchmark='dreambooth'
 mlm_target_list=['masked']
 nonmask_weight_list=[1]
-
 
 
 
@@ -129,7 +128,8 @@ else:
     assert False
 
 
-num_devices=0
+num_devices=3
+avail_count=0
 while True:
     stats=get_gpu_memory()
     found=False
@@ -139,7 +139,10 @@ while True:
         if stat>2e4 :
             available_devices.append(stat_idx)
     if len(available_devices)>=num_devices:
-        break
+        avail_count+=1
+        print(avail_count,'count')
+        if avail_count==1:
+            break
     print('waiting..',num_devices)
     time.sleep(30)
 

@@ -8,24 +8,25 @@ print(hostname,'hostname')
 concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    # 'dog6': ('dog','dog','pet','living'),
-    # 'teapot':('teapot','teapot','nonliving','nonliving'),
-    # 'pet_cat1':('cat','cat','pet','living'),
+    'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    'dog6': ('dog','dog','pet','living'),
+    'teapot':('teapot','teapot','nonliving','nonliving'),
+    'pet_cat1':('cat','cat','pet','living'),
 
-    # 'cat1': ('cat','cat','pet','living'),
-    # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
-    # 'backpack_dog':('backpack','backpack','nonliving','nonliving'),
-    # 'poop_emoji':('toy','toy','nonliving','nonliving'),
-    # 'cat2':('cat','cat','pet','living'),
-    # 'dog3':  ('dog','dog','pet','living'),
-    # 'pet_dog1':('dog','dog','pet','living'),
+    'cat1': ('cat','cat','pet','living'),
+    'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
+    'backpack_dog':('backpack','backpack','nonliving','nonliving'),
+    'poop_emoji':('toy','toy','nonliving','nonliving'),
+    'cat2':('cat','cat','pet','living'),
+    'dog3':  ('dog','dog','pet','living'),
+    'pet_dog1':('dog','dog','pet','living'),
 
-    # 'backpack':('backpack','backpack','nonliving','nonliving'),
-    # 'cat_statue': ('toy','toy','nonliving','nonliving'),
-    # 'rc_car':('toy','toy','nonliving','nonliving'),
-    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    'backpack':('backpack','backpack','nonliving','nonliving'),
+    'cat_statue': ('toy','toy','nonliving','nonliving'),
+    'rc_car':('toy','toy','nonliving','nonliving'),
+    'chair1': ('chair','chair','nonliving','nonliving'),
     'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    'vase':('vase','vase','nonliving','nonliving'),
 
     # 'red_cartoon':('character','cartoon character','pet','living'),
     # 'candle':('candle','candle','nonliving','nonliving'),
@@ -62,7 +63,7 @@ info_map_01={
     # 'flower1':('flower','flower'),
 }
 if '03' in hostname:
-    target_devices=[0,1,2,3,4,5,6,7]
+    target_devices=[2,3,4,5,6,7]
     host_suffix='03'
 
 elif '04' in hostname:
@@ -76,11 +77,12 @@ lambda_mlm_list=[
             # 0.002,
             # 0.005,
             0.001,
-            0.002,
-            0.005,
-            0, 
+            # 0.002,
+            # 0.005,
+            # 0, 
             0.0001,
             0.0002,
+            0.00025,
             0.0005,
             # 0.00005,
             # 0.002,

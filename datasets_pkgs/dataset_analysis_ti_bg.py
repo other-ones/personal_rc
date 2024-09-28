@@ -132,18 +132,20 @@ class TextualInversionDataset(Dataset):
         mask_token_ids=None,
         get_images=True,
         prompt_type=None,
-        prior_concept=None,
+        train_prior_concept=None,
         placeholder_token=None,
         caption_path=None,
         target=None,
         prior_only=None,
+        num_mask=0
     ):
+        self.num_mask=num_mask
         self.prior_only=prior_only
         self.prompt_type=prompt_type
         self.include_prior_concept=include_prior_concept
         # self.captions=open(caption_path).readlines()
         if include_prior_concept:
-            self.placeholder='{} {}'.format(placeholder_token,prior_concept)
+            self.placeholder='{} {}'.format(placeholder_token,train_prior_concept)
         else:
             self.placeholder='{}'.format(placeholder_token)
         self.captions_raw=[]
@@ -159,8 +161,8 @@ class TextualInversionDataset(Dataset):
             # bg_new=' '.join(bg_words)
             bg_new='<bg>{}'.format(bg)
             if prior_only:
-                caption="a picture of {} with {} in the background".format(prior_concept,bg_new)
-                caption_raw="a picture of {} with {} in the background".format(prior_concept,bg)
+                caption="a picture of {} with {} in the background".format(train_prior_concept,bg_new)
+                caption_raw="a picture of {} with {} in the background".format(train_prior_concept,bg)
                 caption_simple="a picture of {}".format(bg_new)
                 caption_simple_raw="a picture of {}".format(bg)
             else:
@@ -187,7 +189,7 @@ class TextualInversionDataset(Dataset):
         self.exclude_suffix = exclude_suffix
         self.data_root = data_root
         self.tokenizer = tokenizer
-        self.prior_concept = prior_concept
+        self.train_prior_concept = train_prior_concept
         self.placeholder_token = placeholder_token
         self.size = size
         self.center_crop = center_crop
@@ -222,11 +224,11 @@ class TextualInversionDataset(Dataset):
         caption_simple_raw=caption_simple_raw.strip()
 
         # if self.include_prior_concept:
-        #     placeholder='{} {}'.format(self.placeholder_token,self.prior_concept)
+        #     placeholder='{} {}'.format(self.placeholder_token,self.train_prior_concept)
         # else:
         #     placeholder='{}'.format(self.placeholder_token)
         # if self.prior_only:
-        #     caption=caption.replace('<new1>',self.prior_concept) # caption without masked embedding
+        #     caption=caption.replace('<new1>',self.train_prior_concept) # caption without masked embedding
         #     caption=caption.replace('  ',' ')
         # else:
         #     caption=caption.replace('<new1>','{}'.format(placeholder)) # caption without masked embedding
@@ -253,25 +255,31 @@ class TextualInversionDataset(Dataset):
         words=caption.split()
         is_bg_tokens=[False]       # first token for <startoftext>
         is_keyword_tokens1=[False] # first token for <startoftext>
+        masked_idxs=[False] # first token for <startoftext>
         non_special_idxs=[False]   # first token for <startoftext>
         non_keyword_idxs=[True]    # first token for <startoftext>
         is_prior1=[False]
+        num_total_tokens=0
         for word_idx in range(len(words)):
             cap_word=words[word_idx]
             cap_word_raw=cap_word.replace('<bg>','')
             word_token_ids=self.tokenizer.encode(cap_word_raw,add_special_tokens=False)
             num_tokens=len(word_token_ids)
             non_special_idxs+=([True]*num_tokens)
+            if "<bg>" in cap_word:
+                is_bg_tokens=is_bg_tokens+(([True])+([False]*(num_tokens-1)))
+            else:
+                is_bg_tokens=is_bg_tokens+([False]*num_tokens)
             for tok_id in word_token_ids:
                 tok_decoded=self.tokenizer.decode(tok_id)
-                if "<bg>" in cap_word:
-                    is_bg_tokens.append(True)
-                else:
-                    is_bg_tokens.append(False)
+                # if "<bg>" in cap_word:
+                #     is_bg_tokens.append(True)
+                # else:
+                #     is_bg_tokens.append(False)
                     
                     
                 
-                if cap_word==self.prior_concept:
+                if cap_word==self.train_prior_concept:
                     is_prior1.append(True)
                 else:
                     is_prior1.append(False)
@@ -284,11 +292,16 @@ class TextualInversionDataset(Dataset):
                 else:
                     is_keyword_tokens1.append(False)
                     non_keyword_idxs.append(True)
-
+        # print(is_bg_tokens,'is_bg_tokens')
+        # exit(0)
         # is_keyword_tokens1
         for _ in range(len(is_keyword_tokens1),self.tokenizer.model_max_length):
             is_keyword_tokens1.append(False)
         assert len(is_keyword_tokens1)==self.tokenizer.model_max_length
+        for _ in range(len(is_bg_tokens),self.tokenizer.model_max_length):
+            is_bg_tokens.append(False)
+        assert sum(is_bg_tokens)==1
+        assert len(is_bg_tokens)==self.tokenizer.model_max_length
         if not self.prior_only:
             assert sum(is_keyword_tokens1)==1
         else:
@@ -356,13 +369,12 @@ class TextualInversionDataset(Dataset):
             cap_word_simple_bg_raw=cap_word_simple_bg.replace('<bg>','')
             word_token_ids_simple_bg=self.tokenizer.encode(cap_word_simple_bg_raw,add_special_tokens=False)
             num_tokens=len(word_token_ids)
+            if "<bg>" in cap_word_simple_bg:
+                is_bg_tokens_simple=is_bg_tokens_simple+(([True])+([False]*(num_tokens-1)))
+            else:
+                is_bg_tokens_simple=is_bg_tokens_simple+([False]*num_tokens)
             for tok_id in word_token_ids_simple_bg:
                 tok_decoded=self.tokenizer.decode(tok_id)
-                if "<bg>" in cap_word_simple_bg:
-                    is_bg_tokens_simple.append(True)
-                    # print(tok_decoded,'tok_decoded')
-                else:
-                    is_bg_tokens_simple.append(False)
                 if tok_decoded==self.placeholder_token:
                     is_keyword_tokens1_simple.append(True)
                 else:
@@ -372,7 +384,7 @@ class TextualInversionDataset(Dataset):
         for _ in range(len(is_bg_tokens_simple),self.tokenizer.model_max_length):
             is_bg_tokens_simple.append(False)
         assert len(is_bg_tokens_simple)==self.tokenizer.model_max_length
-        assert sum(is_bg_tokens_simple)!=0
+        assert sum(is_bg_tokens_simple)==1
         example["is_bg_tokens_simple"]=torch.BoolTensor(is_bg_tokens_simple)   
 
         # is_keyword_tokens1_simple

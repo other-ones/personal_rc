@@ -52,8 +52,6 @@ for concept in concepts:
     concept_path=os.path.join(dir_path,concept)
     exps=os.listdir(concept_path)
     exps=sorted(exps,key=extract_values)
-    if concept=='teddybear':
-        print(exps)
     for exp in exps:
         # if keywords is not None:
         #     valid1=True
@@ -71,13 +69,14 @@ for concept in concepts:
         #             break
         # else:
         #     valid2=True
+
         exp_key=exp.replace('{}_'.format(concept),'')
         exp_path=os.path.join(concept_path,exp)
         dino_path=os.path.join(exp_path,'dino.json')
         fg_dino_path=os.path.join(exp_path,'masked_dino.json')
         bg_dino_path=os.path.join(exp_path,'masked_dino_bg.json')
         clip_path=os.path.join(exp_path,'clip.json')
-        if not(os.path.exists(dino_path) and os.path.exists(clip_path)):
+        if not(os.path.exists(dino_path) and os.path.exists(clip_path) and os.path.exists(fg_dino_path) and os.path.exists(bg_dino_path)):
             print(exp_path,'exp')
             continue
         clip_score=json.load(open(clip_path))['clipscore']

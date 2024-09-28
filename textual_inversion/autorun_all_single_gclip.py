@@ -165,6 +165,7 @@ while True:
     print('waiting..')
     time.sleep(30)
 
+c
 
 for cidx,concept in enumerate(list(info_map.keys())):
     for nonmask_weight in nonmask_weight_list:

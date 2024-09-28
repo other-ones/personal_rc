@@ -43,3 +43,8 @@ python eval_clipscore_dir.py  \
 --dir_path='results/ti_results/abl_prompt_size_prior_seed7777_qlab03_rep1' \
 --ignore_legacy=0
 
+
+export CUDA_VISIBLE_DEVICES=6;
+python eval_clipscore_dir.py  \
+--dir_path='results/ti_results/abl_prompt_type_prior_seed7777_qlab03_rep1' \
+--ignore_legacy=0
