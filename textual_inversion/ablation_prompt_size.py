@@ -103,7 +103,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
-target_devices=[0,1,2,3,4,5,6,7]
+target_devices=[3,5,6,7]
 seed=7777
 include_prior=1
 delay=25
@@ -129,23 +129,23 @@ else:
     assert False
 
 
-num_devices=2
-avail_count=0
-count_threshold=0
-while True:
-    stats=get_gpu_memory()
-    found=False
-    available_devices=[]
-    for stat_idx in target_devices:
-        stat=stats[stat_idx]    
-        if stat>2e4 :
-            available_devices.append(stat_idx)
-    if len(available_devices)>=num_devices:
-        avail_count+=1
-        if avail_count>=count_threshold:
-            break
-    print('waiting..',num_devices)
-    time.sleep(30)
+# num_devices=4
+# avail_count=0
+# count_threshold=0
+# while True:
+#     stats=get_gpu_memory()
+#     found=False
+#     available_devices=[]
+#     for stat_idx in target_devices:
+#         stat=stats[stat_idx]    
+#         if stat>2e4 :
+#             available_devices.append(stat_idx)
+#     if len(available_devices)>=num_devices:
+#         avail_count+=1
+#         if avail_count>=count_threshold:
+#             break
+#     print('waiting..',num_devices)
+#     time.sleep(30)
 
 exp_prefix='abl_prompt_size'
 if include_prior:

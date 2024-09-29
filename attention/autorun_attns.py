@@ -179,7 +179,7 @@ for gen_idx,gen_target_step in enumerate(gen_target_step_list):
             log_path=os.path.join(exp_path,'log.out')
             command='export CUDA_VISIBLE_DEVICES={};'.format(device_idx)
             command+='export CUBLAS_WORKSPACE_CONFIG=:4096:8;'
-            command+='accelerate launch --main_process_port {} visualize_attns_ce.py \\\n'.format(ports[port_idx])
+            command+='accelerate launch --main_process_port {} visualize_attns_kl.py \\\n'.format(ports[port_idx])
             command+='--pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5" \\\n'
             command+='--train_data_dir1="/data/twkim/diffusion/personalization/collected/images/{}" \\\n'.format(concept)
             command+='--placeholder_token1="<{}>" \\\n'.format(concept)

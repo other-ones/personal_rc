@@ -709,9 +709,9 @@ def main():
                         # ignore_index=-100,
                         reduction='none'
                     )
-                    print(loss_mlm.shape,'loss_mlm.shape1')
+                    # print(loss_mlm.shape,'loss_mlm.shape1')
                     loss_mlm=loss_mlm[mlm_labels_flat!=(-100)]
-                    print(loss_mlm.shape,'loss_mlm.shape2')
+                    # print(loss_mlm.shape,'loss_mlm.shape2')
                     loss_mlm=loss_mlm.mean()
                     # # masked_idxs_flat
                     # if args.nonmask_weight!=1 and args.mlm_target in ['non_special','all','non_padding']:

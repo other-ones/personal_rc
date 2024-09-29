@@ -40,11 +40,12 @@ def extract_values(exp):
     # Default values if not found
     mlm = (mlm_match.group(1))[::-1] if mlm_match else 'inf'
     lr = float(lr_match.group(1).replace('e', 'e-')) if lr_match else float('inf')
-    step = -int(s_match.group(1)) if s_match else float('inf')
+    step = int(s_match.group(1)) if s_match else float('inf')
     mprob = (mprob_match.group(1))[::-1] if mprob_match else 'inf'
 
     # Return a tuple for sorting with priority: is_nomlm, mlm, lr, step, no_tagged
-    return (not step,is_nomlm,mlm,mprob,lr)
+    # return (not step,is_nomlm,mprob,lr,mlm)
+    return (step,is_nomlm,mprob,lr,mlm)
 
 
     
@@ -77,7 +78,7 @@ for concept in concepts:
         bg_dino_path=os.path.join(exp_path,'masked_dino_bg.json')
         clip_path=os.path.join(exp_path,'clip.json')
         if not(os.path.exists(dino_path) and os.path.exists(clip_path) and os.path.exists(fg_dino_path) and os.path.exists(bg_dino_path)):
-            print(exp_path,'exp')
+            # print(exp_path,'exp')
             continue
         clip_score=json.load(open(clip_path))['clipscore']
         dino_score=json.load(open(dino_path))['dino']
