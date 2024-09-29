@@ -575,17 +575,17 @@ def main(args):
             keyword_maps=keyword_maps.reshape(N,-1)
             bg_maps=bg_maps.reshape(N,-1)
             eps=1e-6
-            # keyword_maps=(keyword_maps/keyword_maps.sum(1,keepdim=True))
+            keyword_maps_kl=(keyword_maps/keyword_maps.sum(1,keepdim=True))
             # keyword_maps=keyword_maps/(keyword_maps.max(1,keepdim=True)[0])
-            # bg_maps=(bg_maps/bg_maps.sum(1,keepdim=True))
+            bg_maps_kl=(bg_maps/bg_maps.sum(1,keepdim=True))
             # bg_maps=bg_maps/bg_maps.max(1,keepdim=True)
             # bg_maps=bg_maps/(bg_maps.max(1,keepdim=True)[0])
 
             print(keyword_maps.shape,'keyword_maps.shape')
             print(torch.min(keyword_maps),torch.max(keyword_maps),'keyword_maps')
             print(torch.min(bg_maps),torch.max(bg_maps),'bg_maps')
-            kl_div1=kl_criterion(keyword_maps.log(),bg_maps)
-            kl_div2=kl_criterion(bg_maps.log(),keyword_maps)
+            kl_div1=kl_criterion(keyword_maps_kl.log(),bg_maps_kl)
+            kl_div2=kl_criterion(bg_maps_kl.log(),keyword_maps_kl)
             sym_kl=(kl_div1+kl_div2)*0.5
             kl_list.append(sym_kl.mean().item())
             kl_data[img_name]={"sym_kl":sym_kl,"prompt":prompt_save}

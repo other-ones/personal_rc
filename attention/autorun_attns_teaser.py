@@ -8,14 +8,14 @@ print(hostname,'hostname')
 # concepts=os.listdir('/data/twkim/diffusion/personalization/collected/images')
 info_map_03={
     # train_prior/eval_prior/train_prompt_type/eval_prompt_type
-    'duck_toy':('duck','duck toy','nonliving','nonliving'),
-    'teapot':('teapot','teapot','nonliving','nonliving'),
-    'chair1': ('chair','chair','nonliving','nonliving'),
-    'dog6': ('dog','dog','pet','living'),
     'cat1': ('cat','cat','pet','living'),
-    'pet_cat1':('cat','cat','pet','living'),
     'dog3':  ('dog','dog','pet','living'),
-    'teddybear':('teddy','teddy bear','nonliving','nonliving'),
+    # 'duck_toy':('duck','duck toy','nonliving','nonliving'),
+    # 'teapot':('teapot','teapot','nonliving','nonliving'),
+    # 'chair1': ('chair','chair','nonliving','nonliving'),
+    # 'dog6': ('dog','dog','pet','living'),
+    # 'pet_cat1':('cat','cat','pet','living'),
+    # 'teddybear':('teddy','teddy bear','nonliving','nonliving'),
 
     
     # 'wooden_pot':('pot','wooden pot','nonliving','nonliving'),
@@ -116,7 +116,7 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
-target_devices=[0,1,3,4,5,6,7]
+target_devices=[0,1,4]
 gen_seed=6804
 include_prior=1
 delay=25
@@ -145,7 +145,7 @@ for gen_idx,gen_target_step in enumerate(gen_target_step_list):
             continue
         exps=os.listdir(concept_path)
         for exp_idx,exp in enumerate(exps):
-            if not (('_mlm00001_' in exp) or ('_nomlm_' in exp)):
+            if not (('_mlm0001_' in exp) or ('_nomlm_' in exp)):
                 continue
             train_prior,eval_prior,train_prompt_type,eval_prompt_type=info_map[concept]
             learned_embed_path1=os.path.join(concept_path,exp,'checkpoints/learned_embeds_s{}.pt'.format(gen_target_step))

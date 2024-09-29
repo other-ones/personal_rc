@@ -11,7 +11,7 @@
             "a {} on top of a <k>purple <k>rug in a forest",
             "a {} with a <k>wheat <k>field in the background",
             "a {} with a <k>tree and <k>autumn <k>leaves in the background",
-            "a {} with the <k>Eiffel <k>Tower in the background",
+            "a {} at the <k>Eiffel <k>Tower",
             "a {} floating on top of <k>water",
             "a {} floating in an <k>ocean of milk",
             "a {} on top of <k>green <k>grass with <k>sunflowers around it",
@@ -19,10 +19,10 @@
             "a {} on top of the <k>sidewalk in a <k>crowded <k>street",
             "a {} on top of a <k>dirt <k>road",
             "a {} on top of a <k>white <k>rug",
-            "{} in <k>Grand <k>Canyon",
-            "{} in <k>Chinese <k>Great <k>Wall",
-            "{} at <k>Roman <k>Colosseum",
-            "{} at <k>New <k>York <k>Times <k>Square",
-            "{} at <k>Taj <k>Mahal"
+            "{} at the <k>Grand <k>Canyon",
+            "{} on the <k>Chinese <k>Great <k>Wall",
+            "{} at the <k>Roman <k>Colosseum",
+            "{} in <k>New <k>York <k>Times <k>Square",
+            "{} at the <k>Taj <k>Mahal"
             ]
 }
