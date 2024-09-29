@@ -575,9 +575,9 @@ def main(args):
             keyword_maps=keyword_maps.reshape(N,-1)
             bg_maps=bg_maps.reshape(N,-1)
             eps=1e-6
-            keyword_maps=(keyword_maps/keyword_maps.sum(1,keepdim=True))
+            # keyword_maps=(keyword_maps/keyword_maps.sum(1,keepdim=True))
             # keyword_maps=keyword_maps/(keyword_maps.max(1,keepdim=True)[0])
-            bg_maps=(bg_maps/bg_maps.sum(1,keepdim=True))
+            # bg_maps=(bg_maps/bg_maps.sum(1,keepdim=True))
             # bg_maps=bg_maps/bg_maps.max(1,keepdim=True)
             # bg_maps=bg_maps/(bg_maps.max(1,keepdim=True)[0])
 
