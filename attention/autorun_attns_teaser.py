@@ -121,7 +121,7 @@ gen_seed=6804
 include_prior=1
 delay=25
 rev_list=[0]
-benchmark='teaser_attn'
+benchmark='teaser_attn2'
 
 
 
