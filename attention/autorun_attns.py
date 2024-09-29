@@ -116,8 +116,8 @@ for stat_idx,stat in enumerate(stats):
 
 ports=np.arange(1111,2222)
 np.random.shuffle(ports)
-target_devices=[3,4,5,6,7]
-gen_seed=7777
+target_devices=[0,1,3,4,5,6,7]
+gen_seed=6804
 include_prior=1
 delay=25
 rev_list=[0]
