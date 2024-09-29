@@ -121,7 +121,7 @@ gen_seed=7777
 include_prior=1
 delay=25
 rev_list=[0]
-benchmark='analysis_kl'
+benchmark='analysis_ce'
 
 
 
@@ -133,7 +133,7 @@ print('GENERATION')
 # GENERATION
 dir_path=os.path.join('saved_models/ti_attn_models',dir_name)
 delay=30
-num_images_per_prompt=20
+num_images_per_prompt=4
 port_idx=0
 gen_target_step_list=[2000]
 for gen_idx,gen_target_step in enumerate(gen_target_step_list):
